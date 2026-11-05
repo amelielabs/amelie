@@ -13,17 +13,14 @@
 
 enum
 {
-	// all visible relations
-	FALL     = 1 << 0,
-
 	// encode SQL CREATE schema
-	FCREATE  = 1 << 1,
+	FCREATE  = 1 << 0,
 
 	// encode minimal output
-	FMINIMAL = 1 << 2,
+	FMINIMAL = 1 << 1,
 
 	// FROM SHOW
-	FFROM    = 1 << 3
+	FFROM    = 1 << 2
 };
 
 static inline bool

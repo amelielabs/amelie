@@ -84,3 +84,39 @@ tr_set_user(Tr* self, Rel* user)
 {
 	self->user = user;
 }
+
+hot static inline void
+tr_commit(Tr* self)
+{
+	if (! tr_active(self))
+		return;
+
+	auto log = &self->log;
+	for (int pos = 0; pos < log->count; pos++)
+	{
+		auto op = log_of(log, pos);
+		if (op->iface)
+			op->iface->commit(log, op);
+	}
+
+	// reset log
+	log_reset(log);
+}
+
+static inline void
+tr_abort(Tr* self)
+{
+	if (! tr_active(self))
+		return;
+
+	auto log = &self->log;
+	for (int pos = self->log.count - 1; pos >= 0; pos--)
+	{
+		auto op = log_of(log, pos);
+		if (op->iface)
+			op->iface->abort(log, op);
+	}
+
+	// reset log
+	log_reset(log);
+}

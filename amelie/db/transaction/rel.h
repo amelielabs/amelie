@@ -14,7 +14,7 @@
 typedef struct Rel Rel;
 
 typedef void (*RelFree)(Rel*, bool);
-typedef void (*RelShow)(Rel*, Buf*, Str*, int);
+typedef void (*RelShow)(Rel*, Buf*, int);
 
 typedef enum
 {
@@ -26,12 +26,10 @@ typedef enum
 
 struct Rel
 {
-	Str*     user;
 	Str*     name;
 	RelType  type;
 	Rel*     parent;
 	Str*     description;
-	Grants*  grants;
 	RelShow  show;
 	RelFree  free;
 	Hashnode link_ht;
@@ -56,22 +54,14 @@ rel_type_of(RelType type)
 static inline void
 rel_init(Rel* self, RelType type)
 {
-	self->user        = NULL;
 	self->name        = NULL;
 	self->type        = type;
 	self->parent      = NULL;
 	self->description = NULL;
-	self->grants      = NULL;
 	self->show        = NULL;
 	self->free        = NULL;
 	hashnode_init(&self->link_ht);
 	list_init(&self->link);
-}
-
-static inline void
-rel_set_user(Rel* self, Str* user)
-{
-	self->user = user;
 }
 
 static inline void
@@ -93,12 +83,6 @@ rel_set_description(Rel* self, Str* description)
 }
 
 static inline void
-rel_set_grants(Rel* self, Grants* grants)
-{
-	self->grants = grants;
-}
-
-static inline void
 rel_set_show(Rel* self, RelShow func)
 {
 	self->show = func;
@@ -111,10 +95,10 @@ rel_set_free(Rel* self, RelFree func)
 }
 
 static inline void
-rel_show(Rel* self, Buf* buf, Str* user, int flags)
+rel_show(Rel* self, Buf* buf, int flags)
 {
 	if (self->show)
-		self->show(self, buf, user, flags);
+		self->show(self, buf, flags);
 }
 
 static inline void
@@ -134,12 +118,8 @@ rel_drop(Rel* self)
 static inline void
 rel_permission_error(Rel* self)
 {
-	if (self->user)
-		error("relation '{str}.{str}': permission denied",
-		      self->user, self->name);
-	else
-		error("relation '{str}': permission denied",
-		      self->name);
+	error("relation '{str}': permission denied",
+	      self->name);
 }
 
 static inline void
@@ -147,10 +127,6 @@ rel_write(Rel* self, Buf* buf, int flags)
 {
 	unused(flags);
 	encode_obj(buf);
-
-	// user
-	encode_raw(buf, "user", 4);
-	encode_str(buf, self->user);
 
 	// name
 	encode_raw(buf, "name", 4);

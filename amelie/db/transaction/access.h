@@ -23,9 +23,7 @@ struct AccessRel
 struct Access
 {
 	int  count;
-	int  count_users;
 	Buf  list;
-	Buf  list_users;
 	bool ro;
 };
 
@@ -35,37 +33,26 @@ access_at(Access* self, int order)
 	return &((AccessRel*)self->list.start)[order];
 }
 
-static inline Rel*
-access_at_user(Access* self, int order)
-{
-	return ((Rel**)self->list_users.start)[order];
-}
-
 static inline void
 access_init(Access* self)
 {
-	self->ro          = true;
-	self->count       = 0;
-	self->count_users = 0;
+	self->ro    = true;
+	self->count = 0;
 	buf_init(&self->list);
-	buf_init(&self->list_users);
 }
 
 static inline void
 access_free(Access* self)
 {
 	buf_free(&self->list);
-	buf_free(&self->list_users);
 }
 
 static inline void
 access_reset(Access* self)
 {
-	self->ro          = true;
-	self->count       = 0;
-	self->count_users = 0;
+	self->ro    = true;
+	self->count = 0;
 	buf_reset(&self->list);
-	buf_reset(&self->list_users);
 }
 
 static inline bool
@@ -78,12 +65,6 @@ static inline bool
 access_ro(Access* self)
 {
 	return self->ro;
-}
-
-static inline bool
-access_multi_user(Access* self)
-{
-	return self->count_users > 1;
 }
 
 hot static inline void
@@ -107,17 +88,6 @@ access_add(Access* self, Rel* rel, uint32_t perm)
 	ref->rel  = rel;
 	ref->perm = perm;
 	self->count++;
-
-	// add unique user
-	for (auto i = 0; i < self->count_users; i++)
-	{
-		auto user = access_at_user(self, i);
-		if (user == rel->parent)
-			return;
-	}
-
-	buf_write(&self->list_users, &rel->parent, sizeof(Rel**));
-	self->count_users++;
 }
 
 hot static inline void
@@ -131,25 +101,12 @@ access_merge(Access* self, Access* access)
 }
 
 hot static inline AccessRel*
-access_find(Access* self, Str* user, Str* name)
+access_find(Access* self, Str* name)
 {
 	for (auto i = 0; i < self->count; i++)
 	{
 		auto rel = access_at(self, i);
-		if (str_compare(rel->rel->user, user) &&
-		    str_compare(rel->rel->name, name))
-			return rel;
-	}
-	return NULL;
-}
-
-hot static inline Rel*
-access_find_user(Access* self, Str* name)
-{
-	for (auto i = 0; i < self->count_users; i++)
-	{
-		auto rel = access_at_user(self, i);
-		if (str_compare(rel->name, name))
+		if (str_compare(rel->rel->name, name))
 			return rel;
 	}
 	return NULL;

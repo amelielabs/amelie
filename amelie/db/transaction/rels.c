@@ -52,8 +52,6 @@ rels_set_ht(Rels* self, Rel* rel)
 
 	// hash by name
 	uint32_t hash = 0;
-	if (rel->user && rel->type != REL_USER)
-		hash = hash_murmur3_32(str_u8(rel->user), str_size(rel->user), 0);
 	hash = hash_murmur3_32(str_u8(rel->name), str_size(rel->name), hash);
 	rel->link_ht.hash = hash;
 	hashtable_set(&self->ht, &rel->link_ht);
@@ -150,19 +148,9 @@ rels_drop(Rels* self, Tr* tr, Rel* rel)
 }
 
 void
-rels_rename(Rels* self, Rel* rel, Str* user, Str* name)
+rels_rename(Rels* self, Rel* rel, Str* name)
 {
 	rels_delete(self, rel);
-
-	// set new relation name
-	//
-	// note: this updates relation config directly
-	//
-	if (user && !str_compare(rel->user, user))
-	{
-		str_free(rel->user);
-		str_copy(rel->user, user);
-	}
 
 	if (! str_compare(rel->name, name))
 	{
@@ -177,85 +165,45 @@ rels_rename(Rels* self, Rel* rel, Str* user, Str* name)
 	rels_set(self, rel);
 }
 
-hot static inline bool
-rel_accessible(Rel* self, bool all, bool superuser, Str* user)
-{
-	// by owner
-	if (self->user && str_compare(self->user, user))
-		return true;
-
-	// granted
-	if (! all)
-		return false;
-
-	// by superuser
-	if (superuser || !self->grants)
-		return true;
-
-	if (grants_find(self->grants, user))
-		return true;
-
-	return false;
-}
-
 void
-rels_list(Rels* self, RelType type,
-          Buf*  buf,
-          Str*  user_by,
-          Str*  user,
-          Str*  name,
-          int   flags)
+rels_list(Rels* self, RelType type, Buf* buf, Str* name, int flags)
 {
-	auto all = flags_has(flags, FALL);
-	auto superuser = user && str_is(user_by, "amelie", 6);
 	if (name)
 	{
 		// show <type>
-		auto rel = rels_find(self, type, user, name, false);
+		auto rel = rels_find(self, type, name, false);
 		if (rel)
 		{
-			if (user && !rel_accessible(rel, all, superuser, user_by))
-				return;
-			rel_show(rel, buf, user_by, flags);
+			rel_show(rel, buf, flags);
 			return;
 		}
 		encode_null(buf);
 		return;
 	}
 
-	// show [all] <types>
+	// show <types>
 	encode_array(buf);
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
 		if (type != REL_UNDEF && rel->type != type)
 			continue;
-		if (user && !rel_accessible(rel, all, superuser, user_by))
-			continue;
-		rel_show(rel, buf, user_by, flags);
+		rel_show(rel, buf, flags);
 	}
 	encode_array_end(buf);
 }
 
 void
-rels_list_rel(Rels* self, Buf* buf,
-              Str*  user_by,
-              Str*  user,
-              Str*  name,
-              int   flags)
+rels_list_rel(Rels* self, Buf* buf, Str* name, int flags)
 {
-	auto all = flags_has(flags, FALL);
-	auto superuser = user && str_is(user_by, "amelie", 6);
 	if (name)
 	{
 		// show rel
-		auto rel = rels_find(self, REL_UNDEF, user, name, false);
+		auto rel = rels_find(self, REL_UNDEF, name, false);
 		if (rel)
 		{
-			if (user && !rel_accessible(rel, all, superuser, user_by))
-				return;
 			if (flags_has(flags, FCREATE))
-				rel_show(rel, buf, user_by, flags);
+				rel_show(rel, buf, flags);
 			else
 				rel_write(rel, buf, flags);
 			return;
@@ -269,10 +217,8 @@ rels_list_rel(Rels* self, Buf* buf,
 	list_foreach(&self->list)
 	{
 		auto rel = list_at(Rel, link);
-		if (user && !rel_accessible(rel, all, superuser, user_by))
-			continue;
 		if (flags_has(flags, FCREATE))
-			rel_show(rel, buf, user_by, flags);
+			rel_show(rel, buf, flags);
 		else
 			rel_write(rel, buf, flags);
 	}
@@ -283,27 +229,20 @@ hot static inline bool
 rels_cmp(Hashnode* node, void* ptr)
 {
 	// compare by name
-	Str** arg = ptr;
+	Str* name = ptr;
 	auto rel = container_of(node, Rel, link_ht);
-	if (arg[0] && rel->user)
-		if (! str_compare(rel->user, arg[0]))
-			return false;
-	return str_compare(rel->name, arg[1]);
+	return str_compare(rel->name, name);
 }
 
 Rel*
-rels_find(Rels* self, RelType type, Str* user, Str* name,
-          bool  error_if_not_exists)
+rels_find(Rels* self, RelType type, Str* name, bool error_if_not_exists)
 {
 	// hash name
 	uint32_t hash = 0;
-	if (user)
-		hash = hash_murmur3_32(str_u8(user), str_size(user), 0);
 	hash = hash_murmur3_32(str_u8(name), str_size(name), hash);
 
 	// match relation
-	Str* arg[] = { user, name };
-	auto node = hashtable_get(&self->ht, hash, rels_cmp, arg);
+	auto node = hashtable_get(&self->ht, hash, rels_cmp, name);
 	if (node)
 	{
 		auto rel = container_of(node, Rel, link_ht);
@@ -318,7 +257,7 @@ rels_find(Rels* self, RelType type, Str* user, Str* name,
 }
 
 hot int
-rels_count(Rels* self, RelType type, Str* user)
+rels_count(Rels* self, RelType type)
 {
 	int count = 0;
 	list_foreach(&self->list)
@@ -326,8 +265,7 @@ rels_count(Rels* self, RelType type, Str* user)
 		auto rel = list_at(Rel, link);
 		if (rel->type != type)
 			continue;
-		if (rel->user && str_compare(rel->user, user))
-			count++;
+		count++;
 	}
 	return count;
 }

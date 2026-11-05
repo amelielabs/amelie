@@ -15,9 +15,6 @@
 #include "transaction/log.h"
 #include "transaction/tr.h"
 
-// commit
-#include "transaction/commit.h"
-
 // grants
 #include "transaction/permissions.h"
 #include "transaction/grants.h"

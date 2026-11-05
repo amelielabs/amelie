@@ -103,31 +103,3 @@ permission_next(uint32_t* permissions)
 	*permissions &= ~next;
 	return next;
 }
-
-uint32_t
-permission_validate(Str* user, Str* name, uint32_t permissions, uint32_t mask)
-{
-	// ALL returns only supported permissions
-	if (permissions == PERM_ALL)
-		return mask;
-
-	// validate the list against supported permissions
-	auto perms = permissions;
-	while (perms > 0)
-	{
-		auto id = permission_next(&perms);
-		if (id == PERM_NONE)
-			break;
-		if ((id & mask) != id)
-		{
-			auto id_name = permission_name_of(id);
-			if (user)
-				error("relation '{str}.{str}' does not support '{s}' grant",
-				      user, name, id_name);
-			else
-				error("relation '{str}' does not support '{s}' grant",
-				      name, id_name);
-		}
-	}
-	return permissions;
-}

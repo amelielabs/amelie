@@ -63,6 +63,7 @@ part_free(Part* self)
 	am_free(self);
 }
 
+#if 0
 static void
 part_open_heap(Part* self, ManifestRel* ref)
 {
@@ -112,8 +113,7 @@ part_open_heap(Part* self, ManifestRel* ref)
 	usage_update(self->arg->memory, storage_size(storage));
 
 	auto total = (double)storage_size(storage) / 1024 / 1024;
-	info("recover: {str}.{str} ({d} files, {.2f} MB)",
-	     self->arg->rel->user,
+	info("recover: {str} ({d} files, {.2f} MB)",
 	     self->arg->rel->name,
 	     storage->list_count,
 	     total);
@@ -129,21 +129,23 @@ part_open_flat(Part* self, Flat* flat, ManifestRel* ref)
 	usage_update(self->arg->memory, storage_size(storage));
 
 	auto total = (double)storage_size(storage) / 1024 / 1024;
-	info("recover: {str}.{str} ({d} column, {d} files, {.2f} MB)",
-	     self->arg->rel->user,
+	info("recover: {str} ({d} column, {d} files, {.2f} MB)",
 	     self->arg->rel->name,
 	     flat->column->order,
 	     storage->list_count,
 	     total);
 }
+#endif
 
 void
-part_open(Part* self, Manifest* manifest)
+part_open(Part* self)
 {
+	(void)self;
+#if 0
 	auto rel = self->arg->rel;
 
 	// find partition manifest
-	auto ref = manifest_find(manifest, rel->user, rel->name, -1);
+	auto ref = manifest_find(manifest, rel->name, -1);
 	if (! ref)
 		error("recover: manifest is missing {str}.{str}",
 		      rel->user, rel->name);
@@ -165,6 +167,7 @@ part_open(Part* self, Manifest* manifest)
 		auto flat = flats_at(&self->flats, column);
 		part_open_flat(self, flat, ref);
 	}
+#endif
 }
 
 void

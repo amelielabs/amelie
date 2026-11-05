@@ -28,7 +28,7 @@ struct Part
 
 Part*  part_allocate(PartArg*);
 void   part_free(Part*);
-void   part_open(Part*, Manifest*);
+void   part_open(Part*);
 void   part_truncate(Part*);
 bool   part_retention(Part*);
 void   part_column_create(Part*, Column*);
