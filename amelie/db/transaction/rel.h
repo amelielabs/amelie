@@ -28,7 +28,7 @@ struct Rel
 {
 	Str*     name;
 	RelType  type;
-	Rel*     parent;
+	User*    parent;
 	Str*     description;
 	RelShow  show;
 	RelFree  free;
@@ -71,9 +71,9 @@ rel_set_name(Rel* self, Str* name)
 }
 
 static inline void
-rel_set_parent(Rel* self, Rel* rel)
+rel_set_parent(Rel* self, User* user)
 {
-	self->parent = rel;
+	self->parent = user;
 }
 
 static inline void

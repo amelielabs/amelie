@@ -15,14 +15,12 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Str     user;
 	Str     name;
 	Str     description;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
 	int64_t retention;
-	Grants  grants;
 };
 
 static inline TableConfig*
@@ -33,18 +31,15 @@ table_config_allocate(void)
 	self->indexes_count = 0;
 	self->retention     = -1;
 	str_init(&self->name);
-	str_init(&self->user);
 	str_init(&self->description);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
-	grants_init(&self->grants);
 	return self;
 }
 
 static inline void
 table_config_free(TableConfig* self)
 {
-	str_free(&self->user);
 	str_free(&self->name);
 	str_free(&self->description);
 
@@ -55,15 +50,7 @@ table_config_free(TableConfig* self)
 	}
 
 	columns_free(&self->columns);
-	grants_free(&self->grants);
 	am_free(self);
-}
-
-static inline void
-table_config_set_user(TableConfig* self, Str* value)
-{
-	str_free(&self->user);
-	str_copy(&self->user, value);
 }
 
 static inline void
@@ -124,7 +111,6 @@ table_config_copy(TableConfig* self)
 {
 	auto copy = table_config_allocate();
 	table_config_set_name(copy, &self->name);
-	table_config_set_user(copy, &self->user);
 	table_config_set_description(copy, &self->description);
 	table_config_set_retention(copy, self->retention);
 	columns_copy(&copy->columns, &self->columns);
@@ -135,8 +121,6 @@ table_config_copy(TableConfig* self)
 		auto config_copy = index_config_copy(config, &copy->columns);
 		table_config_index_add(copy, config_copy);
 	}
-
-	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -148,16 +132,13 @@ table_config_read(uint8_t** pos)
 
 	uint8_t* pos_columns = NULL;
 	uint8_t* pos_indexes = NULL;
-	uint8_t* pos_grants  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",        &self->user        },
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
 		{ DECODE_ARRAY, "columns",     &pos_columns       },
 		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
 		{ DECODE_INT,   "retention",   &self->retention   },
-		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "table", pos);
@@ -173,8 +154,6 @@ table_config_read(uint8_t** pos)
 		table_config_index_add(self, config);
 	}
 
-	// grants
-	grants_read(&self->grants, &pos_grants);
 	return self;
 }
 
@@ -183,10 +162,6 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 {
 	// obj
 	encode_obj(buf);
-
-	// user
-	encode_raw(buf, "user", 4);
-	encode_str(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -219,10 +194,6 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 	// retention
 	encode_raw(buf, "retention", 9);
 	encode_int(buf, self->retention);
-
-	// grants
-	encode_raw(buf, "grants", 6);
-	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }

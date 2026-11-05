@@ -11,12 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Tr Tr;
+typedef struct Tr   Tr;
+typedef struct User User;
 
 struct Tr
 {
 	Log    log;
-	Rel*   user;
+	User*  user;
 	Local* local;
 	Usage* write;
 	bool   allocated;
@@ -80,7 +81,7 @@ tr_set_limit(Tr* self, Usage* write)
 }
 
 static inline void
-tr_set_user(Tr* self, Rel* user)
+tr_set_user(Tr* self, User* user)
 {
 	self->user = user;
 }

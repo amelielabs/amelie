@@ -11,9 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// storage manifest
-#include "storage/manifest.h"
-
 // storage
 #include "storage/page.h"
 #include "storage/retention.h"

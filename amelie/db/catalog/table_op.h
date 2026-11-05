@@ -36,38 +36,35 @@ table_op_create_read(uint8_t* op)
 }
 
 static inline int
-table_op_truncate(Buf* self, Str* user, Str* name)
+table_op_truncate(Buf* self, Str* name)
 {
-	// [op, user, name]
+	// [op, name]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_TABLE_TRUNCATE);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-table_op_truncate_read(uint8_t* op, Str* user, Str* name)
+table_op_truncate_read(uint8_t* op, Str* name)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_TRUNCATE);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_array_end(&op);
 }
 
 static inline int
-table_op_column_add(Buf* self, Str* user, Str* name, Column* column)
+table_op_column_add(Buf* self, Str* name, Column* column)
 {
-	// [op, user, name, column]
+	// [op, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_TABLE_COLUMN_ADD);
-	encode_str(self, user);
 	encode_str(self, name);
 	column_write(column, self, 0);
 	encode_array_end(self);
@@ -75,13 +72,12 @@ table_op_column_add(Buf* self, Str* user, Str* name, Column* column)
 }
 
 static inline Column*
-table_op_column_add_read(uint8_t* op, Str* user, Str* name)
+table_op_column_add_read(uint8_t* op, Str* name)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_ADD);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	auto column = column_read(&op);
 	unpack_array_end(&op);
@@ -89,13 +85,12 @@ table_op_column_add_read(uint8_t* op, Str* user, Str* name)
 }
 
 static inline int
-table_op_column_drop(Buf* self, Str* user, Str* name, Str* name_column)
+table_op_column_drop(Buf* self, Str* name, Str* name_column)
 {
-	// [op, user, name, column]
+	// [op, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_TABLE_COLUMN_DROP);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_str(self, name_column);
 	encode_array_end(self);
@@ -103,26 +98,24 @@ table_op_column_drop(Buf* self, Str* user, Str* name, Str* name_column)
 }
 
 static inline void
-table_op_column_drop_read(uint8_t* op, Str* user, Str* name, Str* name_column)
+table_op_column_drop_read(uint8_t* op, Str* name, Str* name_column)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_DROP);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_str(&op, name_column);
 	unpack_array_end(&op);
 }
 
 static inline int
-table_op_column_set(Buf* self, int op, Str* user, Str* name, Str* column, Str* value)
+table_op_column_set(Buf* self, int op, Str* name, Str* column, Str* value)
 {
-	// [op, user, name, column, value]
+	// [op, name, column, value]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, op);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_str(self, column);
 	encode_str(self, value);
@@ -131,12 +124,11 @@ table_op_column_set(Buf* self, int op, Str* user, Str* name, Str* column, Str* v
 }
 
 static inline int
-table_op_column_set_read(uint8_t* op, Str* user, Str* name, Str* column, Str* value)
+table_op_column_set_read(uint8_t* op, Str* name, Str* column, Str* value)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_str(&op, column);
 	unpack_str(&op, value);
@@ -145,15 +137,14 @@ table_op_column_set_read(uint8_t* op, Str* user, Str* name, Str* column, Str* va
 }
 
 static inline int
-table_op_column_rename(Buf* self, Str* user, Str* name,
+table_op_column_rename(Buf* self, Str* name,
                        Str* name_column,
                        Str* name_column_new)
 {
-	// [op, user, name, column]
+	// [op, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_TABLE_COLUMN_RENAME);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_str(self, name_column);
 	encode_str(self, name_column_new);
@@ -162,7 +153,7 @@ table_op_column_rename(Buf* self, Str* user, Str* name,
 }
 
 static inline void
-table_op_column_rename_read(uint8_t* op, Str* user, Str* name,
+table_op_column_rename_read(uint8_t* op, Str* name,
                             Str* name_column,
                             Str* name_column_new)
 {
@@ -170,7 +161,6 @@ table_op_column_rename_read(uint8_t* op, Str* user, Str* name,
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_RENAME);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_str(&op, name_column);
 	unpack_str(&op, name_column_new);
@@ -178,13 +168,12 @@ table_op_column_rename_read(uint8_t* op, Str* user, Str* name,
 }
 
 static inline int
-table_op_index_create(Buf* self, Str* user, Str* name, IndexConfig* config)
+table_op_index_create(Buf* self, Str* name, IndexConfig* config)
 {
-	// [op, user, name, config]
+	// [op, name, config]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_INDEX_CREATE);
-	encode_str(self, user);
 	encode_str(self, name);
 	index_config_write(config, self, 0);
 	encode_array_end(self);
@@ -192,13 +181,12 @@ table_op_index_create(Buf* self, Str* user, Str* name, IndexConfig* config)
 }
 
 static inline uint8_t*
-table_op_index_create_read(uint8_t* op, Str* user, Str* name)
+table_op_index_create_read(uint8_t* op, Str* name)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_CREATE);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	auto config_pos = op;
 	data_skip(&op);
@@ -207,13 +195,12 @@ table_op_index_create_read(uint8_t* op, Str* user, Str* name)
 }
 
 static inline int
-table_op_index_drop(Buf* self, Str* user, Str* name, Str* name_index)
+table_op_index_drop(Buf* self,  Str* name, Str* name_index)
 {
-	// [op, user, name, name_index]
+	// [op, name, name_index]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_INDEX_DROP);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_str(self, name_index);
 	encode_array_end(self);
@@ -221,28 +208,26 @@ table_op_index_drop(Buf* self, Str* user, Str* name, Str* name_index)
 }
 
 static inline void
-table_op_index_drop_read(uint8_t* op, Str* user, Str* name, Str* name_index)
+table_op_index_drop_read(uint8_t* op, Str* name, Str* name_index)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_DROP);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_str(&op, name_index);
 	unpack_array_end(&op);
 }
 
 static inline int
-table_op_index_rename(Buf* self, Str* user, Str* name,
+table_op_index_rename(Buf* self, Str* name,
                       Str* name_index,
                       Str* name_index_new)
 {
-	// [op, user, name, name_index, name_index_new]
+	// [op, name, name_index, name_index_new]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_INDEX_RENAME);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_str(self, name_index);
 	encode_str(self, name_index_new);
@@ -251,7 +236,7 @@ table_op_index_rename(Buf* self, Str* user, Str* name,
 }
 
 static inline void
-table_op_index_rename_read(uint8_t* op, Str* user, Str* name,
+table_op_index_rename_read(uint8_t* op, Str* name,
                            Str*     name_index,
                            Str*     name_index_new)
 {
@@ -259,7 +244,6 @@ table_op_index_rename_read(uint8_t* op, Str* user, Str* name,
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_RENAME);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_str(&op, name_index);
 	unpack_str(&op, name_index_new);
@@ -267,15 +251,14 @@ table_op_index_rename_read(uint8_t* op, Str* user, Str* name,
 }
 
 static inline int
-table_op_index_primary(Buf* self, Str* user, Str* name,
+table_op_index_primary(Buf* self, Str* name,
                        Str* name_index,
                        bool pk)
 {
-	// [op, user, name, name_index, pk]
+	// [op, name, name_index, pk]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_INDEX_PRIMARY);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_str(self, name_index);
 	encode_bool(self, pk);
@@ -284,7 +267,7 @@ table_op_index_primary(Buf* self, Str* user, Str* name,
 }
 
 static inline void
-table_op_index_primary_read(uint8_t* op, Str* user, Str* name,
+table_op_index_primary_read(uint8_t* op, Str* name,
                             Str*     name_index,
                             bool*    pk)
 {
@@ -292,7 +275,6 @@ table_op_index_primary_read(uint8_t* op, Str* user, Str* name,
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_INDEX_PRIMARY);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_str(&op, name_index);
 	unpack_bool(&op, pk);
@@ -300,13 +282,12 @@ table_op_index_primary_read(uint8_t* op, Str* user, Str* name,
 }
 
 static inline int
-table_op_retention(Buf* self, Str* user, Str* name, int64_t value)
+table_op_retention(Buf* self, Str* name, int64_t value)
 {
-	// [op, user, name, value]
+	// [op, name, value]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_TABLE_RETENTION);
-	encode_str(self, user);
 	encode_str(self, name);
 	encode_int(self, value);
 	encode_array_end(self);
@@ -314,13 +295,12 @@ table_op_retention(Buf* self, Str* user, Str* name, int64_t value)
 }
 
 static inline void
-table_op_retention_read(uint8_t* op, Str* user, Str* name, int64_t* value)
+table_op_retention_read(uint8_t* op, Str* name, int64_t* value)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_TABLE_RETENTION);
-	unpack_str(&op, user);
 	unpack_str(&op, name);
 	unpack_int(&op, value);
 	unpack_array_end(&op);

@@ -26,12 +26,9 @@ catalog_init(Catalog*   self,
              EvalIf*    iface_eval,
              void*      iface_arg)
 {
-	self->manifest   = NULL;
 	self->iface      = iface;
 	self->iface_eval = iface_eval;
 	self->iface_arg  = iface_arg;
-
-	rels_init(&self->users);
 	rels_init(&self->rels);
 }
 
@@ -39,57 +36,24 @@ void
 catalog_free(Catalog* self)
 {
 	rels_free(&self->rels);
-	rels_free(&self->users);
 }
 
 void
-catalog_create(Catalog* self)
+catalog_limit(Catalog* self, Tr* tr, RelType type, int limit_id)
 {
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
+	if (!tr->local || !tr->local->limits)
+		return;
 
-	Tr tr;
-	tr_init(&tr);
-	defer(tr_free, &tr);
-	auto on_error = error_catch
-	(
-		// create amelie user
-		auto user_config = user_config_allocate();
-		defer(user_config_free, user_config);
-		Str name;
-		str_init(&name);
-		str_set_cstr(&name, "amelie");
-		user_config_set_name(user_config, &name);
-		user_config_set_parent(user_config, &name);
-		user_config_set_superuser(user_config, true);
-		user_create(self, &tr, user_config, false);
+	auto limits = tr->local->limits;
+	if (! limits_is_set(limits, limit_id))
+		return;
 
-		// commit
-		tr_commit(&tr);
-	);
-	if (on_error)
-	{
-		tr_abort(&tr);
-		rethrow();
-	}
-}
-
-void
-catalog_status(Catalog* self, Buf* buf)
-{
-	// {}
-	encode_obj(buf);
-
-	// users
-	encode_raw(buf, "users", 5);
-	encode_int(buf, self->users.list_count);
-
-	// rels
-	encode_raw(buf, "rels", 4);
-	encode_int(buf, self->rels.list_count);
-
-	encode_obj_end(buf);
+	auto user  = tr->user;
+	auto count = rels_count(&self->rels, type);
+	if (unlikely(! limits_check(limits, limit_id, count + 1)))
+		error("{s} '{str}': {s}s limit reached",
+		      user->agent ? "agent" :"user", user->name,
+		      rel_type_of(type));
 }
 
 bool
@@ -101,168 +65,61 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	switch (cmd) {
 	case DDL_DROP:
 	{
-		Str  user;
 		Str  name;
 		bool cascade;
-		auto type = rel_op_drop_read(op, &user, &name, &cascade);
+		auto type = rel_op_drop_read(op, &name, &cascade);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = catalog_drop(self, tr, type, &user, &name, if_exists, cascade);
+		write = catalog_drop(self, tr, type, &name, if_exists, cascade);
 		break;
 	}
 	case DDL_RENAME:
 	{
-		Str user;
-		Str name;
-		Str user_new;
-		Str name_new;
-		auto type = rel_op_rename_read(op, &user, &name, &user_new, &name_new);
+		Str  name;
+		Str  name_new;
+		auto type = rel_op_rename_read(op, &name, &name_new);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = catalog_rename(self, tr, type, &user, &name,
-		                       &user_new, &name_new,
-		                       if_exists);
-		break;
-	}
-	case DDL_GRANT:
-	{
-		Str     user;
-		Str     name;
-		Str     to;
-		bool    grant;
-		int64_t perms;
-		rel_op_grant_read(op, &user, &name, &to, &grant, &perms);
-		write = catalog_grant(self, tr, &user, &name, &to, grant, perms);
+		write = catalog_rename(self, tr, type, &name, &name_new, if_exists);
 		break;
 	}
 	case DDL_DESCRIBE:
 	{
-		Str  user;
 		Str  name;
 		Str  description;
-		auto type = rel_op_describe_read(op, &user, &name, &description);
+		auto type = rel_op_describe_read(op, &name, &description);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = catalog_describe(self, tr, type, &user, &name, &description, if_exists);
-		break;
-	}
-	case DDL_USER_CREATE:
-	{
-		auto config = user_op_create_read(op);
-		defer(user_config_free, config);
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = user_create(self, tr, config, if_not_exists);
-		break;
-	}
-	case DDL_USER_DROP:
-	{
-		Str  name;
-		bool cascade;
-		user_op_drop_read(op, &name, &cascade);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_drop(self, tr, &name, if_exists, cascade);
-		break;
-	}
-	case DDL_USER_RENAME:
-	{
-		Str name;
-		Str name_new;
-		user_op_rename_read(op, &name, &name_new);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_rename(self, tr, &name, &name_new, if_exists);
-		break;
-	}
-	case DDL_USER_REVOKE_TOKEN:
-	{
-		Str name;
-		Str revoked_at;
-		user_op_revoke_token_read(op, &name, &revoked_at);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_revoke_token(self, tr, &name, &revoked_at, if_exists);
-		break;
-	}
-	case DDL_USER_DESCRIBE:
-	{
-		Str name;
-		Str description;
-		user_op_describe_read(op, &name, &description);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_describe(self, tr, &name, &description, if_exists);
-		break;
-	}
-	case DDL_USER_LIMIT_SET:
-	{
-		Str    name;
-		Limits limits;
-		limits_init(&limits);
-		user_op_limit_set_read(op, &name, &limits);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_limit_set(self, tr, &name, &limits, if_exists);
-		break;
-	}
-	case DDL_USER_LIMIT_UNSET:
-	{
-		Str      name;
-		uint64_t mask;
-		user_op_limit_unset_read(op, &name, &mask);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_limit_unset(self, tr, &name, mask, if_exists);
-		break;
-	}
-	case DDL_USER_API_CREATE:
-	{
-		Str  name;
-		auto api = user_op_api_create_read(op, &name);
-		defer(api_free, api);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_api_create(self, tr, &name, api, if_exists);
-		break;
-	}
-	case DDL_USER_API_DROP:
-	{
-		Str name;
-		Str uri;
-		user_op_api_drop_read(op, &name, &uri);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = user_api_drop(self, tr, &name, &uri, if_exists);
+		write = catalog_describe(self, tr, type, &name, &description, if_exists);
 		break;
 	}
 	case DDL_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(op);
 		defer(table_config_free, config);
+
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = table_create(self, tr, config, if_not_exists);
 		break;
 	}
 	case DDL_TABLE_TRUNCATE:
 	{
-		Str user;
 		Str name;
-		table_op_truncate_read(op, &user, &name);
+		table_op_truncate_read(op, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_truncate(self, tr, &user, &name, if_exists);
+		write = table_truncate(self, tr, &name, if_exists);
 		break;
 	}
 	case DDL_TABLE_COLUMN_ADD:
 	{
-		Str  user;
 		Str  name;
-		auto column = table_op_column_add_read(op, &user, &name);
+		auto column = table_op_column_add_read(op, &name);
 		defer(column_free, column);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_not_exists = ddl_if_column_not_exists(flags);
-		write = table_column_add(self, tr, &user, &name,
+		write = table_column_add(self, tr, &name,
 		                         column,
 		                         if_exists,
 		                         if_column_not_exists);
@@ -270,14 +127,13 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_COLUMN_DROP:
 	{
-		Str user;
 		Str name;
 		Str name_column;
-		table_op_column_drop_read(op, &user, &name, &name_column);
+		table_op_column_drop_read(op, &name, &name_column);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_column_drop(self, tr, &user, &name,
+		write = table_column_drop(self, tr, &name,
 		                          &name_column,
 		                          if_exists,
 		                          if_column_exists);
@@ -285,15 +141,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_COLUMN_RENAME:
 	{
-		Str user;
 		Str name;
 		Str name_column;
 		Str name_column_new;
-		table_op_column_set_read(op, &user, &name, &name_column, &name_column_new);
+		table_op_column_set_read(op, &name, &name_column, &name_column_new);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_column_rename(self, tr, &user, &name, &name_column,
+		write = table_column_rename(self, tr, &name, &name_column,
 		                            &name_column_new,
 		                            if_exists,
 		                            if_column_exists);
@@ -301,15 +156,14 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_COLUMN_SET_DEFAULT:
 	{
-		Str user;
 		Str name;
 		Str name_column;
 		Str value;
-		table_op_column_set_read(op, &user, &name, &name_column, &value);
+		table_op_column_set_read(op, &name, &name_column, &value);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
-		write = table_column_set(self, tr, &user, &name, &name_column,
+		write = table_column_set(self, tr, &name, &name_column,
 		                         &value, cmd,
 		                         if_exists,
 		                         if_column_exists);
@@ -317,13 +171,12 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_TABLE_RETENTION:
 	{
-		Str user;
 		Str name;
 		int64_t value;
-		table_op_retention_read(op, &user, &name, &value);
+		table_op_retention_read(op, &name, &value);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = table_retention(self, tr, &user, &name, value, if_exists);
+		write = table_retention(self, tr, &name, value, if_exists);
 		break;
 	}
 	case DDL_INDEX_CREATE:
@@ -335,38 +188,35 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_INDEX_DROP:
 	{
-		Str user;
 		Str name;
 		Str name_index;
-		table_op_index_drop_read(op, &user, &name, &name_index);
+		table_op_index_drop_read(op, &name, &name_index);
 
-		auto table = catalog_find_table(self, &user, &name, true);
+		auto table = catalog_find_table(self, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_drop(self, table, tr, &name_index, if_exists);
 		break;
 	}
 	case DDL_INDEX_RENAME:
 	{
-		Str user;
 		Str name;
 		Str name_index;
 		Str name_index_new;
-		table_op_index_rename_read(op, &user, &name, &name_index, &name_index_new);
+		table_op_index_rename_read(op, &name, &name_index, &name_index_new);
 
-		auto table = catalog_find_table(self, &user, &name, true);
+		auto table = catalog_find_table(self, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_rename(self, table, tr, &name_index, &name_index_new, if_exists);
 		break;
 	}
 	case DDL_INDEX_PRIMARY:
 	{
-		Str  user;
 		Str  name;
 		Str  name_index;
 		bool pk;
-		table_op_index_primary_read(op, &user, &name, &name_index, &pk);
+		table_op_index_primary_read(op, &name, &name_index, &pk);
 
-		auto table = catalog_find_table(self, &user, &name, true);
+		auto table = catalog_find_table(self, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_primary(self, table, tr, &name_index, pk, if_exists);
 		break;

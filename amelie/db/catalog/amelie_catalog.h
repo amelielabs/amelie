@@ -14,14 +14,6 @@
 // ddl
 #include "catalog/ddl.h"
 
-// user
-#include "catalog/api.h"
-#include "catalog/apis.h"
-#include "catalog/user_config.h"
-#include "catalog/user_op.h"
-#include "catalog/user.h"
-#include "catalog/check.h"
-
 // table
 #include "catalog/table_config.h"
 #include "catalog/table_op.h"
@@ -34,24 +26,15 @@
 #include "catalog/udf_op.h"
 #include "catalog/udf.h"
 
-// grant
+// rel
 #include "catalog/rel_op.h"
 #include "catalog/rel.h"
 
-// eval
-#include "catalog/eval.h"
-
 // catalog
+#include "catalog/eval.h"
 #include "catalog/catalog.h"
-#include "catalog/catalog_find.h"
-#include "catalog/catalog_check.h"
-#include "catalog/catalog_limit.h"
-
-// cascade operations
 #include "catalog/cascade.h"
-
-// describe
 #include "catalog/describe.h"
 
 // mcp
-#include "catalog/catalog_mcp.h"
+#include "catalog/mcp.h"

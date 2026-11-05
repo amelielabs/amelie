@@ -11,6 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void describe_text(Rel*, Buf*, Str*, int);
-void describe(Rel*, Buf*, Str*, int);
-void describe_catalog(Catalog*, Buf*, Buf*);
+void describe_text(Rel*, Buf*, int);
+void describe(Rel*, Buf*, int);
+void describe_catalog(Catalog*, Buf*);

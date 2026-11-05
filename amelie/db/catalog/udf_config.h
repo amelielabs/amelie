@@ -15,14 +15,12 @@ typedef struct UdfConfig UdfConfig;
 
 struct UdfConfig
 {
-	Str     user;
 	Str     name;
 	Str     description;
 	Str     text;
 	Columns args;
 	int64_t type;
 	Columns returning;
-	Grants  grants;
 };
 
 static inline UdfConfig*
@@ -31,34 +29,23 @@ udf_config_allocate(void)
 	UdfConfig* self;
 	self = am_malloc(sizeof(UdfConfig));
 	self->type = TYPE_NULL;
-	str_init(&self->user);
 	str_init(&self->name);
 	str_init(&self->description);
 	str_init(&self->text);
 	columns_init(&self->args);
 	columns_init(&self->returning);
-	grants_init(&self->grants);
 	return self;
 }
 
 static inline void
 udf_config_free(UdfConfig* self)
 {
-	str_free(&self->user);
 	str_free(&self->name);
 	str_free(&self->description);
 	str_free(&self->text);
 	columns_free(&self->args);
 	columns_free(&self->returning);
-	grants_free(&self->grants);
 	am_free(self);
-}
-
-static inline void
-udf_config_set_user(UdfConfig* self, Str* user)
-{
-	str_free(&self->user);
-	str_copy(&self->user, user);
 }
 
 static inline void
@@ -91,14 +78,12 @@ static inline UdfConfig*
 udf_config_copy(UdfConfig* self)
 {
 	auto copy = udf_config_allocate();
-	udf_config_set_user(copy, &self->user);
 	udf_config_set_name(copy, &self->name);
 	udf_config_set_description(copy, &self->description);
 	udf_config_set_text(copy, &self->text);
 	udf_config_set_type(copy, self->type);
 	columns_copy(&copy->args, &self->args);
 	columns_copy(&copy->returning, &self->returning);
-	grants_copy(&copy->grants, &self->grants);
 	return copy;
 }
 
@@ -109,25 +94,19 @@ udf_config_read(uint8_t** pos)
 	errdefer(udf_config_free, self);
 	uint8_t* pos_args      = NULL;
 	uint8_t* pos_returning = NULL;
-	uint8_t* pos_grants    = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "user",        &self->user        },
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
 		{ DECODE_STR,   "text",        &self->text        },
 		{ DECODE_ARRAY, "args",        &pos_args          },
 		{ DECODE_INT,   "type",        &self->type        },
 		{ DECODE_ARRAY, "returning",   &pos_returning     },
-		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "udf", pos);
 	columns_read(&self->args, &pos_args);
 	columns_read(&self->returning, &pos_returning);
-
-	// grants
-	grants_read(&self->grants, &pos_grants);
 	return self;
 }
 
@@ -136,10 +115,6 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 {
 	// map
 	encode_obj(buf);
-
-	// user
-	encode_raw(buf, "user", 4);
-	encode_str(buf, &self->user);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -170,10 +145,6 @@ udf_config_write(UdfConfig* self, Buf* buf, int flags)
 	// returning
 	encode_raw(buf, "returning", 9);
 	columns_write(&self->returning, buf, flags);
-
-	// grants
-	encode_raw(buf, "grants", 6);
-	grants_write(&self->grants, buf, 0);
 
 	encode_obj_end(buf);
 }

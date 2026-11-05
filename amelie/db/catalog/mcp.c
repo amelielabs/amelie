@@ -101,7 +101,7 @@ catalog_mcp_schema(Columns* columns, Buf* buf)
 }
 
 void
-catalog_mcp_tools(Catalog* self, Str* user, Buf* buf)
+catalog_mcp_tools(Catalog* self, Buf* buf)
 {
 	// []
 	encode_array(buf);
@@ -110,8 +110,6 @@ catalog_mcp_tools(Catalog* self, Str* user, Buf* buf)
 	{
 		auto rel = list_at(Rel, link);
 		if (rel->type != REL_UDF)
-			continue;
-		if (! str_compare(user, rel->user))
 			continue;
 		auto udf = udf_of(rel);
 
@@ -137,7 +135,7 @@ catalog_mcp_tools(Catalog* self, Str* user, Buf* buf)
 }
 
 void
-catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
+catalog_mcp_resources(Catalog* self, Buf* buf)
 {
 	// []
 	encode_array(buf);
@@ -153,8 +151,6 @@ catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
 		auto udf = udf_of(rel);
 		if (udf->config->args.count != 0)
 			continue;
-		if (! str_compare(user, rel->user))
-			continue;
 
 		// {}
 		encode_obj(buf);
@@ -162,8 +158,7 @@ catalog_mcp_resources(Catalog* self, Str* user, Buf* buf)
 		// uri
 		encode_raw(buf, "uri", 3);
 		char uri[256];
-		auto uri_size = format(uri, sizeof(uri), "mcp://{str}/{str}",
-		                       rel->user, rel->name);
+		auto uri_size = format(uri, sizeof(uri), "mcp://{str}", rel->name);
 		encode_raw(buf, uri, uri_size);
 
 		// name

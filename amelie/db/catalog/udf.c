@@ -32,16 +32,16 @@ udf_free(Udf* self, bool drop)
 }
 
 static inline void
-udf_show(Udf* self, Buf* buf, Str* user, int flags)
+udf_show(Udf* self, Buf* buf, int flags)
 {
 	if (flags_has(flags, FCREATE))
-		describe(&self->rel, buf, user, flags);
+		describe(&self->rel, buf, flags);
 	else
 		udf_config_write(self->config, buf, flags);
 }
 
 static inline Udf*
-udf_allocate_as(Rel* user, UdfConfig* config, void* data, UdfFree free, void* free_arg)
+udf_allocate_as(User* user, UdfConfig* config, void* data, UdfFree free, void* free_arg)
 {
 	auto self = (Udf*)am_malloc(sizeof(Udf));
 	self->free     = free;
@@ -52,18 +52,16 @@ udf_allocate_as(Rel* user, UdfConfig* config, void* data, UdfFree free, void* fr
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_UDF);
-	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
 	rel_set_parent(rel, user);
 	rel_set_description(rel, &self->config->description);
-	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)udf_show);
 	rel_set_free(rel, (RelFree)udf_free);
 	return self;
 }
 
 static inline Udf*
-udf_allocate(Rel* user, UdfConfig* config, UdfFree free, void* free_arg)
+udf_allocate(User* user, UdfConfig* config, UdfFree free, void* free_arg)
 {
 	return udf_allocate_as(user, udf_config_copy(config), NULL, free, free_arg);
 }
@@ -100,7 +98,6 @@ replace_if_abort(Log* self, LogOp* op)
 	udf->data   = data[1];
 
 	// update rel data
-	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
 	rel_set_description(&udf->rel, &udf->config->description);
 }
@@ -117,9 +114,6 @@ udf_replace(Catalog*   self,
             Udf*       udf,
             UdfConfig* config)
 {
-	// only owner or superuser
-	check_ownership(tr, &udf->rel);
-
 	// allow to replace udf only if it has identical arguments
 	// and return type
 
@@ -162,10 +156,8 @@ udf_replace(Catalog*   self,
 	udf_new->data   = NULL;
 
 	// update rel data
-	rel_set_user(&udf->rel, &udf->config->user);
 	rel_set_name(&udf->rel, &udf->config->name);
 	rel_set_description(&udf->rel, &udf->config->description);
-	rel_set_grants(&udf->rel, &udf->config->grants);
 }
 
 bool
@@ -175,10 +167,10 @@ udf_create(Catalog*   self,
            bool       or_replace)
 {
 	// PERM_CREATE_FUNCTION
-	catalog_check(self, tr, PERM_CREATE_FUNCTION, &config->user);
+	check_user(tr, PERM_CREATE_FUNCTION);
 
 	// find existing udf
-	auto udf = catalog_find_udf(self, &config->user, &config->name, false);
+	auto udf = catalog_find_udf(self, &config->name, false);
 	if (udf)
 	{
 		// replace
@@ -190,21 +182,15 @@ udf_create(Catalog*   self,
 	}
 
 	// make sure relation does not exists
-	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	auto rel = catalog_find(self, REL_UNDEF, &config->name, false);
 	if (rel)
 		error("relation '{str}': already exists", &config->name);
-
-	// validate grants
-	catalog_grant_validate(self, tr, REL_UDF,
-	                       &config->user,
-	                       &config->name, &config->grants);
 
 	// check limit
 	catalog_limit(self, tr, REL_UDF, LIMIT_FUNCTIONS);
 
 	// create udf
-	auto user = catalog_find_user(self, &config->user, true);
-	udf = udf_allocate(&user->rel, config, self->iface->udf_free, self->iface_arg);
+	udf = udf_allocate(tr->user, config, self->iface->udf_free, self->iface_arg);
 	rels_create(&self->rels, tr, &udf->rel);
 
 	// compile on creation

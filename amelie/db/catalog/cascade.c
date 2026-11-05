@@ -48,7 +48,7 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 		{
 			// udf depends on the table
 			auto udf = udf_of(at);
-			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+			dep = self->iface->udf_depends(udf, rel->name);
 		}
 		break;
 	}
@@ -58,7 +58,7 @@ catalog_depends(Catalog* self, Rel* rel, Rel* at)
 		{
 			// udf depends on the udf
 			auto udf = udf_of(at);
-			dep = self->iface->udf_depends(udf, rel->user, rel->name);
+			dep = self->iface->udf_depends(udf, rel->name);
 		}
 		break;
 	}
@@ -111,8 +111,8 @@ catalog_deps_validate(Catalog* self, Rel* rel, bool error_on_match)
 		if (catalog_depends(self, rel, at))
 		{
 			if (error_on_match)
-				error("{s} '{str}.{str}' depends on {s} '{str}'",
-				      rel_type_of(at->type), at->user, at->name,
+				error("{s} '{str}' depends on {s} '{str}'",
+				      rel_type_of(at->type), at->name,
 				      rel_type_of(rel->type), rel->name);
 			return false;
 		}
@@ -135,58 +135,15 @@ catalog_deps_validate_udf(Catalog* self, Rel* rel, bool error_on_match)
 
 		// udf depends on the relation
 		auto udf = udf_of(at);
-		auto dep = self->iface->udf_depends(udf, rel->user, rel->name);
+		auto dep = self->iface->udf_depends(udf, rel->name);
 		if (dep)
 		{
 			if (error_on_match)
-				error("{s} '{str}.{str}' depends on {s} '{str}'",
-				      rel_type_of(at->type), at->user, at->name,
+				error("{s} '{str}' depends on {s} '{str}'",
+				      rel_type_of(at->type), at->name,
 				      rel_type_of(rel->type), rel->name);
 			return false;
 		}
-	}
-	return true;
-}
-
-bool
-catalog_deps_validate_user(Catalog* self, Str* user, bool error_on_match)
-{
-	// no recursion
-	list_foreach(&self->rels.list)
-	{
-		auto at  = list_at(Rel, link);
-		auto dep = false;
-		switch (at->type) {
-		case REL_UDF:
-		{
-			// udf depends on the user
-			auto udf = udf_of(at);
-			dep = self->iface->udf_depends(udf, user, NULL);
-			break;
-		}
-		default:
-			break;
-		}
-
-		if (dep)
-		{
-			if (error_on_match)
-			{
-				error("{s} '{str}.{str}' depends on user '{str}'",
-				      rel_type_of(at->type), at->user, at->name,
-				      user);
-			}
-			return false;
-		}
-	}
-
-	// ensure not child users
-	list_foreach(&self->users.list)
-	{
-		auto at = list_at(Rel, link);
-		if (str_compare(at->user, user))
-			error("user '{str}' depends on user '{str}'",
-			      at->user, user);
 	}
 	return true;
 }

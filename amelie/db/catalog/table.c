@@ -35,10 +35,10 @@ table_free(Table* self, bool drop)
 }
 
 static inline void
-table_show(Table* self, Buf* buf, Str* user, int flags)
+table_show(Table* self, Buf* buf, int flags)
 {
 	if (flags_has(flags, FCREATE))
-		describe(&self->rel, buf, user, flags);
+		describe(&self->rel, buf, flags);
 	else
 		table_config_write(self->config, buf, flags);
 }
@@ -46,8 +46,7 @@ table_show(Table* self, Buf* buf, Str* user, int flags)
 static inline Table*
 table_allocate(Catalog*     catalog,
                User*        user,
-               TableConfig* config,
-               Usage*       memory)
+               TableConfig* config)
 {
 	auto self = (Table*)am_malloc(sizeof(Table));
 	self->config  = table_config_copy(config);
@@ -57,7 +56,7 @@ table_allocate(Catalog*     catalog,
 	// part context
 	auto arg = &self->part_arg;
 	arg->rel       = &self->rel;
-	arg->memory    = memory;
+	arg->memory    = user->memory;
 	arg->columns   = &self->config->columns;
 	arg->retention = &self->retention;
 
@@ -68,11 +67,9 @@ table_allocate(Catalog*     catalog,
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_TABLE);
-	rel_set_user(rel, &self->config->user);
 	rel_set_name(rel, &self->config->name);
-	rel_set_parent(rel, &user->rel);
+	rel_set_parent(rel, user);
 	rel_set_description(rel, &self->config->description);
-	rel_set_grants(rel, &self->config->grants);
 	rel_set_show(rel, (RelShow)table_show);
 	rel_set_free(rel, (RelFree)table_free);
 	return self;
@@ -104,7 +101,7 @@ table_open(Table* self)
 
 	// open partition files
 	if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
-		part_open(part, self->catalog->manifest);
+		part_open(part);
 }
 
 bool
@@ -114,10 +111,10 @@ table_create(Catalog*     self,
              bool         if_not_exists)
 {
 	// PERM_CREATE_TABLE
-	catalog_check(self, tr, PERM_CREATE_TABLE, &config->user);
+	check_user(tr, PERM_CREATE_TABLE);
 
 	// make sure table does not exists
-	auto rel = catalog_find(self, REL_UNDEF, &config->user, &config->name, false);
+	auto rel = catalog_find(self, REL_UNDEF, &config->name, false);
 	if (rel)
 	{
 		if (! if_not_exists)
@@ -128,19 +125,13 @@ table_create(Catalog*     self,
 	// check limit
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);
 
-	// validate grants
-	catalog_grant_validate(self, tr, REL_TABLE,
-	                       &config->user,
-	                       &config->name, &config->grants);
-
 	// validate retention
 	if (config->retention >= 0 && config->indexes_count > 0)
 		error("table '{str}': using indexes with retention is not supported",
 		      &config->name);
 
 	// allocate table
-	auto user  = catalog_find_user(self, &config->user, true);
-	auto table = table_allocate(self, user, config, &user->memory);
+	auto table = table_allocate(self, tr->user, config);
 
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);
@@ -155,8 +146,6 @@ truncate_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
 	auto table = table_of(op->rel);
-
-	//table->catalog->iface->table_truncate(table->catalog, table);
 	part_truncate(table->part);
 }
 
@@ -176,20 +165,16 @@ static LogIf truncate_if =
 bool
 table_truncate(Catalog* self,
                Tr*      tr,
-               Str*     user,
                Str*     name,
                bool     if_exists)
 {
-	auto table = catalog_find_table(self, user, name, false);
+	auto table = catalog_find_table(self, name, false);
 	if (! table)
 	{
 		if (! if_exists)
 			error("table '{str}': not exists", name);
 		return false;
 	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	// update table
 	log_ddl(&tr->log, &truncate_if, NULL, &table->rel);

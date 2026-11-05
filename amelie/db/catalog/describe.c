@@ -123,63 +123,13 @@ describe_column(Column* self, Buf* buf, int flags)
 }
 
 static void
-describe_grants(Grants* self, Buf* buf)
-{
-	if (grants_empty(self))
-		return;
-
-	auto grant = grants_first(self);
-	for (; grant; grant = grants_next(self, grant))
-	{
-		buf_write(buf, "  grant ", 8);
-
-		auto n = 0;
-		auto permissions = grant->permissions;
-		while (permissions > 0)
-		{
-			auto id = permission_next(&permissions);
-			if (n > 0)
-				buf_write(buf, ", ", 2);
-			buf_format(buf, "{s}", permission_name_of(id));
-			n++;
-		}
-		buf_format(buf, " to {.*s}", grant->name_size, grant->name);
-	}
-}
-
-static void
-describe_grants_self(Grants* self, Buf* buf)
-{
-	if (grants_empty(self))
-		return;
-
-	auto grant = grants_first(self);
-	buf_write(buf, "  grant ", 8);
-
-	auto n = 0;
-	auto permissions = grant->permissions;
-	while (permissions > 0)
-	{
-		auto id = permission_next(&permissions);
-		if (n > 0)
-			buf_write(buf, ", ", 2);
-		buf_format(buf, "{s}", permission_name_of(id));
-		n++;
-	}
-}
-
-static void
-describe_table(Table* self, Buf* buf, Str* user, int flags)
+describe_table(Table* self, Buf* buf, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config  = self->config;
 
 	// create table
-	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create table {str}\n(\n", &config->name);
-	else
-		buf_format(buf, "create table {str}.{str}\n(\n", &config->user,
-		           &config->name);
+	buf_format(buf, "create table {str}\n(\n", &config->name);
 
 	// (columns)
 	list_foreach(&config->columns.list)
@@ -258,23 +208,16 @@ describe_table(Table* self, Buf* buf, Str* user, int flags)
 			buf_write(buf, " using hash", 11);
 		buf_write(buf, "\n", 1);
 	}
-
-	// grants
-	describe_grants(&self->config->grants, buf);
 }
 
 static void
-describe_udf(Udf* self, Buf* buf, Str* user, int flags)
+describe_udf(Udf* self, Buf* buf, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
 
 	// create function
-	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "create function {str} ", &config->name);
-	else
-		buf_format(buf, "create function {str}.{str} ", &config->user,
-		           &config->name);
+	buf_format(buf, "create function {str} ", &config->name);
 
 	// (args)
 	buf_write(buf, "(", 1);
@@ -319,99 +262,17 @@ describe_udf(Udf* self, Buf* buf, Str* user, int flags)
 
 	if (! verbose)
 		return;
-
-	// grants
-	describe_grants(&self->config->grants, buf);
-}
-
-static void
-describe_user(User* self, Buf* buf, Str* user, int flags)
-{
-	auto verbose = !flags_has(flags, FMINIMAL);
-	auto config = self->config;
-
-	// create user
-	if (config->agent)
-		buf_format(buf, "create agent ");
-	else
-		buf_format(buf, "create user ");
-
-	// [parent.]name
-	if (!verbose && str_compare_case(self->rel.user, user))
-		buf_format(buf, "{str}\n", &config->name);
-	else
-		buf_format(buf, "{str}.{str}\n", &config->parent,
-		           &config->name);
-
-	// description
-	if (! str_empty(&config->description))
-		buf_format(buf, "  description {qstr}\n", &config->description);
-
-	if (! verbose)
-		return;
-
-	// created
-	if (! str_empty(&config->created_at))
-		buf_format(buf, "  created {qstr}\n", &config->created_at);
-
-	// revoked
-	if (! str_empty(&config->revoked_at))
-		buf_format(buf, "  revoked {qstr}\n", &config->revoked_at);
-
-	// limit name = value, ...
-	auto limit_clause = false;	
-	auto limits = &config->limits;
-	for (auto i = 0; i < LIMIT_MAX; i++)
-	{
-		if (! limits_is_set(limits, i))
-			continue;
-
-		if (! limit_clause)
-		{
-			buf_format(buf, "  limit ");
-			limit_clause = true;
-		} else {
-			buf_format(buf, ", ");
-		}
-		buf_format(buf, "{s} = {i64}", limits_of(i),
-		           limits->limits[i]);
-	}
-	if (limit_clause)
-		buf_write(buf, "\n", 1);
-
-	// grants
-	describe_grants_self(&self->config->grants, buf);
-
-	if (buf->position[-1] != '\n')
-		buf_write(buf, "\n", 1);
-
-	// apis
-	list_foreach(&self->config->apis.list)
-	{
-		auto api = list_at(Api, link);
-		buf_format(buf, "  api {qstr} ", &api->uri);
-		if (api->mcp)
-			buf_format(buf, "as mcp\n");
-		else
-			buf_format(buf, "on {str}.{str}\n",
-			           &api->rel_user, &api->rel);
-	}
 }
 
 void
-describe_text(Rel* self, Buf* buf, Str* user, int flags)
+describe_text(Rel* self, Buf* buf, int flags)
 {
-	unused(user);
-
 	switch (self->type) {
 	case REL_TABLE:
-		describe_table(table_of(self), buf, user, flags);
+		describe_table(table_of(self), buf, flags);
 		break;
 	case REL_UDF:
-		describe_udf(udf_of(self), buf, user, flags);
-		break;
-	case REL_USER:
-		describe_user(user_of(self), buf, user, flags);
+		describe_udf(udf_of(self), buf, flags);
 		break;
 	default:
 		abort();
@@ -424,13 +285,13 @@ describe_text(Rel* self, Buf* buf, Str* user, int flags)
 }
 
 void
-describe(Rel* self, Buf* buf, Str* user, int flags)
+describe(Rel* self, Buf* buf, int flags)
 {
 	auto offset = buf_size(buf);
 	encode_str32(buf, 0);
 
 	// generate schema
-	describe_text(self, buf, user, flags);
+	describe_text(self, buf, flags);
 
 	// update generated string size
 	auto start = buf->start + offset;
@@ -438,120 +299,22 @@ describe(Rel* self, Buf* buf, Str* user, int flags)
 }
 
 static void
-describe_manifest(Rel* self, Column* column, Buf* buf)
+describe_rels(Rels* rels, RelType type, Buf* schema)
 {
-	// {}
-	encode_obj(buf);
-
-	// user
-	encode_raw(buf, "user", 4);
-	encode_str(buf, self->user);
-
-	// name
-	encode_raw(buf, "name", 4);
-	encode_str(buf, self->name);
-
-	// column
-	if (column)
-	{
-		encode_raw(buf, "column", 6);
-		encode_int(buf, column->order);
-	}
-
-	// pages
-	encode_raw(buf, "pages", 5);
-
-	auto table = table_of(self);
-	auto part = table->part;
-
-	// [id, ...]
-	encode_array(buf);
-
-	Storage* storage;
-	if (column)
-		storage = &flats_at(&part->flats, column)->storage;
-	else
-		storage = &part->heap->storage;
-
-	assert(storage->meta);
-	encode_int(buf, storage->meta->psn);
-	for (auto i = 0; i < storage->list_count; i++)
-	{
-		auto page = storage_at(storage, i);
-		encode_int(buf, page->psn);
-	}
-
-	encode_array_end(buf);
-
-	encode_obj_end(buf);
-}
-
-static void
-describe_rels(Rels* rels, RelType type, Buf* schema, Buf* manifest)
-{
-	Str user;
-	str_set(&user, "amelie", 6);
 	list_foreach(&rels->list)
 	{
 		auto rel = list_at(Rel, link);
 		if (rel->type != type)
 			continue;
-		if (rel->type == REL_USER && user_of(rel)->config->superuser)
-			continue;
-		describe_text(rel, schema, &user, 0);
+		describe_text(rel, schema, 0);
 		buf_write(schema, "\n\n", 2);
-
-		if (rel->type != REL_TABLE)
-			continue;
-
-		// heap and vector stores
-		describe_manifest(rel, NULL, manifest);
-		auto columns = table_columns(table_of(rel));
-		if (! columns->count_flat)
-			continue;
-		list_foreach(&columns->list)
-		{
-			auto column = list_at(Column, link);
-			if (! column->size_flat)
-				continue;
-			describe_manifest(rel, column, manifest);
-		}
-	}
-}
-
-static void
-describe_amelie(Catalog* self, Buf* buf)
-{
-	Str user;
-	str_set(&user, "amelie", 6);
-	auto amelie = catalog_find_user(self, &user, true);
-
-	// apis
-	list_foreach(&amelie->config->apis.list)
-	{
-		auto api = list_at(Api, link);
-		buf_format(buf, "create api {qstr} ", &api->uri);
-		if (api->mcp)
-			buf_format(buf, "as mcp\n");
-		else
-			buf_format(buf, "on {str}.{str}\n",
-			           &api->rel_user, &api->rel);
-		buf_write(buf, ";", 1);
 	}
 }
 
 void
-describe_catalog(Catalog* self, Buf* schema, Buf* manifest)
+describe_catalog(Catalog* self, Buf* schema)
 {
-	encode_array(manifest);
-
-	// alter superuser
-	describe_amelie(self, schema);
-
-	// users, tables, udfs
-	describe_rels(&self->users, REL_USER, schema, NULL);
-	describe_rels(&self->rels, REL_TABLE, schema, manifest);
-	describe_rels(&self->rels, REL_UDF, schema, NULL);
-
-	encode_array_end(manifest);
+	// users, tables
+	describe_rels(&self->rels, REL_TABLE, schema);
+	describe_rels(&self->rels, REL_UDF, schema);
 }

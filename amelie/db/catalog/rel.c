@@ -28,11 +28,11 @@ catalog_drop_of(Catalog* self, Tr* tr, Rel* rel)
 }
 
 bool
-catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
+catalog_drop(Catalog* self, Tr* tr, RelType type, Str* name,
              bool     if_exists,
              bool     cascade)
 {
-	auto rel = catalog_find(self, REL_UNDEF, user, name, false);
+	auto rel = catalog_find(self, REL_UNDEF, name, false);
 	if (! rel)
 	{
 		if (! if_exists)
@@ -42,9 +42,6 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
-
-	// only owner or superuser
-	check_ownership(tr, rel);
 
 	// collect dependencies
 	Buf deps;
@@ -58,14 +55,14 @@ catalog_drop(Catalog* self, Tr* tr, RelType type, Str* user, Str* name,
 		{
 			auto first = *(Rel**)deps.start;
 			if (count >= 2)
-				error("{s} '{str}': depends on {s} '{str}.{str}' and {d} more",
+				error("{s} '{str}': depends on {s} '{str}' and {d} more",
 				      rel_type_of(type), name,
-				      rel_type_of(first->type), first->user, first->name,
+				      rel_type_of(first->type), first->name,
 				      count - 1);
 			else
-				error("{s} '{str}': depends on {s} '{str}.{str}'",
+				error("{s} '{str}': depends on {s} '{str}'",
 				      rel_type_of(type), name,
-				      rel_type_of(first->type), first->user, first->name);
+				      rel_type_of(first->type), first->name);
 		}
 		catalog_deps_drop(self, tr, &deps);
 	}
@@ -86,12 +83,10 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	uint8_t* pos = log_data_of(self, op);
-	Str user;
 	Str name;
-	unpack_str(&pos, &user);
 	unpack_str(&pos, &name);
 	Catalog* catalog = op->iface_arg;
-	rels_rename(&catalog->rels, op->rel, &user, &name);
+	rels_rename(&catalog->rels, op->rel, &name);
 }
 
 static LogIf rename_if =
@@ -104,7 +99,6 @@ void
 catalog_rename_of(Catalog* self,
                   Tr*      tr,
                   Rel*     rel,
-                  Str*     user_new,
                   Str*     name_new)
 {
 	// (no checks)
@@ -113,24 +107,21 @@ catalog_rename_of(Catalog* self,
 	log_ddl(&tr->log, &rename_if, self, rel);
 
 	// save previous name
-	encode_str(&tr->log.data, rel->user);
 	encode_str(&tr->log.data, rel->name);
 
 	// set new name
-	rels_rename(&self->rels, rel, user_new, name_new);
+	rels_rename(&self->rels, rel, name_new);
 }
 
 bool
 catalog_rename(Catalog* self,
                Tr*      tr,
                RelType  type,
-               Str*     user,
                Str*     name,
-               Str*     user_new,
                Str*     name_new,
                bool     if_exists)
 {
-	auto rel = catalog_find(self, REL_UNDEF, user, name, false);
+	auto rel = catalog_find(self, REL_UNDEF, name, false);
 	if (! rel)
 	{
 		if (! if_exists)
@@ -141,195 +132,15 @@ catalog_rename(Catalog* self,
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
 
-	// only owner or superuser
-	check_ownership(tr, rel);
-
-	// ensure user exists
-	catalog_find_user(self, user_new, true);
-
 	// ensure other relation with the same name does not exists
-	if (catalog_find(self, REL_UNDEF, user_new, name_new, false))
+	if (catalog_find(self, REL_UNDEF, name_new, false))
 		error("relation '{str}': already exists", name_new);
 
 	// ensure no strict dependecies
 	catalog_deps_validate(self, rel, true);
 
-	catalog_rename_of(self, tr, rel, user_new, name_new);
+	catalog_rename_of(self, tr, rel, name_new);
 	return true;
-}
-
-static void
-grant_if_commit(Log* self, LogOp* op)
-{
-	unused(self);
-	unused(op);
-}
-
-static void
-grant_if_abort(Log* self, LogOp* op)
-{
-	// restore grants
-	uint8_t* pos = log_data_of(self, op);
-	auto grants = op->rel->grants;
-	grants_reset(grants);
-	grants_read(grants, &pos);
-}
-
-static LogIf grant_if =
-{
-	.commit = grant_if_commit,
-	.abort  = grant_if_abort
-};
-
-void
-catalog_grant_of(Catalog* self,
-                 Tr*      tr,
-                 Rel*     rel,
-                 Str*     to,
-                 bool     grant,
-                 uint32_t perms)
-{
-	// (no check)
-	unused(self);
-
-	// update table
-	log_ddl(&tr->log, &grant_if, NULL, rel);
-
-	// save previous grants
-	auto grants = rel->grants;
-	grants_write(grants, &tr->log.data, 0);
-
-	// set new grants
-	if (grant)
-		grants_add(grants, to, perms);
-	else
-		grants_remove(grants, to, perms);
-}
-
-uint32_t
-catalog_grant_mask(RelType type)
-{
-	uint32_t perms_all = 0;
-	switch (type) {
-	case REL_TABLE:
-		perms_all =
-			PERM_SELECT | PERM_INSERT | PERM_UPDATE |
-			PERM_DELETE | PERM_CREATE_TABLE;
-		break;
-	case REL_UDF:
-		perms_all =
-			PERM_EXECUTE;
-		break;
-	case REL_USER:
-		perms_all =
-			PERM_GRANT           |
-			PERM_SYSTEM          |
-			PERM_CREATE_USER     |
-			PERM_CREATE_TOKEN    |
-			PERM_CREATE_TABLE    |
-			PERM_CREATE_FUNCTION |
-			PERM_CREATE_API      |
-			PERM_SQL;
-		break;
-	default:
-		abort();
-		break;
-	}
-	return perms_all;
-}
-
-bool
-catalog_grant(Catalog* self,
-              Tr*      tr,
-              Str*     user,
-              Str*     name,
-              Str*     to,
-              bool     grant,
-              uint32_t perms)
-{
-	// PERM_GRANT
-	check_user(tr, PERM_GRANT);
-
-	// user grants
-	if (str_empty(name))
-		return user_grant(self, tr, to, grant, perms, 0);
-
-	// find relation
-	auto rel = catalog_find(self, REL_UNDEF, user, name, true);
-
-	// only owner or superuser
-	check_ownership(tr, rel);
-
-	// ensure user exists
-	catalog_find_user(self, to, true);
-
-	// validate permissions
-	auto perms_all = catalog_grant_mask(rel->type);
-	perms = permission_validate(user, name, perms, perms_all);
-
-	// grant/revoke
-	catalog_grant_of(self, tr, rel, to, grant, perms);
-	return true;
-}
-
-void
-catalog_grant_validate(Catalog* self, Tr* tr, RelType type,
-                       Str*     user,
-                       Str*     name,
-                       Grants*  grants)
-{
-	// validate permissions
-	auto perms_all = catalog_grant_mask(type);
-	auto grant = grants_first(grants);
-	while (grant)
-	{
-		// ensure user exists
-		Str to;
-		str_set(&to, (char*)grant->name, grant->name_size);
-		if (type != REL_USER)
-		{
-			catalog_find_user(self, &to, true);
-		} else {
-			// user permissions are using 'self' as a user name
-		}
-
-		// validate and handle ALL
-		auto perms = permission_validate(user, name, grant->permissions, perms_all);
-
-		// PERM_SYSTEM for system wide grants
-		if (((perms & PERM_SYSTEM) > 0) ||
-		    ((perms & PERM_CREATE_USER) > 0))
-			check_user(tr, PERM_SYSTEM);
-
-		grant->permissions = perms;
-		grant = grants_next(grants, grant);
-	}
-}
-
-void
-catalog_grant_rename_of(Catalog* self,
-                        Tr*      tr,
-                        Rel*     rel,
-                        Str*     user,
-                        Str*     user_new)
-{
-	// (no check)
-	unused(self);
-
-	// update table
-	log_ddl(&tr->log, &grant_if, NULL, rel);
-
-	// save previous grants
-	auto grants = rel->grants;
-	grants_write(grants, &tr->log.data, 0);
-
-	// rename and replace grants
-	Grants grants_new;
-	grants_init(&grants_new);
-	defer(grants_free, &grants_new);
-	grants_copy_rename(&grants_new, grants, user, user_new);
-	grants_reset(grants);
-	grants_copy(grants, &grants_new);
 }
 
 static void
@@ -380,12 +191,11 @@ bool
 catalog_describe(Catalog* self,
                  Tr*      tr,
                  RelType  type,
-                 Str*     user,
                  Str*     name,
                  Str*     description,
                  bool     if_exists)
 {
-	auto rel = catalog_find(self, REL_UNDEF, user, name, false);
+	auto rel = catalog_find(self, REL_UNDEF, name, false);
 	if (! rel)
 	{
 		if (! if_exists)
@@ -395,9 +205,6 @@ catalog_describe(Catalog* self,
 
 	if (rel->type != type)
 		error("relation '{str}': is not a {s}", name, rel_type_of(type));
-
-	// only owner or superuser
-	check_ownership(tr, rel);
 
 	if (! rel->description)
 		error("{s} '{str}': does not support description",

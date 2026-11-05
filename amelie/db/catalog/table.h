@@ -11,7 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Table Table;
+typedef struct Table   Table;
+typedef struct Catalog Catalog;
 
 struct Table
 {
@@ -24,7 +25,7 @@ struct Table
 };
 
 bool table_create(Catalog*, Tr*, TableConfig*, bool);
-bool table_truncate(Catalog*, Tr*, Str*, Str*, bool);
+bool table_truncate(Catalog*, Tr*, Str*, bool);
 
 always_inline static inline Table*
 table_of(Rel* self)

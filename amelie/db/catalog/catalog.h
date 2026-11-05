@@ -16,18 +16,14 @@ typedef struct Catalog   Catalog;
 
 struct CatalogIf
 {
-	void (*user_attach)(Catalog*, User*);
-	void (*user_detach)(Catalog*, User*);
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
-	bool (*udf_depends)(Udf*, Str*, Str*);
+	bool (*udf_depends)(Udf*, Str*);
 };
 
 struct Catalog
 {
-	Rels       users;
 	Rels       rels;
-	Manifest*  manifest;
 	EvalIf*    iface_eval;
 	CatalogIf* iface;
 	void*      iface_arg;
@@ -35,6 +31,23 @@ struct Catalog
 
 void catalog_init(Catalog*, CatalogIf*, EvalIf*, void*);
 void catalog_free(Catalog*);
-void catalog_create(Catalog*);
+void catalog_limit(Catalog*, Tr*, RelType, int);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
-void catalog_status(Catalog*, Buf*);
+
+static inline Rel*
+catalog_find(Catalog* self, RelType type, Str* name, bool error_if_not_exists)
+{
+	return rels_find(&self->rels, type, name, error_if_not_exists);
+}
+
+static inline Table*
+catalog_find_table(Catalog* self, Str* name, bool error_if_not_exists)
+{
+	return table_of(rels_find(&self->rels, REL_TABLE, name, error_if_not_exists));
+}
+
+static inline Udf*
+catalog_find_udf(Catalog* self, Str* name, bool error_if_not_exists)
+{
+	return udf_of(rels_find(&self->rels, REL_UDF, name, error_if_not_exists));
+}

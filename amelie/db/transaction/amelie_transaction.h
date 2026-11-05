@@ -15,13 +15,12 @@
 #include "transaction/log.h"
 #include "transaction/tr.h"
 
-// grants
+// permissions
 #include "transaction/permissions.h"
 #include "transaction/grants.h"
+#include "transaction/user.h"
 
 // relation
 #include "transaction/rel.h"
 #include "transaction/rels.h"
-
-// access list
 #include "transaction/access.h"

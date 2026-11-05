@@ -47,23 +47,19 @@ static LogIf column_rename_if =
 bool
 table_column_rename(Catalog* self,
                     Tr*      tr,
-                    Str*     user,
                     Str*     name,
                     Str*     name_column,
                     Str*     name_column_new,
                     bool     if_exists,
                     bool     if_column_exists)
 {
-	auto table = catalog_find_table(self, user, name, false);
+	auto table = catalog_find_table(self, name, false);
 	if (! table)
 	{
 		if (! if_exists)
 			error("table '{str}': not exists", name);
 		return false;
 	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	// ensure column does not exists
 	auto column = columns_find(&table->config->columns, name_column);
@@ -128,22 +124,18 @@ static LogIf column_add_if =
 bool
 table_column_add(Catalog* self,
                  Tr*      tr,
-                 Str*     user,
                  Str*     name,
                  Column*  column,
                  bool     if_exists,
                  bool     if_not_exists)
 {
-	auto table = catalog_find_table(self, user, name, false);
+	auto table = catalog_find_table(self, name, false);
 	if (! table)
 	{
 		if (! if_exists)
 			error("table '{str}': not exists", name);
 		return false;
 	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	// ensure column does not exists
 	if (columns_find(&table->config->columns, &column->name))
@@ -200,22 +192,18 @@ static LogIf column_drop_if =
 bool
 table_column_drop(Catalog* self,
                   Tr*      tr,
-                  Str*     user,
                   Str*     name,
                   Str*     name_column,
                   bool     if_exists,
                   bool     if_column_exists)
 {
-	auto table = catalog_find_table(self, user, name, false);
+	auto table = catalog_find_table(self, name, false);
 	if (! table)
 	{
 		if (! if_exists)
 			error("table '{str}': not exists", name);
 		return false;
 	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	auto column = columns_find(&table->config->columns, name_column);
 	if (! column)
@@ -278,7 +266,6 @@ static LogIf column_set_if =
 bool
 table_column_set(Catalog* self,
                  Tr*      tr,
-                 Str*     user,
                  Str*     name,
                  Str*     name_column,
                  Str*     value,
@@ -286,16 +273,13 @@ table_column_set(Catalog* self,
                  bool     if_exists,
                  bool     if_column_exists)
 {
-	auto table = catalog_find_table(self, user, name, false);
+	auto table = catalog_find_table(self, name, false);
 	if (! table)
 	{
 		if (! if_exists)
 			error("table '{str}': not exists", name);
 		return false;
 	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	auto column = columns_find(&table->config->columns, name_column);
 	if (! column)
@@ -354,21 +338,17 @@ static LogIf retention_if =
 bool
 table_retention(Catalog* self,
                 Tr*      tr,
-                Str*     user,
                 Str*     name,
                 int64_t  value,
                 bool     if_exists)
 {
-	auto table = catalog_find_table(self, user, name, false);
+	auto table = catalog_find_table(self, name, false);
 	if (! table)
 	{
 		if (! if_exists)
 			error("table '{str}': not exists", name);
 		return false;
 	}
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	if (table->config->indexes_count > 0)
 		error("table '{str}': using indexes with retention is not supported", name);

@@ -18,7 +18,6 @@ struct Api
 	Str  description;
 	Str  uri;
 	bool mcp;
-	Str  rel_user;
 	Str  rel;
 	List link;
 };
@@ -31,7 +30,6 @@ api_allocate()
 	self->mcp = false;
 	str_init(&self->description);
 	str_init(&self->uri);
-	str_init(&self->rel_user);
 	str_init(&self->rel);
 	list_init(&self->link);
 	return self;
@@ -42,7 +40,6 @@ api_free(Api* self)
 {
 	str_free(&self->description);
 	str_free(&self->uri);
-	str_free(&self->rel_user);
 	str_free(&self->rel);
 	am_free(self);
 }
@@ -68,13 +65,6 @@ api_set_mcp(Api* self, bool value)
 }
 
 static inline void
-api_set_rel_user(Api* self, Str* value)
-{
-	str_free(&self->rel_user);
-	str_copy(&self->rel_user, value);
-}
-
-static inline void
 api_set_rel(Api* self, Str* value)
 {
 	str_free(&self->rel);
@@ -88,7 +78,6 @@ api_copy(Api* self)
 	api_set_description(copy, &self->description);
 	api_set_uri(copy, &self->uri);
 	api_set_mcp(copy, self->mcp);
-	api_set_rel_user(copy, &self->rel_user);
 	api_set_rel(copy, &self->rel);
 	return copy;
 }
@@ -103,7 +92,6 @@ api_read(uint8_t** pos)
 		{ DECODE_STR,  "description", &self->description },
 		{ DECODE_STR,  "uri",         &self->uri         },
 		{ DECODE_BOOL, "mcp",         &self->mcp         },
-		{ DECODE_STR,  "rel_user",    &self->rel_user    },
 		{ DECODE_STR,  "rel",         &self->rel         },
 		{ 0,            NULL,          NULL              },
 	};
@@ -136,10 +124,6 @@ api_write(Api* self, Buf* buf, int flags)
 	// mcp
 	encode_raw(buf, "mcp", 3);
 	encode_bool(buf, self->mcp);
-
-	// rel_user
-	encode_raw(buf, "rel_user", 8);
-	encode_str(buf, &self->rel_user);
 
 	// rel
 	encode_raw(buf, "rel", 3);

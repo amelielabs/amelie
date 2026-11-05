@@ -72,10 +72,7 @@ static LogIf add_if =
 void
 table_index_add(Catalog* self, Table* table, Tr* tr, IndexConfig* config)
 {
-	// only owner or superuser
 	unused(self);
-	check_ownership(tr, &table->rel);
-
 	table_config_index_add(table->config, config);
 
 	// update table
@@ -121,9 +118,6 @@ table_index_drop(Catalog* self,
                  Str*     name,
                  bool     if_exists)
 {
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
 	auto index = table_index_find(table, name, false);
 	if (! index)
 	{
@@ -181,9 +175,6 @@ table_index_rename(Catalog* self,
                    Str*     name_new,
                    bool     if_exists)
 {
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
 	auto index = table_index_find(table, name, false);
 	if (! index)
 	{
@@ -243,9 +234,6 @@ table_index_primary(Catalog* self,
                     bool     pk,
                     bool     if_exists)
 {
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
-
 	auto index = table_index_find(table, name, false);
 	if (! index)
 	{

@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void catalog_mcp_tools(Catalog*, Str*, Buf*);
-void catalog_mcp_resources(Catalog*, Str*, Buf*);
+void catalog_mcp_tools(Catalog*, Buf*);
+void catalog_mcp_resources(Catalog*, Buf*);
