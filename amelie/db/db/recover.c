@@ -15,10 +15,11 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_user.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
@@ -68,7 +69,7 @@ recover_read(Recover* self, RecordMsg* msg)
 	if (str_empty(&name))
 		error("recover: user field not found");
 
-	return catalog_find_user(&self->db->catalog, &name, true);
+	return users_find(&self->db->users, &name, true);
 }
 
 void

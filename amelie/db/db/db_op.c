@@ -15,10 +15,11 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_user.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
@@ -26,7 +27,7 @@ void
 db_checkpoint(Db* self)
 {
 	// create new checkpoint
-	checkpoint(&self->checkpoints, &self->catalog);
+	// checkpoint(&self->checkpoints, &self->catalog);
 
 	// run db cleanup
 	db_gc(self);
@@ -40,7 +41,7 @@ db_gc(Db* self)
 	wal_gc(&self->wal, lsn);
 
 	// checkpoint gc
-	checkpoints_gc(&self->checkpoints);
+	// checkpoints_gc(&self->checkpoints);
 }
 
 static void

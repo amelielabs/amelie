@@ -11,9 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
+#if 0
 // checkpoint
 #include "db/checkpoints.h"
 #include "db/checkpoint.h"
+#endif
 
 // syncer
 #include "db/syncer.h"

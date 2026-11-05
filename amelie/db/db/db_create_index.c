@@ -15,10 +15,11 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_user.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
@@ -105,25 +106,16 @@ db_indexate(Part* part, IndexConfig* config)
 void
 db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 {
-	// one checkpoint (or create index) at a time
-	auto checkpoint_lock = lock_checkpoint(LOCK_EXCLUSIVE);
-	defer(unlock, checkpoint_lock);
+	(void)self;
 
-	// take shared catalog lock
-	auto lock_catalog = lock_catalog(LOCK_SHARED);
-	defer(unlock, lock_catalog);
-
-	Str  name_user;
 	Str  name;
-	auto pos = table_op_index_create_read(op, &name_user, &name);
+	auto pos = table_op_index_create_read(op, &name);
 
 	// find table
-	auto table = catalog_find_table(&self->catalog, &name_user, &name, false);
+	auto user  = user_of(tr->user_);
+	auto table = catalog_find_table(&user->catalog, &name, false);
 	if (! table)
 		error("table '{str}': not exists", &name);
-
-	// only owner or superuser
-	check_ownership(tr, &table->rel);
 
 	if (table->config->retention >= 0)
 		error("table '{str}': indexes cannot be used with retention", &name);
@@ -150,18 +142,11 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 		error("table '{str}': indexes limit reached",
 		      &table->config->name);
 
-	// todo: exclusive lock
-
-	// todo:
-	// auto lock_table = lock(&table->rel, LOCK_EXCLUSIVE_RO);
-
 	auto part = table->part;
 	auto on_error = error_catch
 	(
 		db_indexate(part, config);
 	);
-
-	//unlock(lock_table);
 
 	if (on_error)
 	{
@@ -173,17 +158,9 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 			index_free(part->in_progress, &io);
 			part->in_progress = NULL;
 		}
-		usage_update(&user_of(tr->user)->memory, io.delta);
-		unlock(lock_catalog);
+		usage_update(&user_of(tr->user_)->memory, io.delta);
 		rethrow();
 	}
-
-	unlock(lock_catalog);
-
-	// take exclusive catalog lock (HELD till completion)
-	lock_catalog = lock_catalog(LOCK_EXCLUSIVE);
-
-	// todo: validate table again
 
 	// attach index
 	assert(part->in_progress);
@@ -191,5 +168,5 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	part->in_progress = NULL;
 
 	// attach index to the table
-	table_index_add(&self->catalog, table, tr, config);
+	table_index_add(&user->catalog, table, tr, config);
 }

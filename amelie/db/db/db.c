@@ -15,32 +15,33 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_user.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
 void
 db_init(Db*        self,
-        CatalogIf* iface,
+        UsersIf*   iface,
+        CatalogIf* iface_catalog,
         EvalIf*    iface_eval,
         void*      iface_arg)
 {
-	catalog_init(&self->catalog,
-	             iface,
-	             iface_eval, iface_arg);
+	users_init(&self->users,
+	           iface,
+	           iface_catalog,
+	           iface_eval, iface_arg);
 	wal_init(&self->wal);
-	checkpoints_init(&self->checkpoints, &self->catalog);
 	syncer_init(&self->syncer, self);
 }
 
 void
 db_free(Db* self)
 {
-	checkpoints_free(&self->checkpoints);
-	catalog_free(&self->catalog);
+	users_free(&self->users);
 	wal_free(&self->wal);
 }
 
@@ -55,7 +56,7 @@ db_open(Db* self, bool bootstrap)
 	wal_open(&self->wal);
 
 	// create superuser
-	catalog_create(&self->catalog);
+	users_create(&self->users);
 
 	// create initial checkpoint
 	if (bootstrap)
@@ -65,8 +66,7 @@ db_open(Db* self, bool bootstrap)
 		return;
 	}
 
-	// restore last checkpoint
-	checkpoints_open(&self->checkpoints);
+	// todo: restore last checkpoint
 }
 
 void

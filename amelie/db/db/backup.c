@@ -15,13 +15,15 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_user.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
+#if 0
 typedef struct Backup Backup;
 
 struct Backup
@@ -188,10 +190,14 @@ backup_job(intptr_t* argv)
 	auto self = (Backup*)argv[0];
 	backup_main(self);
 }
+#endif
 
 void
 backup(Db* self, Uuid* id)
 {
+	(void)self;
+	(void)id;
+#if 0
 	// one checkpoint, create index or backup at a time
 	auto lock = lock_checkpoint(LOCK_EXCLUSIVE);
 	defer(unlock, lock);
@@ -201,4 +207,5 @@ backup(Db* self, Uuid* id)
 	defer(backup_free, &backup);
 	backup_prepare(&backup);
 	run(backup_job, 1, &backup);
+#endif
 }
