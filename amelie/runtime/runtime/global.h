@@ -157,7 +157,7 @@ resolve(char* addr, int port, struct addrinfo** result)
 #define lock_system(resource_id, id) \
 	lock(&runtime()->lockables.list[(resource_id)].res, (id))
 
-#define lock_catalog(id)    lock_system(RES_CATALOG, id)
+#define lock_users(id)      lock_system(RES_USERS, id)
 #define lock_checkpoint(id) lock_system(RES_CHECKPOINT, id)
 
 #define breakpoint(res_id) \

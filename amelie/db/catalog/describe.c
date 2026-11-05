@@ -15,8 +15,8 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
@@ -314,7 +314,7 @@ describe_rels(Rels* rels, RelType type, Buf* schema)
 void
 describe_catalog(Catalog* self, Buf* schema)
 {
-	// users, tables
+	// tables, udfs
 	describe_rels(&self->rels, REL_TABLE, schema);
 	describe_rels(&self->rels, REL_UDF, schema);
 }

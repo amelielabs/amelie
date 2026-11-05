@@ -15,8 +15,8 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
@@ -41,7 +41,7 @@ udf_show(Udf* self, Buf* buf, int flags)
 }
 
 static inline Udf*
-udf_allocate_as(User* user, UdfConfig* config, void* data, UdfFree free, void* free_arg)
+udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 {
 	auto self = (Udf*)am_malloc(sizeof(Udf));
 	self->free     = free;
@@ -53,7 +53,6 @@ udf_allocate_as(User* user, UdfConfig* config, void* data, UdfFree free, void* f
 	auto rel = &self->rel;
 	rel_init(rel, REL_UDF);
 	rel_set_name(rel, &self->config->name);
-	rel_set_parent(rel, user);
 	rel_set_description(rel, &self->config->description);
 	rel_set_show(rel, (RelShow)udf_show);
 	rel_set_free(rel, (RelFree)udf_free);
@@ -61,9 +60,9 @@ udf_allocate_as(User* user, UdfConfig* config, void* data, UdfFree free, void* f
 }
 
 static inline Udf*
-udf_allocate(User* user, UdfConfig* config, UdfFree free, void* free_arg)
+udf_allocate(UdfConfig* config, UdfFree free, void* free_arg)
 {
-	return udf_allocate_as(user, udf_config_copy(config), NULL, free, free_arg);
+	return udf_allocate_as(udf_config_copy(config), NULL, free, free_arg);
 }
 
 static void
@@ -72,9 +71,8 @@ replace_if_commit(Log* self, LogOp* op)
 	// free previous config and data by constructing
 	// temprorary udf object
 	Catalog* catalog = op->iface_arg;
-	auto udf  = udf_of(op->rel);
 	auto data = (void**)log_data_of(self, op);
-	auto tmp  = udf_allocate_as(udf->rel.parent, data[0], data[1],
+	auto tmp  = udf_allocate_as(data[0], data[1],
 	                            catalog->iface->udf_free,
 	                            catalog->iface_arg);
 	udf_free(tmp, false);
@@ -87,7 +85,7 @@ replace_if_abort(Log* self, LogOp* op)
 	// temprorary udf object
 	Catalog* catalog = op->iface_arg;
 	auto udf = udf_of(op->rel);
-	auto tmp = udf_allocate_as(udf->rel.parent, udf->config,
+	auto tmp = udf_allocate_as(udf->config,
 	                           udf->data, catalog->iface->udf_free,
 	                           catalog->iface_arg);
 	udf_free(tmp, false);
@@ -133,7 +131,7 @@ udf_replace(Catalog*   self,
 		      &config->name);
 
 	// create and compile new temporary udf
-	auto udf_new = udf_allocate(udf->rel.parent, config, self->iface->udf_free, self->iface_arg);
+	auto udf_new = udf_allocate(config, self->iface->udf_free, self->iface_arg);
 	defer(rel_free, udf_new);
 
 	// compile on creation
@@ -167,7 +165,7 @@ udf_create(Catalog*   self,
            bool       or_replace)
 {
 	// PERM_CREATE_FUNCTION
-	check_user(tr, PERM_CREATE_FUNCTION);
+	check_permission(tr, PERM_CREATE_FUNCTION);
 
 	// find existing udf
 	auto udf = catalog_find_udf(self, &config->name, false);
@@ -190,7 +188,7 @@ udf_create(Catalog*   self,
 	catalog_limit(self, tr, REL_UDF, LIMIT_FUNCTIONS);
 
 	// create udf
-	udf = udf_allocate(tr->user, config, self->iface->udf_free, self->iface_arg);
+	udf = udf_allocate(config, self->iface->udf_free, self->iface_arg);
 	rels_create(&self->rels, tr, &udf->rel);
 
 	// compile on creation

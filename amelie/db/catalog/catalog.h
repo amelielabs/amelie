@@ -24,6 +24,7 @@ struct CatalogIf
 struct Catalog
 {
 	Rels       rels;
+	Usage      memory;
 	EvalIf*    iface_eval;
 	CatalogIf* iface;
 	void*      iface_arg;

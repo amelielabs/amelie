@@ -15,8 +15,8 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
@@ -29,6 +29,7 @@ catalog_init(Catalog*   self,
 	self->iface      = iface;
 	self->iface_eval = iface_eval;
 	self->iface_arg  = iface_arg;
+	usage_init(&self->memory, "memory");
 	rels_init(&self->rels);
 }
 
@@ -48,12 +49,9 @@ catalog_limit(Catalog* self, Tr* tr, RelType type, int limit_id)
 	if (! limits_is_set(limits, limit_id))
 		return;
 
-	auto user  = tr->user;
 	auto count = rels_count(&self->rels, type);
 	if (unlikely(! limits_check(limits, limit_id, count + 1)))
-		error("{s} '{str}': {s}s limit reached",
-		      user->agent ? "agent" :"user", user->name,
-		      rel_type_of(type));
+		error("{s}s: limit reached", rel_type_of(type));
 }
 
 bool
@@ -182,7 +180,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	case DDL_INDEX_CREATE:
 	{
 		// create index has different processing path and must be
-		// done using the user_create_index()
+		// done using the db_create_index()
 		abort();
 		break;
 	}

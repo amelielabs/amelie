@@ -11,23 +11,23 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Tr   Tr;
-typedef struct User User;
+typedef struct Tr     Tr;
+typedef struct Grants Grants;
 
 struct Tr
 {
-	Log    log;
-	User*  user;
-	Local* local;
-	Usage* write;
-	bool   allocated;
-	List   link;
+	Log     log;
+	Grants* grants;
+	Local*  local;
+	Usage*  write;
+	bool    allocated;
+	List    link;
 };
 
 static inline void
 tr_init(Tr* self)
 {
-	self->user      = NULL;
+	self->grants    = NULL;
 	self->local     = NULL;
 	self->write     = NULL;
 	self->allocated = false;
@@ -38,9 +38,9 @@ tr_init(Tr* self)
 static inline void
 tr_reset(Tr* self)
 {
-	self->user  = NULL;
-	self->local = NULL;
-	self->write = NULL;
+	self->grants = NULL;
+	self->local  = NULL;
+	self->write  = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
 }
@@ -81,9 +81,9 @@ tr_set_limit(Tr* self, Usage* write)
 }
 
 static inline void
-tr_set_user(Tr* self, User* user)
+tr_set_grants(Tr* self, Grants* grants)
 {
-	self->user = user;
+	self->grants = grants;
 }
 
 hot static inline void

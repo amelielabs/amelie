@@ -11,16 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-// transaction
-#include "transaction/log.h"
-#include "transaction/tr.h"
-
 // permissions
 #include "transaction/permissions.h"
 #include "transaction/grants.h"
-#include "transaction/user.h"
+
+// transaction
+#include "transaction/log.h"
+#include "transaction/tr.h"
 
 // relation
 #include "transaction/rel.h"
 #include "transaction/rels.h"
 #include "transaction/access.h"
+#include "transaction/check.h"

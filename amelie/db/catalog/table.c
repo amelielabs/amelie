@@ -15,8 +15,8 @@
 #include <amelie_storage.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
-#include <amelie_transaction.h>
 #include <amelie_index.h>
+#include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
@@ -44,9 +44,7 @@ table_show(Table* self, Buf* buf, int flags)
 }
 
 static inline Table*
-table_allocate(Catalog*     catalog,
-               User*        user,
-               TableConfig* config)
+table_allocate(Catalog* catalog, TableConfig* config)
 {
 	auto self = (Table*)am_malloc(sizeof(Table));
 	self->config  = table_config_copy(config);
@@ -56,7 +54,7 @@ table_allocate(Catalog*     catalog,
 	// part context
 	auto arg = &self->part_arg;
 	arg->rel       = &self->rel;
-	arg->memory    = user->memory;
+	arg->memory    = &catalog->memory;
 	arg->columns   = &self->config->columns;
 	arg->retention = &self->retention;
 
@@ -68,7 +66,6 @@ table_allocate(Catalog*     catalog,
 	auto rel = &self->rel;
 	rel_init(rel, REL_TABLE);
 	rel_set_name(rel, &self->config->name);
-	rel_set_parent(rel, user);
 	rel_set_description(rel, &self->config->description);
 	rel_set_show(rel, (RelShow)table_show);
 	rel_set_free(rel, (RelFree)table_free);
@@ -111,7 +108,7 @@ table_create(Catalog*     self,
              bool         if_not_exists)
 {
 	// PERM_CREATE_TABLE
-	check_user(tr, PERM_CREATE_TABLE);
+	check_permission(tr, PERM_CREATE_TABLE);
 
 	// make sure table does not exists
 	auto rel = catalog_find(self, REL_UNDEF, &config->name, false);
@@ -131,7 +128,7 @@ table_create(Catalog*     self,
 		      &config->name);
 
 	// allocate table
-	auto table = table_allocate(self, tr->user, config);
+	auto table = table_allocate(self, config);
 
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);
