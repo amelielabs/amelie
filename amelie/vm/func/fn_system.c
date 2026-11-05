@@ -94,7 +94,7 @@ static ShowCmd show_cmds[] =
 	{ SHOW_REL,           "rel",           3,  SHOW_YES,   true  },
 
 	// relations objects
-	{ SHOW_GRANTS,        "grants",        6,  SHOW_MAYBE, false },
+	{ SHOW_GRANTS,        "grants",        6,  SHOW_NO,    false },
 	{ SHOW_INDEXES,       "indexes",       7,  SHOW_YES,   false },
 
 	// mcp
@@ -162,9 +162,6 @@ fn_show_command(Call* self, Str* section, Str* name, Str* on, int* flags)
 		// string
 		call_arg(self, arg, TYPE_STRING);
 		auto at = &argv[arg].string;
-		if (str_is(at, "all", 3))
-			mask |= FALL;
-		else
 		if (str_is(at, "create", 6))
 			mask |= FCREATE;
 		else
@@ -210,12 +207,6 @@ fn_show(Call* self)
 	int  flags;
 	auto cmd = fn_show_command(self, &section, &name, &on, &flags);
 
-	// on user
-	auto user_by = &self->local->user;
-	auto user = user_by;
-	if (! str_empty(&on))
-		user = &on;
-
 	auto buf = buf_create();
 	errdefer_buf(buf);
 
@@ -244,7 +235,8 @@ fn_show(Call* self)
 	if (wrap)
 		encode_array(buf);
 
-	auto catalog = &share()->db->catalog;
+	auto user = users_find(&share()->db->users, &self->local->user, true);
+	auto catalog = &user->catalog;
 	switch (cmd->id) {
 	case SHOW_REPLICAS:
 	{
@@ -280,102 +272,80 @@ fn_show(Call* self)
 	}
 	case SHOW_LIMITS:
 	{
-		// todo: check permissions
-		auto ref = catalog_find_user(catalog, user, true);
-		limits_write(&ref->config->limits, buf);
+		limits_write(&user->config->limits, buf);
 		break;
 	}
 	case SHOW_API:
 	{
-		// todo: check permissions
-		auto ref = catalog_find_user(catalog, user, true);
-		apis_write(&ref->config->apis, buf, flags);
+		apis_write(&user->config->apis, buf, flags);
 		break;
 	}
 	case SHOW_MEMORY:
 	{
-		// todo: check permissions
-		auto ref = catalog_find_user(catalog, user, true);
-		usage_status(&ref->memory, buf);
+		usage_status(&user->memory, buf);
 		break;
 	}
 	case SHOW_USERS:
 	{
 		// created users
-		rels_list(&catalog->users, REL_USER, buf, user_by, user, NULL, flags);
+		rels_list(&share()->db->users.users, REL_USER, buf, NULL, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		rels_list(&catalog->users, REL_USER, buf, user_by, NULL, &name, flags);
+		rels_list(&share()->db->users.users, REL_USER, buf, &name, flags);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		rels_list(&catalog->rels, REL_TABLE, buf, user_by, user, NULL, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, NULL, flags);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		rels_list(&catalog->rels, REL_TABLE, buf, user_by, user, &name, flags);
+		rels_list(&catalog->rels, REL_TABLE, buf, &name, flags);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		rels_list(&catalog->rels, REL_UDF, buf, user_by, user, NULL, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, NULL, flags);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		rels_list(&catalog->rels, REL_UDF, buf, user_by, user, &name, flags);
+		rels_list(&catalog->rels, REL_UDF, buf, &name, flags);
 		break;
 	}
 	case SHOW_RELS:
 	{
-		rels_list_rel(&catalog->rels, buf, user_by, user, NULL, flags);
+		rels_list_rel(&catalog->rels, buf, NULL, flags);
 		break;
 	}
 	case SHOW_REL:
 	{
-		rels_list_rel(&catalog->rels, buf, user_by, user, &name, flags);
+		rels_list_rel(&catalog->rels, buf, &name, flags);
 		break;
 	}
 	case SHOW_GRANTS:
 	{
 		// show grants [on user]
-		if (str_empty(&name))
-		{
-			auto ref = catalog_find_user(catalog, user, true);
-			// todo: check permissions
-			grants_write(ref->rel.grants, buf, 0);
-			break;
-		}
-
-		// show grants rel
-		auto rel = catalog_find(catalog, REL_UNDEF, user, &name, true);
-		if (rel->grants)
-			grants_write(rel->grants, buf, 0);
-		else
-			encode_null(buf);
+		grants_write(&user->config->grants, buf, 0);
 		break;
 	}
 	case SHOW_INDEXES:
 	{
-		// todo: check permissions
-		auto table = catalog_find_table(catalog, user, &name, true);
+		auto table = catalog_find_table(catalog, &name, true);
 		table_index_list(table, buf, NULL, flags);
 		break;
 	}
 	case SHOW_TOOLS:
 	{
-		// todo: check permissions
-		catalog_mcp_tools(catalog, user, buf);
+		catalog_mcp_tools(catalog, buf);
 		break;
 	}
 	case SHOW_RESOURCES:
 	{
-		// todo: check permissions
-		catalog_mcp_resources(catalog, user, buf);
+		catalog_mcp_resources(catalog, buf);
 		break;
 	}
 	case SHOW_STATE:

@@ -448,17 +448,14 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto table = (Table*)op->a;
 			op_write(buf, op, false, false, false,
-			         "{str}.{str}",
-			         &table->config->user, &table->config->name);
+			         "{str}", &table->config->name);
 			break;
 		}
 		case CUPSERT_OPEN:
 		{
 			auto table = (Table*)op->b;
 			op_write(buf, op, true, false, false,
-			         "{str}.{str}",
-			         &table->config->user,
-			         &table->config->name);
+			         "{str}", &table->config->name);
 			break;
 		}
 		case CTABLE_OPEN:
@@ -476,8 +473,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			else
 				str_set(&index_name, "heap", 4);
 			op_write(buf, op, true, true, true,
-			         "{str}.{str} ({str}) {buf}",
-			         &open->table->config->user,
+			         "{str} ({str}) {buf}",
 			         &open->table->config->name,
 			         &index_name,
 			         desc);
@@ -519,8 +515,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CCALL_UDF:
 		{
 			auto udf = (Udf*)op->b;
-			op_write(buf, op, true, false, false, "{str}.{str}()",
-			         &udf->config->user, &udf->config->name);
+			op_write(buf, op, true, false, false, "{str}()",
+			         &udf->config->name);
 			break;
 		}
 		case CVALUE:

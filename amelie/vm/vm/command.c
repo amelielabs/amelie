@@ -112,8 +112,8 @@ cupsert_open(Vm* self, Op* op)
 	// create primary index iterator for related partition
 	auto primary = part_primary(part);
 	if (unlikely(! primary))
-		error("table {str}.{str}: primary key is required for upsert",
-		      table->rel.user, table->rel.name);
+		error("table {str}: primary key is required for upsert",
+		      table->rel.name);
 	auto it = index_iterator(primary);
 	value_set_cursor(cursor, table, it);
 }

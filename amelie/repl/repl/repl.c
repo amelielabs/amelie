@@ -155,8 +155,10 @@ repl_describe(Repl* self, Buf* buf)
 void
 repl_connect(Repl* self, Client* client)
 {
-	auto lock = lock_catalog(LOCK_SHARED);
-	defer(unlock, lock);
+	// todo: repl lock
+
+	//	auto lock = lock_catalog(LOCK_SHARED);
+	//	defer(unlock, lock);
 
 	// ensure server is replica
 	if (state_is_primary())

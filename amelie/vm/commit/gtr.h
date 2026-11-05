@@ -54,33 +54,7 @@ gtr_free(Gtr* self)
 	write_free(&self->write);
 }
 
-static inline bool
-gtr_lock(Access* self, User* user)
-{
-	if (! self->count_users)
-		return false;
-
-	// same user (shared) or cross-user access (exclusive)
-	LockId lock = LOCK_SHARED;
-	if (self->count == 1)
-	{
-		if (access_at_user(self, 0) != &user->rel)
-			lock = LOCK_EXCLUSIVE;
-	} else {
-		lock = LOCK_EXCLUSIVE;
-	}
-
-	// lock users
-	for (auto i = 0; i < self->count_users; i++)
-	{
-		auto ref = user_of(access_at_user(self, i));
-		lock(&ref->lock, lock);
-	}
-
-	return lock == LOCK_EXCLUSIVE;
-}
-
-static inline bool
+static inline void
 gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 {
 	self->local = local;
@@ -101,7 +75,4 @@ gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 
 	// set access
 	self->access = access;
-
-	// take user locks
-	return gtr_lock(access, user);
 }
