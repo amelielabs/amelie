@@ -54,7 +54,7 @@ table_allocate(Catalog* catalog, TableConfig* config)
 	// part context
 	auto arg = &self->part_arg;
 	arg->rel       = &self->rel;
-	arg->memory    = &catalog->memory;
+	arg->memory    = catalog->memory;
 	arg->columns   = &self->config->columns;
 	arg->retention = &self->retention;
 

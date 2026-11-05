@@ -31,7 +31,6 @@
 #include "catalog/rel.h"
 
 // catalog
-#include "catalog/eval.h"
 #include "catalog/catalog.h"
 #include "catalog/cascade.h"
 #include "catalog/describe.h"

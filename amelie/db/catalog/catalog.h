@@ -24,13 +24,12 @@ struct CatalogIf
 struct Catalog
 {
 	Rels       rels;
-	Usage      memory;
-	EvalIf*    iface_eval;
+	Usage*     memory;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, EvalIf*, void*);
+void catalog_init(Catalog*, CatalogIf*, void*, Usage*);
 void catalog_free(Catalog*);
 void catalog_limit(Catalog*, Tr*, RelType, int);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

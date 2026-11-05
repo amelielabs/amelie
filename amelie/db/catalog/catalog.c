@@ -23,13 +23,12 @@
 void
 catalog_init(Catalog*   self,
              CatalogIf* iface,
-             EvalIf*    iface_eval,
-             void*      iface_arg)
+             void*      iface_arg,
+             Usage*     memory)
 {
-	self->iface      = iface;
-	self->iface_eval = iface_eval;
-	self->iface_arg  = iface_arg;
-	usage_init(&self->memory, "memory");
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
+	self->memory    = memory;
 	rels_init(&self->rels);
 }
 

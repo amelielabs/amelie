@@ -18,6 +18,7 @@ struct Tr
 {
 	Log     log;
 	Grants* grants;
+	Rel*    user_;
 	Local*  local;
 	Usage*  write;
 	bool    allocated;
@@ -28,6 +29,7 @@ static inline void
 tr_init(Tr* self)
 {
 	self->grants    = NULL;
+	self->user_     = NULL;
 	self->local     = NULL;
 	self->write     = NULL;
 	self->allocated = false;
@@ -39,6 +41,7 @@ static inline void
 tr_reset(Tr* self)
 {
 	self->grants = NULL;
+	self->user_  = NULL;
 	self->local  = NULL;
 	self->write  = NULL;
 	log_reset(&self->log);
@@ -84,6 +87,12 @@ static inline void
 tr_set_grants(Tr* self, Grants* grants)
 {
 	self->grants = grants;
+}
+
+static inline void
+tr_set_user(Tr* self, Rel* user)
+{
+	self->user_ = user;
 }
 
 hot static inline void
