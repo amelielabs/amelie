@@ -25,7 +25,7 @@ link_sql(Link* self)
 	auto http     = &self->client->request;
 
 	// check permission
-	user_check(portal->user, PERM_SQL);
+	check_permission_on(&portal->user->config->grants, PERM_SQL);
 
 	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];
@@ -198,7 +198,6 @@ link_api(Link* self)
 
 	// set request
 	auto req = &self->req;
-	req->rel_user     = self->api->rel_user;
 	req->rel          = self->api->rel;
 	req->content_type = *content_type;
 	req->content      =  content;

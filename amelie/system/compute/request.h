@@ -24,7 +24,6 @@ typedef enum
 
 struct Request
 {
-	Str  rel_user;
 	Str  rel;
 	Str  content_type;
 	Str  content;
@@ -83,9 +82,6 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 	// []
 	encode_array(buf);
 
-	// rel_user
-	encode_str(buf, &self->rel_user);
-
 	// rel
 	encode_str(buf, &self->rel);
 
@@ -129,7 +125,6 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 		case META_REQUEST:
 		{
 			unpack_array(&pos);
-			unpack_str(&pos, &self->rel_user);
 			unpack_str(&pos, &self->rel);
 			unpack_str(&pos, &self->content_type);
 			unpack_str(&pos, &self->content);

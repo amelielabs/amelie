@@ -25,7 +25,7 @@ struct Portal
 static inline void
 portal_lock(Portal* self, LockId id)
 {
-	// take catalog lock
+	// take users lock
 	if (self->lock)
 	{
 		if (self->lock->lock == id)
@@ -33,7 +33,7 @@ portal_lock(Portal* self, LockId id)
 		unlock(self->lock);
 		self->lock = NULL;
 	}
-	self->lock = lock_catalog(id);
+	self->lock = lock_users(id);
 	if (self->lock)
 		lock_detach(self->lock);
 }
@@ -96,9 +96,8 @@ portal_prepare(Portal* self)
 hot static inline void
 portal_auth(Portal* self, Auth* auth, Token* token)
 {
-	// take catalog lock
-	self->lock = lock_catalog(LOCK_SHARED);
-	lock_detach(self->lock);
+	// take users lock
+	portal_lock(self, LOCK_SHARED);
 
 	// authenticate user/token
 	auto endpoint = &self->endpoint;
@@ -133,12 +132,11 @@ portal_set_local(Portal* self, bool with_limits)
 hot static inline void
 portal_set(Portal* self, Str* user, bool with_limits)
 {
-	// take catalog lock
-	self->lock = lock_catalog(LOCK_SHARED);
-	lock_detach(self->lock);
+	// take users lock
+	portal_lock(self, LOCK_SHARED);
 
 	// find user
-	self->user = catalog_find_user(&share()->db->catalog, user, true);
+	self->user = users_find(&share()->db->users, user, true);
 
 	// configure local
 	portal_set_local(self, with_limits);

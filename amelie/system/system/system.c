@@ -21,9 +21,31 @@
 #include <amelie_system.h>
 
 static void
+users_if_attach(Users* users, User* user)
+{
+	System* system = users->iface_arg;
+	computes_deploy(&system->computes, user);
+}
+
+static void
+users_if_detach(Users* users, User* user)
+{
+	System* system = users->iface_arg;
+	computes_undeploy(&system->computes, user);
+}
+
+static UsersIf users_if =
+{
+	.attach = users_if_attach,
+	.detach = users_if_detach
+};
+
+static void
 catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
-	auto user = catalog_find_user(catalog, &udf->config->user, true);
+	System* system = catalog->iface_arg;
+
+	auto user = users_find(&system->db.users, catalog->user, true);
 	Local local;
 	local_init(&local);
 	local.user    = user->config->name;
@@ -40,7 +62,7 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 	Compiler compiler;
 	compiler_init(&compiler, &set_cache);
 	defer(compiler_free, &compiler);
-	compiler_set(&compiler, &local, program);
+	compiler_set(&compiler, user, &local, program);
 
 	// parse SQL statements
 	compiler_parse_udf(&compiler, udf);
@@ -69,35 +91,15 @@ catalog_if_udf_free(Udf* udf)
 }
 
 static bool
-catalog_if_udf_depends(Udf* udf, Str* user, Str* name)
+catalog_if_udf_depends(Udf* udf, Str* name)
 {
 	Program* program = udf->data;
 	assert(program);
-	if (name)
-		return access_find(&program->access, user, name);
-	return access_find_user(&program->access, user);
-}
-
-static void
-catalog_if_user_attach(Catalog* catalog, User* user)
-{
-	// create pod
-	System* system = catalog->iface_arg;
-	computes_deploy(&system->computes, user);
-}
-
-static void
-catalog_if_user_detach(Catalog* catalog, User* user)
-{
-	// drop pods
-	System* system = catalog->iface_arg;
-	computes_undeploy(&system->computes, user);
+	return access_find(&program->access, name);
 }
 
 static CatalogIf catalog_if =
 {
-	.user_attach = catalog_if_user_attach,
-	.user_detach = catalog_if_user_detach,
 	.udf_compile = catalog_if_udf_compile,
 	.udf_free    = catalog_if_udf_free,
 	.udf_depends = catalog_if_udf_depends
@@ -219,7 +221,7 @@ system_create(void)
 	functions_init(&self->functions);
 
 	// db
-	db_init(&self->db, &catalog_if, &eval_if, self);
+	db_init(&self->db, &users_if, &catalog_if, &eval_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

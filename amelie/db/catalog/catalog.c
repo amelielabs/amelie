@@ -24,11 +24,13 @@ void
 catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
-             Usage*     memory)
+             Usage*     memory,
+             Str*       user)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	self->memory    = memory;
+	self->user      = user;
 	rels_init(&self->rels);
 }
 

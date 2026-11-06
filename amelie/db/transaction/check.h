@@ -12,10 +12,15 @@
 //
 
 static inline void
+check_permission_on(Grants* self, uint32_t perm)
+{
+	if (! grants_check_first(self, perm))
+		error("{s}: permission denied", permission_name_of(perm));
+}
+
+static inline void
 check_permission(Tr* self, uint32_t perm)
 {
-	if (! self->grants)
-		return;
-	if (! grants_check_first(self->grants, perm))
-		error("{s}: permission denied", permission_name_of(perm));
+	if (self->grants)
+		check_permission_on(self->grants, perm);
 }

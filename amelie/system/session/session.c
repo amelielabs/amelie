@@ -135,9 +135,7 @@ session_run(Session* self)
 	}
 
 	// begin transaction
-
-	// lock users
-	auto multi_user = gtr_begin(gtr, &portal->local, portal->user, access);
+	gtr_begin(gtr, &portal->local, portal->user, access);
 
 	// do retention
 	session_retention(access, portal->user);
@@ -176,8 +174,6 @@ session_run(Session* self)
 	{
 		auto write = &gtr->write;
 		request_write(req, &portal->endpoint, &write->record_data);
-		if (multi_user)
-			write_set_flags(write, RECORD_MULTI_USER);
 
 		commit(share()->commit, gtr);
 	}
@@ -210,13 +206,9 @@ session_run_utility(Session* self)
 	if (!req->replay && !ro && !state_is_primary())
 		error("system is in read-only mode");
 
-	// switch session lock to match the program catalog lock
-	//
-	// note: user not changed
-	//
-	portal_lock(portal, program->lock_catalog);
+	// todo: take system lock
 
-	// prepare global transaction
+	// begin transaction
 	gtr_begin(gtr, &portal->local, portal->user, &program->access);
 
 	// [PROFILE]
@@ -313,15 +305,17 @@ session_main(Session* self, Portal* portal, Request* req)
 
 	// parse request
 	auto compiler = &self->compiler;
-	compiler_set(compiler, &portal->local, self->program);
+	compiler_set(compiler, portal->user, &portal->local, self->program);
 
 	if (str_empty(&req->rel))
 	{
-		user_check(portal->user, PERM_SQL);
+		// check permission
+		check_permission_on(&portal->user->config->grants, PERM_SQL);
+
 		compiler_parse(compiler, &req->content);
 	} else
 	{
-		compiler_parse_copy(compiler, &req->rel_user, &req->rel,
+		compiler_parse_copy(compiler, &req->rel,
 		                    &req->content_type,
 		                    &req->content);
 	}
@@ -350,6 +344,7 @@ session_main(Session* self, Portal* portal, Request* req)
 		return;
 	}
 
+#if 0
 	// permission to EXECUTE
 	if (stmt->id == STMT_EXECUTE)
 		user_check_permission(portal->user, &compiler->program_udf->rel,
@@ -357,6 +352,7 @@ session_main(Session* self, Portal* portal, Request* req)
 
 	// validate user permissions
 	user_check_access(portal->user, &program->access);
+#endif
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)

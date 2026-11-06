@@ -74,7 +74,8 @@ user_allocate(Users* users, UserConfig* config)
 	catalog_init(&self->catalog,
 	             users->iface_catalog,
 	             users->iface_arg,
-	             &self->memory);
+	             &self->memory,
+	             &self->config->name);
 
 	// set relation
 	auto rel = &self->rel;
@@ -300,6 +301,7 @@ user_grant(Users*   self,
 	if (user->config->superuser)
 		error("user '{str}': system user cannot change grants", name);
 
+#if 0
 	// validate permissions
 	auto perms_all =
 		PERM_GRANT           |
@@ -311,6 +313,7 @@ user_grant(Users*   self,
 		PERM_CREATE_API      |
 		PERM_SQL;
 	perms = permission_validate(NULL, name, perms, perms_all);
+#endif
 
 	// PERM_SYSTEM for system wide grants
 	if (((perms & PERM_SYSTEM) > 0) ||

@@ -110,7 +110,7 @@ mcp_tools_list(Mcp* self)
 
 	// tools []
 	encode_raw(buf, "tools", 5);
-	catalog_mcp_tools(&share()->db->catalog, &portal->user->config->name, buf);
+	catalog_mcp_tools(&portal->user->catalog, buf);
 
 	encode_obj_end(buf);
 	encode_obj_end(buf);
@@ -147,7 +147,7 @@ mcp_resources_list(Mcp* self)
 
 	// resources []
 	encode_raw(buf, "resources", 9);
-	catalog_mcp_resources(&share()->db->catalog, &portal->user->config->name, buf);
+	catalog_mcp_resources(&portal->user->catalog, buf);
 
 	encode_obj_end(buf);
 	encode_obj_end(buf);
@@ -179,8 +179,6 @@ output_mcp_write(Output* self, Columns* columns, Value* value)
 		// resource result
 		char result[] = ", \"result\": {\"contents\": [{\"uri\": \"mcp://";
 		buf_write(buf, result, sizeof(result) - 1);
-		buf_write_str(buf, &mcp->rel_user);
-		buf_write(buf, "/", 1);
 		buf_write_str(buf, &mcp->rel);
 		buf_write(buf, "\", \"text\": \"", 12);
 	} else {
@@ -321,8 +319,7 @@ mcp_execute(Mcp* self, Request* req)
 	case MCP_RESOURCES_READ:
 	{
 		// execute UDF call
-		req->rel_user  = self->rel_user;
-		req->rel       = self->rel;
+		req->rel = self->rel;
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;

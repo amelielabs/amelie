@@ -80,8 +80,7 @@ recover_next(Recover* self, RecordMsg* msg)
 	// sync on ddl and multi-user transactions (wait for completion)
 	auto sync = &self->sync;
 	auto sync_after = false;
-	if (unlikely((msg->record->flags & RECORD_UTILITY) > 0 ||
-	             (msg->record->flags & RECORD_MULTI_USER) > 0))
+	if (unlikely((msg->record->flags & RECORD_UTILITY) > 0))
 	{
 		recover_wait(self);
 		sync_after = true;

@@ -106,7 +106,7 @@ system_metrics(System* self, Buf* buf)
 
 	// db
 	encode_raw(buf, "db", 2);
-	catalog_status(&self->db.catalog, buf);
+	users_status(&self->db.users, buf);
 
 	// process
 	encode_raw(buf, "process", 7);

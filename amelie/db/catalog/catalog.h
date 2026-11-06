@@ -25,11 +25,12 @@ struct Catalog
 {
 	Rels       rels;
 	Usage*     memory;
+	Str*       user;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, CatalogIf*, void*, Usage*);
+void catalog_init(Catalog*, CatalogIf*, void*, Usage*, Str*);
 void catalog_free(Catalog*);
 void catalog_limit(Catalog*, Tr*, RelType, int);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

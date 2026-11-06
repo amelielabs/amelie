@@ -32,18 +32,19 @@ streaming_start(Link* self)
 static Table*
 streaming_prepare(Link* self, StreamPos* pos)
 {
+	auto portal = &self->portal;
+
 	// find relation
 	auto api = self->api;
-	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &api->rel_user, &api->rel, false);
+	auto rel = catalog_find(&portal->user->catalog, REL_UNDEF, &api->rel, false);
 	if (! rel)
-		error("stream: relation {str}.{str} not found",
-		      &api->rel_user, &api->rel);
+		error("stream: relation {str} not found", &api->rel);
 	if (rel->type != REL_TABLE)
-		error("stream: relation {str}.{str} cannot be used for streaming",
-		      rel->user, rel->name);
+		error("stream: relation {str} cannot be used for streaming",
+		      rel->name);
 
 	// prepare streams (one per partition)
-	auto id = &self->portal.endpoint.id.string;
+	auto id = &portal->endpoint.id.string;
 	if (! str_empty(id))
 		if (stream_pos_read(pos, id) == -1)
 			error("stream: invalid id");

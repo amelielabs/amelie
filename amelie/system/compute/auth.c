@@ -65,7 +65,7 @@ auth_jwt(Auth* self, Str* token, uint64_t* expire)
 		error("auth: user '{str}' token has expired", &sub);
 
 	// find user
-	auto user = catalog_find_user(&share()->db->catalog, &sub, false);
+	auto user = users_find(&share()->db->users, &sub, false);
 	if (! user)
 		error("auth: user '{str}' not found", &sub);
 
@@ -97,7 +97,7 @@ auth_basic(Auth* self, Str* token)
 	defer_buf(buf);
 
 	// find user
-	auto user = catalog_find_user(&share()->db->catalog, &name, false);
+	auto user = users_find(&share()->db->users, &name, false);
 	if (! user)
 		error("auth: user '{str}' not found", &name);
 
@@ -122,7 +122,7 @@ auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 		// set superuser
 		Str name;
 		str_set(&name, "amelie", 6);
-		self->amelie = catalog_find_user(&share()->db->catalog, &name, true);
+		self->amelie = users_find(&share()->db->users, &name, true);
 		return self->amelie;
 	}
 
@@ -158,7 +158,7 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 		           token->expire > now &&
 		           str_compare(ref, &token->token)))
 		{
-			auto user = catalog_find_user(&share()->db->catalog, &token->user, true);
+			auto user = users_find(&share()->db->users, &token->user, true);
 			if (user->inv_seq == token->seq_user)
 				return user;
 		}
