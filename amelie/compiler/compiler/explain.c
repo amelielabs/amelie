@@ -28,8 +28,7 @@ explain_access(Access* self, Buf* buf)
 		auto record = access_at(self, i);
 
 		// target
-		buf_format(buf, "  •   {str}.{str} [", record->rel->user,
-		           record->rel->name);
+		buf_format(buf, "  •   {str} [", record->rel->name);
 
 		// permissions
 		auto     first = true;
@@ -53,25 +52,13 @@ explain(Compiler* self, Program* program, Udf* udf, bool calls)
 	auto buf = &self->explain;
 	buf_write(buf, "\n", 1);
 
-	// [function user.function]
+	// [function name]
 	if (udf)
-		buf_format(buf, "FUNCTION {str}.{str}\n\n", udf->rel.user,
-		           udf->rel.name);
+		buf_format(buf, "FUNCTION {str}\n\n", udf->rel.name);
 
 	// main
 	auto access = &program->access;
-	auto multi_user = access_multi_user(access);
-	if (access->count > 0 && !multi_user)
-	{
-		auto first = access_at(access, 0);
-		if (! str_compare(&self->parser.local->user, first->rel->user))
-			multi_user = true;
-	}
-
-	if (multi_user)
-		buf_format(buf, "main [multi-user]\n");
-	else
-		buf_format(buf, "main\n");
+	buf_format(buf, "main\n");
 
 	op_dump(program, &program->code, buf);
 

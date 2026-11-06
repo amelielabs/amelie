@@ -64,12 +64,12 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_set(Compiler* self, Local* local, Program* program)
+compiler_set(Compiler* self, User* user, Local* local, Program* program)
 {
 	self->program   = program;
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
-	parser_prepare(&self->parser, local);
+	parser_prepare(&self->parser, user, local);
 }
 
 static void
@@ -121,11 +121,11 @@ compiler_parse_udf(Compiler* self, Udf* udf)
 }
 
 hot void
-compiler_parse_copy(Compiler* self, Str* user, Str* rel,
+compiler_parse_copy(Compiler* self, Str* rel,
                     Str*      content_type,
                     Str*      content)
 {
-	parse_copy(&self->parser, self->program, user, rel,
+	parse_copy(&self->parser, self->program, rel,
 	           content_type, content);
 	compiler_prepare(self);
 }

@@ -81,10 +81,11 @@ include_directories("${AMELIE_ROOT}/db/type")
 include_directories("${AMELIE_ROOT}/db/storage")
 include_directories("${AMELIE_ROOT}/db/flat")
 include_directories("${AMELIE_ROOT}/db/heap")
-include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/index")
+include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
+include_directories("${AMELIE_ROOT}/db/user")
 include_directories("${AMELIE_ROOT}/db/wal")
 include_directories("${AMELIE_ROOT}/db/db")
 
@@ -182,7 +183,6 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/servers.c)
 
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/storage/manifest.c
     ${AMELIE_ROOT}/db/storage/page.c
     ${AMELIE_ROOT}/db/storage/storage.c
     ${AMELIE_ROOT}/db/flat/flat.c
@@ -195,25 +195,27 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/index/index_hash.c
     ${AMELIE_ROOT}/db/part/part.c
     ${AMELIE_ROOT}/db/part/part_op.c
-    ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/rel.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
-    ${AMELIE_ROOT}/db/catalog/catalog_limit.c
-    ${AMELIE_ROOT}/db/catalog/catalog_mcp.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/catalog/describe.c
+    ${AMELIE_ROOT}/db/catalog/mcp.c
+    ${AMELIE_ROOT}/db/user/user.c
+    ${AMELIE_ROOT}/db/user/users.c
+    ${AMELIE_ROOT}/db/user/describe.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_recovery.c
     ${AMELIE_ROOT}/db/wal/wal_write.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/wal/wal_slot.c
     ${AMELIE_ROOT}/db/wal/wal_subscribe.c
-    ${AMELIE_ROOT}/db/db/checkpoints.c
-    ${AMELIE_ROOT}/db/db/checkpoint.c
+
+    #${AMELIE_ROOT}/db/db/checkpoints.c
+    #${AMELIE_ROOT}/db/db/checkpoint.c
     ${AMELIE_ROOT}/db/db/syncer.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_op.c
@@ -346,7 +348,8 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
-    ${AMELIE_SOURCES_SYSTEM})
+    #${AMELIE_SOURCES_SYSTEM})
+   )
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/main.c
@@ -402,21 +405,21 @@ add_library(amelie_static STATIC ${AMELIE_SOURCES})
 set_target_properties(amelie_static PROPERTIES OUTPUT_NAME amelie)
 set(AMELIE_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_static>")
 
-# libamelie-unit.a
-add_library(amelie_unit_static STATIC ${AMELIE_SOURCES_UNIT})
-set_target_properties(amelie_unit_static PROPERTIES OUTPUT_NAME amelie_unit)
-set(AMELIE_UNIT_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_unit_static>")
+## libamelie-unit.a
+#add_library(amelie_unit_static STATIC ${AMELIE_SOURCES_UNIT})
+#set_target_properties(amelie_unit_static PROPERTIES OUTPUT_NAME amelie_unit)
+#set(AMELIE_UNIT_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_unit_static>")
 
-# libamelie.so
-file(TOUCH libamelie_so.c)
-add_library(amelie_so SHARED libamelie_so.c)
-set_target_properties(amelie_so PROPERTIES OUTPUT_NAME amelie)
-target_link_libraries(amelie_so ${AMELIE_STATIC_LINK})
-target_link_libraries(amelie_so ${AMELIE_LIBRARIES})
+## libamelie.so
+#file(TOUCH libamelie_so.c)
+#add_library(amelie_so SHARED libamelie_so.c)
+#set_target_properties(amelie_so PROPERTIES OUTPUT_NAME amelie)
+#target_link_libraries(amelie_so ${AMELIE_STATIC_LINK})
+#target_link_libraries(amelie_so ${AMELIE_LIBRARIES})
 
-# amelie
-add_executable(amelie ${AMELIE_SOURCES_MAIN})
-target_link_libraries(amelie ${AMELIE_STATIC_LINK})
-target_link_libraries(amelie ${AMELIE_UNIT_STATIC_LINK})
-target_link_libraries(amelie ${AMELIE_LIBRARIES})
-set_target_properties(amelie PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
+## amelie
+#add_executable(amelie ${AMELIE_SOURCES_MAIN})
+#target_link_libraries(amelie ${AMELIE_STATIC_LINK})
+#target_link_libraries(amelie ${AMELIE_UNIT_STATIC_LINK})
+#target_link_libraries(amelie ${AMELIE_LIBRARIES})
+#set_target_properties(amelie PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)

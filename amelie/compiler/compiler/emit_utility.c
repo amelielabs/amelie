@@ -31,19 +31,19 @@ emit_alter_table(Compiler* self)
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 	{
-		offset = rel_op_rename(data, REL_TABLE, &arg->user, &arg->name, &arg->user, &arg->name_new);
+		offset = rel_op_rename(data, REL_TABLE, &arg->name, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_DESCRIPTION:
 	{
-		offset = rel_op_describe(data, REL_TABLE, &arg->user, &arg->name, &arg->description);
+		offset = rel_op_describe(data, REL_TABLE, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_COLUMN_RENAME:
 	{
-		offset = table_op_column_rename(data, &arg->user, &arg->name, &arg->column_name,
+		offset = table_op_column_rename(data, &arg->name, &arg->column_name,
 		                                &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_exists)
@@ -52,7 +52,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_COLUMN_ADD:
 	{
-		offset = table_op_column_add(data, &arg->user, &arg->name, arg->column);
+		offset = table_op_column_add(data, &arg->name, arg->column);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_not_exists)
 			flags |= DDL_IF_COLUMN_NOT_EXISTS;
@@ -60,7 +60,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_COLUMN_DROP:
 	{
-		offset = table_op_column_drop(data, &arg->user, &arg->name, &arg->column_name);
+		offset = table_op_column_drop(data, &arg->name, &arg->column_name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_exists)
 			flags |= DDL_IF_COLUMN_EXISTS;
@@ -70,7 +70,7 @@ emit_alter_table(Compiler* self)
 	case TABLE_ALTER_COLUMN_UNSET_DEFAULT:
 	{
 		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_DEFAULT,
-		                             &arg->user, &arg->name,
+		                             &arg->name,
 		                             &arg->column_name,
 		                             &arg->value);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
@@ -80,7 +80,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_RETENTION:
 	{
-		offset = table_op_retention(data, &arg->user, &arg->name, arg->retention);
+		offset = table_op_retention(data, &arg->name, arg->retention);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -99,16 +99,18 @@ emit_ddl(Compiler* self)
 	auto offset = 0;
 	auto flags  = 0;
 	switch (stmt->id) {
+#if 0
 	// grant
 	case STMT_GRANT:
 	case STMT_REVOKE:
 	{
 		auto arg = ast_grant_of(stmt->ast);
-		offset = rel_op_grant(data, &arg->rel_user, &arg->rel, &arg->to,
-		                      arg->grant, arg->perms);
+		offset = rel_op_grant(data, &arg->rel, &arg->to, arg->grant, arg->perms);
 		break;
 	}
+#endif
 
+#if 0
 	// user
 	case STMT_CREATE_USER:
 	{
@@ -164,6 +166,7 @@ emit_ddl(Compiler* self)
 		offset = user_op_api_drop(data, &self->parser.local->user, &arg->uri);
 		break;
 	}
+#endif
 
 	// table
 	case STMT_CREATE_TABLE:
@@ -176,7 +179,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TABLE:
 	{
 		auto arg = ast_table_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_TABLE, &arg->user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_TABLE, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -188,7 +191,7 @@ emit_ddl(Compiler* self)
 	case STMT_TRUNCATE:
 	{
 		auto arg = ast_table_truncate_of(stmt->ast);
-		offset = table_op_truncate(data, &arg->user, &arg->name);
+		offset = table_op_truncate(data, &arg->name);
 		break;
 	}
 
@@ -202,7 +205,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_INDEX:
 	{
 		auto arg = ast_index_drop_of(stmt->ast);
-		offset = table_op_index_drop(data, &arg->table_user, &arg->table_name, &arg->name);
+		offset = table_op_index_drop(data, &arg->table_name, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -210,12 +213,11 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_index_alter_of(stmt->ast);
 		if (arg->type == INDEX_ALTER_RENAME)
-			offset = table_op_index_rename(data, &arg->table_user, &arg->table_name,
+			offset = table_op_index_rename(data, &arg->table_name,
 			                               &arg->name, &arg->name_new);
 		else
 		if (arg->type == INDEX_ALTER_PRIMARY)
-			offset = table_op_index_primary(data, &arg->table_user, &arg->table_name,
-			                                &arg->name, arg->pk);
+			offset = table_op_index_primary(data, &arg->table_name, &arg->name, arg->pk);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -231,7 +233,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_FUNCTION:
 	{
 		auto arg = ast_function_drop_of(stmt->ast);
-		offset = rel_op_drop(data, REL_UDF, &arg->user, &arg->name, arg->cascade);
+		offset = rel_op_drop(data, REL_UDF, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -239,10 +241,10 @@ emit_ddl(Compiler* self)
 	{
 		auto arg = ast_function_alter_of(stmt->ast);
 		if (arg->type == FUNCTION_ALTER_RENAME)
-			offset = rel_op_rename(data, REL_UDF, &arg->user, &arg->name, &arg->user, &arg->name_new);
+			offset = rel_op_rename(data, REL_UDF, &arg->name, &arg->name_new);
 		else
 		if (arg->type == FUNCTION_ALTER_DESCRIPTION)
-			offset = rel_op_describe(data, REL_UDF, &arg->user, &arg->name, &arg->description);
+			offset = rel_op_describe(data, REL_UDF, &arg->name, &arg->description);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -285,8 +287,6 @@ emit_show(Compiler* self)
 
 	// flags
 	int flags = FFROM;
-	if (arg->all)
-		flags |= FALL;
 	if (arg->create)
 		flags |= FCREATE;
 	if (! arg->verbose)
@@ -305,11 +305,7 @@ emit_utility(Compiler* self)
 	auto stmt    = compiler_stmt(self);
 	auto data    = &self->code_data->data;
 	auto program = self->program;
-
-	// explicily set program to have exclusive lock for majority of
-	// the utility/ddl commands with some exceptions below
 	program->utility = true;
-	auto lock_catalog = LOCK_EXCLUSIVE;
 
 	int r = -1;
 	switch (stmt->id) {
@@ -317,9 +313,6 @@ emit_utility(Compiler* self)
 	case STMT_SHOW:
 	{
 		r = emit_show(self);
-
-		// lock
-		lock_catalog = LOCK_SHARED;
 		break;
 	}
 	case STMT_ALTER_SYSTEM:
@@ -340,9 +333,6 @@ emit_utility(Compiler* self)
 		auto arg = ast_checkpoint_of(stmt->ast);
 		unused(arg);
 		op0(self, CCHECKPOINT);
-
-		// lock
-		lock_catalog = LOCK_NONE;
 		break;
 	}
 
@@ -355,9 +345,6 @@ emit_utility(Compiler* self)
 		auto uuid   = (Uuid*)buf_emplace(&self->code_data->data, sizeof(Uuid));
 		*uuid = arg->id;
 		op1(self, CBACKUP, offset);
-
-		// lock
-		lock_catalog = LOCK_NONE;
 		break;
 	}
 
@@ -374,9 +361,6 @@ emit_utility(Compiler* self)
 		encode_str(data, &str);
 
 		r = op2pin(self, CCREATE_TOKEN, TYPE_JSON, offset);
-
-		// lock
-		lock_catalog = LOCK_SHARED;
 		break;
 	}
 
@@ -416,13 +400,9 @@ emit_utility(Compiler* self)
 	case STMT_CREATE_INDEX:
 	{
 		auto arg    = ast_index_create_of(stmt->ast);
-		auto offset = table_op_index_create(data, &arg->table_user, &arg->table_name, arg->config);
+		auto offset = table_op_index_create(data, &arg->table_name, arg->config);
 		auto flags  = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		op2(self, CDDL_CREATE_INDEX, offset, flags);
-
-		// start without locks and require manual locking control
-		// during execution
-		lock_catalog = LOCK_NONE;
 		break;
 	}
 
@@ -438,7 +418,4 @@ emit_utility(Compiler* self)
 	op1(self, CRET, r);
 	if (r != -1)
 		runpin(self, r);
-
-	// set catalog lock
-	program->lock_catalog = lock_catalog;
 }

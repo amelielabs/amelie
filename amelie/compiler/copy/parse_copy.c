@@ -179,30 +179,25 @@ copy_execute(Parser* self, Udf* udf, uint8_t* args)
 
 void
 parse_copy(Parser* self, Program* program,
-           Str*    rel_user,
            Str*    rel,
            Str*    content_type,
            Str*    content)
 {
 	// csv
 	if (str_is(content_type, "text/csv", 8))
-		return parse_copy_csv(self, program, rel_user, rel, content);
+		return parse_copy_csv(self, program, rel, content);
 
 	// application/json
 	assert(str_empty(content_type));
 
-	Str* user = rel_user;
-	if (str_empty(rel_user))
-		user = &self->local->user;
 	self->program = program;
 
 	// find relation
-	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
+	auto ref = catalog_find(&self->user->catalog, REL_UNDEF, rel, true);
 
 	// only function call have empty content
 	if (str_empty(content) && ref->type != REL_UDF)
-		error("relation {str}.{str} is not a function",
-		      ref->user, ref->name);
+		error("relation {str} is not a function", ref->name);
 
 	auto args = str_u8(content);
 	switch (ref->type) {

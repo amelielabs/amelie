@@ -121,16 +121,12 @@ copy_insert(Parser* self, Table* table, Str* content)
 
 void
 parse_copy_csv(Parser* self, Program* program,
-               Str*    rel_user,
                Str*    rel,
                Str*    content)
 {
-	Str* user = rel_user;
-	if (str_empty(rel_user))
-		user = &self->local->user;
 	self->program = program;
 
-	auto ref = catalog_find(&share()->db->catalog, REL_UNDEF, user, rel, true);
+	auto ref = catalog_find(&self->user->catalog, REL_UNDEF, rel, true);
 	switch (ref->type) {
 	case REL_TABLE:
 	{
