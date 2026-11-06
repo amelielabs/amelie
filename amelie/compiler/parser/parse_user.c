@@ -86,13 +86,11 @@ parse_user_create(Stmt* self, bool agent)
 	auto config = user_config_allocate();
 	stmt->config = config;
 
-	// [user.]name
-	Str user;
-	Str name;
-	parse_target(self, &user, &name);
+	// name
+	auto name = stmt_expect(self, KNAME);
 
-	user_config_set_parent(config, &user);
-	user_config_set_name(config, &name);
+	/*user_config_set_parent(config, &user);*/
+	user_config_set_name(config, &name->string);
 	user_config_set_agent(config, agent);
 
 	// [DESCRIPTION]

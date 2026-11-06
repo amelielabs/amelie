@@ -19,7 +19,6 @@ struct AstIndexCreate
 {
 	Ast          ast;
 	bool         if_not_exists;
-	Str          table_user;
 	Str          table_name;
 	IndexConfig* config;
 };
@@ -28,7 +27,6 @@ struct AstIndexDrop
 {
 	Ast  ast;
 	bool if_exists;
-	Str  table_user;
 	Str  table_name;
 	Str  name;
 };
@@ -44,7 +42,6 @@ struct AstIndexAlter
 	Ast  ast;
 	bool if_exists;
 	int  type;
-	Str  table_user;
 	Str  table_name;
 	Str  name;
 	Str  name_new;

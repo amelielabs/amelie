@@ -331,19 +331,17 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 static Ast*
 expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 {
-	// [user.]function_name[(expr, ...)]
+	// function_name[(expr, ...)]
 	auto func = ast_func_allocate();
-	Str user;
-	Str name;
-	parse_target_path(self, path, &user, &name);
+	auto name = stmt_expect(self, KNAME);
 
 	// find and call function
 	if (path->id == KNAME)
-		func->fn = functions_find(share()->functions, &name);
+		func->fn = functions_find(share()->functions, &name->string);
 	if (! func->fn)
 	{
 		// find udf
-		func->udf = catalog_find_udf(&share()->db->catalog, &user, &name, false);
+		func->udf = catalog_find_udf(&self->parser->user->catalog, &name->string, false);
 		if (! func->udf)
 			stmt_error(self, path, "function not found");
 

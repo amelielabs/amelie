@@ -649,7 +649,7 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 	auto end = lex_expect(lex, KEND);
 
 	// ensure udf has no recursion
-	if (access_find(&program->access, &udf->config->user, &udf->config->name))
+	if (access_find(&program->access, &udf->config->name))
 		lex_error(lex, end, "UDF recursion is not supported");
 
 	// ensure main stmt is not utility when using CTE

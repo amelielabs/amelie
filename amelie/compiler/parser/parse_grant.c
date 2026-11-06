@@ -50,7 +50,8 @@ parse_grant(Stmt* self, bool grant)
 	if (stmt_if(self, KON))
 	{
 		// relation
-		parse_target(self, &stmt->rel_user, &stmt->rel);
+		auto name = stmt_expect(self, KNAME);
+		stmt->rel = name->string;
 	}
 
 	// TO | FROM

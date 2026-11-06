@@ -43,11 +43,13 @@ catalog_find(Catalog* self, RelType type, Str* name, bool error_if_not_exists)
 static inline Table*
 catalog_find_table(Catalog* self, Str* name, bool error_if_not_exists)
 {
-	return table_of(rels_find(&self->rels, REL_TABLE, name, error_if_not_exists));
+	return table_of(rels_find(&self->rels, REL_TABLE, name,
+	                          error_if_not_exists));
 }
 
 static inline Udf*
 catalog_find_udf(Catalog* self, Str* name, bool error_if_not_exists)
 {
-	return udf_of(rels_find(&self->rels, REL_UDF, name, error_if_not_exists));
+	return udf_of(rels_find(&self->rels, REL_UDF, name,
+	                        error_if_not_exists));
 }

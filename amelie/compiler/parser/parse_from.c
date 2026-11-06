@@ -97,11 +97,9 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 		return target;
 	}
 
-	// FROM [user.]name [(args)]
-	Str user;
-	Str name;
-	auto path = parse_target(self, &user, &name);
-	target->ast = path;
+	// FROM name [(args)]
+	auto name = stmt_expect(self, KNAME);
+	target->ast = name;
 
 	// function()
 	if ((self->id == STMT_SELECT || self->id == STMT_FOR) &&
@@ -109,9 +107,9 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 	{
 		// find function
 		auto func = ast_func_allocate();
-		func->fn = functions_find(share()->functions, &name);
+		func->fn = functions_find(share()->functions, &name->string);
 		if (! func->fn)
-			stmt_error(self, path, "function not found");
+			stmt_error(self, name, "function not found");
 
 		// parse args ()
 		func->ast.r = parse_expr_args(self, NULL, ')', false);
@@ -129,7 +127,7 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 	}
 
 	// var
-	auto var = namespace_find_var(self->block->ns, &name);
+	auto var = namespace_find_var(self->block->ns, &name->string);
 	if (var)
 	{
 		target->type     = TARGET_VAR;
@@ -149,11 +147,11 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 	}
 
 	// cte
-	auto stmt = block_find_cte(self->block, &name);
+	auto stmt = block_find_cte(self->block, &name->string);
 	if (stmt)
 	{
 		if (stmt == self)
-			stmt_error(self, path, "recursive CTE are not supported");
+			stmt_error(self, name, "recursive CTE are not supported");
 		target->type      = TARGET_STMT;
 		target->from_stmt = stmt;
 		target->columns   = &stmt->cte_columns;
@@ -162,9 +160,9 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 	}
 
 	// find relation
-	auto rel = catalog_find(&share()->db->catalog, REL_UNDEF, &user, &name, false);
+	auto rel = catalog_find(&self->parser->user->catalog, REL_UNDEF, &name->string, false);
 	if (! rel)
-		stmt_error(self, path, "relation not found");
+		stmt_error(self, name, "relation not found");
 
 	switch (rel->type) {
 	case REL_TABLE:
@@ -215,7 +213,7 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 		break;
 	}
 	default:
-		stmt_error(self, path, "{s} cannot be used here",
+		stmt_error(self, name, "{s} cannot be used here",
 		           rel_type_of(rel->type));
 		break;
 	}

@@ -133,9 +133,6 @@ parse_show_func(Stmt* self, Str* target)
 		all = false;
 	}
 
-	// flags
-	if (all)
-		flags->integer |= FALL;
 	if (create)
 		flags->integer |= FCREATE;
 

@@ -18,7 +18,6 @@ struct AstGrant
 	Ast      ast;
 	bool     grant;
 	uint32_t perms;
-	Str      rel_user;
 	Str      rel;
 	Str      to;
 };

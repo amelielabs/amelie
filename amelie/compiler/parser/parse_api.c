@@ -21,7 +21,7 @@ void
 parse_api_create(Stmt* self)
 {
 	// CREATE API 'uri' AS MCP
-	// CREATE API 'uri' ON [user.]name [DESCRIPTION]
+	// CREATE API 'uri' ON name [DESCRIPTION]
 	auto stmt = ast_api_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -36,7 +36,7 @@ parse_api_create(Stmt* self)
 void
 parse_api_create_inline(Stmt* self, Apis* apis)
 {
-	// uri ON [user.]name [DESCRIPTION]
+	// uri ON name [DESCRIPTION]
 	auto uri = stmt_expect(self, KSTRING);
 	if (apis_find(apis, &uri->string))
 		stmt_error(self, uri, "api redefined");
@@ -51,7 +51,7 @@ parse_api_create_inline(Stmt* self, Apis* apis)
 	apis_add(apis, config);
 	api_set_uri(config, &uri->string);
 
-	// [ON user.name] | [AS MCP]
+	// [ON name] | [AS MCP]
 	if (stmt_if(self, KAS))
 	{
 		// MCP
@@ -65,12 +65,9 @@ parse_api_create_inline(Stmt* self, Apis* apis)
 		// on
 		stmt_expect(self, KON);
 
-		// [user.]name
-		Str user;
-		Str name;
-		parse_target(self, &user, &name);
-		api_set_rel_user(config, &user);
-		api_set_rel(config, &name);
+		// name
+		auto name = stmt_expect(self, KNAME);
+		api_set_rel(config, &name->string);
 	}
 
 	// set options

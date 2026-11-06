@@ -116,7 +116,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 hot void
 parse_insert(Stmt* self)
 {
-	// INSERT INTO [user.]name [(column_list)]
+	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE]
 	// [RETURNING expr]
@@ -212,7 +212,6 @@ parse_insert(Stmt* self)
 	if (stmt->on_conflict == ON_CONFLICT_UPDATE)
 	{
 		auto access = access_find(&self->parser->program->access,
-		                          &table->config->user,
 		                          &table->config->name);
 		access->perm |= PERM_UPDATE;
 	}

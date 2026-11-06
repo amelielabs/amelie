@@ -364,7 +364,7 @@ parse_columns(Stmt* self, TableConfig* config)
 void
 parse_table_create(Stmt* self)
 {
-	// CREATE TABLE [IF NOT EXISTS] name [ON name]
+	// CREATE TABLE [IF NOT EXISTS] name
 	// (columns)
 	// [DESCRIPTION]
 	// [RETENTION]
@@ -377,16 +377,13 @@ parse_table_create(Stmt* self)
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
-	// [user.]name
-	Str user;
-	Str name;
-	parse_target(self, &user, &name);
+	// name
+	auto name = stmt_expect(self, KNAME);
 
 	// create table config
 	auto config = table_config_allocate();
 	stmt->config = config;
-	table_config_set_user(config, &user);
-	table_config_set_name(config, &name);
+	table_config_set_name(config, &name->string);
 
 	// (columns)
 	parse_columns(self, config);
@@ -425,13 +422,6 @@ parse_table_create(Stmt* self)
 		{
 			auto text = stmt_expect(self, KSTRING);
 			table_config_set_description(config, &text->string);
-			continue;
-		}
-
-		// GRANT name, ... TO user
-		if (str_is_case(&name->string, "grant", 5))
-		{
-			parse_grant_to_inline(self, &config->grants);
 			continue;
 		}
 
@@ -489,8 +479,9 @@ parse_table_drop(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// [user.]name
-	parse_target(self, &stmt->user, &stmt->name);
+	// name
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// [CASCADE]
 	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
@@ -514,8 +505,9 @@ parse_table_alter(Stmt* self)
 	// [if exists]
 	stmt->if_exists = parse_if_exists(self);
 
-	// [user.]name
-	auto target = parse_target(self, &stmt->user, &stmt->name);
+	// name
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// [ADD COLUMN]
 	if (stmt_if(self, KADD))
@@ -637,10 +629,9 @@ parse_table_alter(Stmt* self)
 			stmt_expect(self, KDEFAULT);
 
 			// find table and column
-			auto table  = catalog_find_table(&share()->db->catalog, &self->parser->local->user,
-			                                 &stmt->name, false);
+			auto table  = catalog_find_table(&self->parser->user->catalog, &stmt->name, false);
 			if (! table)
-				stmt_error(self, target, "table not found");
+				stmt_error(self, name, "table not found");
 			auto column = columns_find(table_columns(table), &stmt->column_name);
 			if (! column)
 				stmt_error(self, name, "column does not exists");
@@ -721,9 +712,10 @@ parse_table_truncate(Stmt* self)
 	auto stmt = ast_table_truncate_allocate();
 	self->ast = &stmt->ast;
 
-	// [user.]name
-	auto path = parse_target(self, &stmt->user, &stmt->name);
-	auto table = catalog_find_table(&share()->db->catalog, &stmt->user, &stmt->name, false);
+	// name
+	auto name  = stmt_expect(self, KNAME);
+	stmt->name = name->string;
+	auto table = catalog_find_table(&self->parser->user->catalog, &stmt->name, false);
 	if (! table)
-		stmt_error(self, path, "table not found");
+		stmt_error(self, name, "table not found");
 }

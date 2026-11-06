@@ -22,10 +22,11 @@ struct Parser
 	SetCache*  set_cache;
 	Json       json;
 	Lex        lex;
+	User*      user;
 	Local*     local;
 };
 
 void parser_init(Parser*, SetCache*);
 void parser_free(Parser*);
 void parser_reset(Parser*);
-void parser_prepare(Parser*, Local*);
+void parser_prepare(Parser*, User*, Local*);

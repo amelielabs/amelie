@@ -77,22 +77,9 @@ parse_function_create(Stmt* self, bool or_replace)
 	// create function config
 	stmt->config = udf_config_allocate();
 
-	// [user.]name
-	Str user;
-	Str name;
-	parse_target(self, &user, &name);
-
 	// name
-	udf_config_set_user(stmt->config, &user);
-	udf_config_set_name(stmt->config, &name);
-
-	// copy existing grants
-	if (stmt->or_replace)
-	{
-		auto udf = catalog_find_udf(&share()->db->catalog, &self->parser->local->user, &name, false);
-		if (udf)
-			grants_copy(&stmt->config->grants, &udf->config->grants);
-	}
+	auto name = stmt_expect(self, KNAME);
+	udf_config_set_name(stmt->config, &name->string);
 
 	// (args)
 	parse_function_args(self, &stmt->config->args);
@@ -135,14 +122,6 @@ parse_function_create(Stmt* self, bool or_replace)
 		udf_config_set_description(stmt->config, &text->string);
 	}
 
-	// switch to using target user (to compile on behalf on another user)
-	//
-	// only for superuser (bootstrap)
-	//
-	Str user_current = self->parser->local->user;
-	if (!str_compare(&user, &user_current) && str_is(&user_current, "amelie", 6))
-		self->parser->local->user = user;
-
 	// create new namespace
 	auto parser = self->parser;
 	auto ns     = namespaces_add(&parser->nss, self->block->ns, stmt->config);
@@ -162,8 +141,6 @@ parse_function_create(Stmt* self, bool or_replace)
 
 	// END
 	auto end = stmt_expect(self, KEND);
-
-	self->parser->local->user = user_current;
 
 	// set function text
 	Str text;
@@ -192,13 +169,6 @@ parse_function_create(Stmt* self, bool or_replace)
 			continue;
 		}
 
-		// GRANT name, ... TO user
-		if (str_is_case(&name->string, "grant", 5))
-		{
-			parse_grant_to_inline(self, &stmt->config->grants);
-			continue;
-		}
-
 		stmt_error(self, name, "unrecognized option");
 	}
 }
@@ -213,8 +183,9 @@ parse_function_drop(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// [user.]name
-	parse_target(self, &stmt->user, &stmt->name);
+	// name
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// [CASCADE]
 	stmt->cascade = stmt_if(self, KCASCADE) != NULL;
@@ -231,8 +202,9 @@ parse_function_alter(Stmt* self)
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
-	// [user.]name
-	parse_target(self, &stmt->user, &stmt->name);
+	// name
+	auto name = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// RENAME
 	if (stmt_if(self, KRENAME))
