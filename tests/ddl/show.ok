@@ -35,7 +35,6 @@ show tables;
 tables
 ──────
 {
-  "user": "amelie",
   "name": "test",
   "description": ""
 }
@@ -44,7 +43,6 @@ select * from show tables;
 tables
 ──────
 {
-  "user": "amelie",
   "name": "test",
   "description": ""
 }
@@ -53,7 +51,6 @@ SHOW TABLES;
 TABLES
 ──────
 {
-  "user": "amelie",
   "name": "test",
   "description": ""
 }
@@ -65,7 +62,6 @@ show table test;
 table
 ─────
 {
-  "user": "amelie",
   "name": "test",
   "description": ""
 }
@@ -74,7 +70,6 @@ select * from show table test;
 table
 ─────
 {
-  "user": "amelie",
   "name": "test",
   "description": ""
 }
@@ -155,7 +150,6 @@ show functions;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test_fn",
   "description": ""
 }
@@ -164,7 +158,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test_fn",
   "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
@@ -177,15 +170,13 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select * from show functions verbose;
 
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test_fn",
   "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
@@ -198,8 +189,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 # test: show function
 show function;
@@ -209,7 +199,6 @@ show function test_fn;
 function
 ────────
 {
-  "user": "amelie",
   "name": "test_fn",
   "description": ""
 }
@@ -218,7 +207,6 @@ show function test_fn verbose;
 function
 ────────
 {
-  "user": "amelie",
   "name": "test_fn",
   "description": "",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
@@ -231,15 +219,13 @@ function
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select * from show function test_fn;
 
 function
 ────────
 {
-  "user": "amelie",
   "name": "test_fn",
   "description": ""
 }
@@ -291,7 +277,7 @@ STATE
   "compute": 1,
   "lsn": 4,
   "psn": 1,
-  "checkpoint": 1
+  "checkpoint": 0
 }
 select show('state', null, null);
 
@@ -304,7 +290,7 @@ show
   "compute": 1,
   "lsn": 4,
   "psn": 1,
-  "checkpoint": 1
+  "checkpoint": 0
 }
 select show('state', null, null).directory;
 
@@ -443,7 +429,7 @@ main
   3   push                0      0      0
   4   string              0      12     0     # 
   5   push                0      0      0
-  6   int                 0      -      0     # 12
+  6   int                 0      -      0     # 6
   7   push                0      0      0
   8   call                0      -      4     # show()
   9   ret                 0      0      -
@@ -493,10 +479,10 @@ show locks;
 locks
 ─────
 {
-  "resource": "catalog",
+  "resource": "users",
   "lock": "shared",
   "waiting": false,
-  "function": "portal_auth"
+  "function": "portal_lock"
 }
 disconnect S0;
 close E0;

@@ -176,6 +176,17 @@ cddl(Vm* self, Op* op)
 }
 
 void
+cddl_user(Vm* self, Op* op)
+{
+	// [op, flags]
+	unused(self);
+	auto pos = code_data_at(&self->program->code_data, op->a);
+
+	auto flags = op->b;
+	users_execute(&share()->db->users, &self->gtr->tr, pos, flags);
+}
+
+void
 cddl_create_index(Vm* self, Op* op)
 {
 	// [op, flags]

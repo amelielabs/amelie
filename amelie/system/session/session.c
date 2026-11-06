@@ -310,7 +310,8 @@ session_main(Session* self, Portal* portal, Request* req)
 	if (str_empty(&req->rel))
 	{
 		// check permission
-		check_permission_on(&portal->user->config->grants, PERM_SQL);
+		if (! portal->user->config->superuser)
+			check_permission_on(&portal->user->config->grants, PERM_SQL);
 
 		compiler_parse(compiler, &req->content);
 	} else

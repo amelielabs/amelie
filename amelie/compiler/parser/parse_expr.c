@@ -329,25 +329,24 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 }
 
 static Ast*
-expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
+expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 {
 	// function_name[(expr, ...)]
 	auto func = ast_func_allocate();
-	auto name = stmt_expect(self, KNAME);
 
 	// find and call function
-	if (path->id == KNAME)
+	if (name->id == KNAME)
 		func->fn = functions_find(share()->functions, &name->string);
 	if (! func->fn)
 	{
 		// find udf
 		func->udf = catalog_find_udf(&self->parser->user->catalog, &name->string, false);
 		if (! func->udf)
-			stmt_error(self, path, "function not found");
+			stmt_error(self, name, "function not found");
 
 		// ensure udf can be used here
 		if (!expr || !expr->udf)
-			stmt_error(self, path, "UDF cannot be used here");
+			stmt_error(self, name, "UDF cannot be used here");
 
 		// track udf access
 		auto access = &self->parser->program->access;
@@ -364,8 +363,8 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		func->ast.r = args;
 	}
 
-	func->ast.pos_start = path->pos_start;
-	func->ast.pos_end   = path->pos_end;
+	func->ast.pos_start = name->pos_start;
+	func->ast.pos_end   = name->pos_end;
 	return &func->ast;
 }
 
@@ -837,14 +836,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// name.path.*
 	case KNAME_COMPOUND:
 	{
-		// function(expr, ...)
-		if (stmt_if(self,'('))
-		{
-			value = expr_func(self, expr, value, true);
-			value = expr_func_constify(self, value, NULL);
-			break;
-		}
-
 		// find variable by name
 		Str name;
 		str_split(&value->string, &name, '.');
@@ -1081,8 +1072,7 @@ parse_op(Stmt*     self, Expr* expr,
 	{
 		// expr :: path [(call, ...)]
 		auto r = stmt_next_shadow(self);
-		if (r->id == KNAME ||
-		    r->id == KNAME_COMPOUND)
+		if (r->id == KNAME)
 		{
 			// function[(expr, ...)]
 			auto with_args = stmt_if(self, '(') != NULL;

@@ -393,6 +393,7 @@ vm_run(Vm*      self,
 
 		// ddl
 		&&cddl,
+		&&cddl_user,
 		&&cddl_create_index,
 
 		// var
@@ -2134,6 +2135,10 @@ crepl_unfollow:
 
 cddl:
 	cddl(self, op);
+	op_next;
+
+cddl_user:
+	cddl_user(self, op);
 	op_next;
 
 cddl_create_index:

@@ -98,25 +98,15 @@ emit_ddl(Compiler* self)
 	auto data   = &self->code_data->data;
 	auto offset = 0;
 	auto flags  = 0;
+	int  op     = CDDL;
 	switch (stmt->id) {
-#if 0
-	// grant
-	case STMT_GRANT:
-	case STMT_REVOKE:
-	{
-		auto arg = ast_grant_of(stmt->ast);
-		offset = rel_op_grant(data, &arg->rel, &arg->to, arg->grant, arg->perms);
-		break;
-	}
-#endif
-
-#if 0
 	// user
 	case STMT_CREATE_USER:
 	{
 		auto arg = ast_user_create_of(stmt->ast);
 		offset = user_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		op = CDDL_USER;
 		break;
 	}
 	case STMT_DROP_USER:
@@ -124,6 +114,7 @@ emit_ddl(Compiler* self)
 		auto arg = ast_user_drop_of(stmt->ast);
 		offset = user_op_drop(data, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		op = CDDL_USER;
 		break;
 	}
 	case STMT_ALTER_USER:
@@ -150,20 +141,31 @@ emit_ddl(Compiler* self)
 		if (arg->type == USER_ALTER_API_DROP)
 			offset = user_op_api_drop(data, &arg->name, &arg->api_uri);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		op = CDDL_USER;
 		break;
 	}
-
-	// api
 	case STMT_CREATE_API:
 	{
 		auto arg = ast_api_create_of(stmt->ast);
 		offset = user_op_api_create(data, &self->parser.local->user, arg->config);
+		op = CDDL_USER;
 		break;
 	}
 	case STMT_DROP_API:
 	{
 		auto arg = ast_api_drop_of(stmt->ast);
 		offset = user_op_api_drop(data, &self->parser.local->user, &arg->uri);
+		op = CDDL_USER;
+		break;
+	}
+
+#if 0
+	// grant
+	case STMT_GRANT:
+	case STMT_REVOKE:
+	{
+		auto arg = ast_grant_of(stmt->ast);
+		offset = rel_op_grant(data, &arg->rel, &arg->to, arg->grant, arg->perms);
 		break;
 	}
 #endif
@@ -253,7 +255,7 @@ emit_ddl(Compiler* self)
 		abort();
 		break;
 	}
-	op2(self, CDDL, offset, flags);
+	op2(self, op, offset, flags);
 }
 
 static int

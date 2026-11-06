@@ -25,7 +25,8 @@ link_sql(Link* self)
 	auto http     = &self->client->request;
 
 	// check permission
-	check_permission_on(&portal->user->config->grants, PERM_SQL);
+	if (! portal->user->config->superuser)
+		check_permission_on(&portal->user->config->grants, PERM_SQL);
 
 	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];
