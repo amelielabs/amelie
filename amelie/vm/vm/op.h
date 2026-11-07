@@ -321,7 +321,6 @@ enum
 
 	// ddl
 	CDDL,
-	CDDL_USER,
 
 	// var
 	CVAR,

@@ -235,7 +235,7 @@ fn_show(Call* self)
 	if (wrap)
 		encode_array(buf);
 
-	auto user = users_find(&share()->db->users, &self->local->user, true);
+	auto user = catalog_find_user(&share()->db->users, &self->local->user, true);
 	auto catalog = &user->catalog;
 	switch (cmd->id) {
 	case SHOW_REPLICAS:
@@ -288,12 +288,12 @@ fn_show(Call* self)
 	case SHOW_USERS:
 	{
 		// created users
-		rels_list(&share()->db->users.users, REL_USER, buf, NULL, flags);
+		rels_list(&share()->db->users.rels, REL_USER, buf, NULL, flags);
 		break;
 	}
 	case SHOW_USER:
 	{
-		rels_list(&share()->db->users.users, REL_USER, buf, &name, flags);
+		rels_list(&share()->db->users.rels, REL_USER, buf, &name, flags);
 		break;
 	}
 	case SHOW_TABLES:

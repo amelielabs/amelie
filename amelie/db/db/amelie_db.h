@@ -21,6 +21,7 @@
 #include "db/syncer.h"
 
 // db
+#include "db/eval.h"
 #include "db/db.h"
 #include "db/db_op.h"
 

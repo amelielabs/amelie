@@ -136,7 +136,7 @@ portal_set(Portal* self, Str* user, bool with_limits)
 	portal_lock(self, LOCK_SHARED);
 
 	// find user
-	self->user = users_find(&share()->db->users, user, true);
+	self->user = catalog_find_user(&share()->db->users, user, true);
 
 	// configure local
 	portal_set_local(self, with_limits);

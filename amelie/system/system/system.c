@@ -21,31 +21,11 @@
 #include <amelie_system.h>
 
 static void
-users_if_attach(Users* users, User* user)
-{
-	System* system = users->iface_arg;
-	computes_deploy(&system->computes, user);
-}
-
-static void
-users_if_detach(Users* users, User* user)
-{
-	System* system = users->iface_arg;
-	computes_undeploy(&system->computes, user);
-}
-
-static UsersIf users_if =
-{
-	.attach = users_if_attach,
-	.detach = users_if_detach
-};
-
-static void
 catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
 	System* system = catalog->iface_arg;
 
-	auto user = users_find(&system->db.users, catalog->user, true);
+	auto user = catalog_find_user(&system->db.users, catalog->user, true);
 	Local local;
 	local_init(&local);
 	local.user    = user->config->name;
@@ -98,11 +78,27 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 	return access_find(&program->access, name);
 }
 
+static void
+catalog_if_attach(Catalog* users, User* user)
+{
+	System* system = users->iface_arg;
+	computes_deploy(&system->computes, user);
+}
+
+static void
+catalog_if_detach(Catalog* users, User* user)
+{
+	System* system = users->iface_arg;
+	computes_undeploy(&system->computes, user);
+}
+
 static CatalogIf catalog_if =
 {
 	.udf_compile = catalog_if_udf_compile,
 	.udf_free    = catalog_if_udf_free,
-	.udf_depends = catalog_if_udf_depends
+	.udf_depends = catalog_if_udf_depends,
+	.attach      = catalog_if_attach,
+	.detach      = catalog_if_detach
 };
 
 static void*
@@ -221,7 +217,7 @@ system_create(void)
 	functions_init(&self->functions);
 
 	// db
-	db_init(&self->db, &users_if, &catalog_if, &eval_if, self);
+	db_init(&self->db, &catalog_if, &eval_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

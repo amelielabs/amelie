@@ -15,13 +15,13 @@ typedef struct Db Db;
 
 struct Db
 {
-	Users  users;
-	Wal    wal;
-	Syncer syncer;
+	Catalog users;
+	Wal     wal;
+	Syncer  syncer;
 	// checkpoints
 };
 
-void db_init(Db*, UsersIf*, CatalogIf*, EvalIf*, void*);
+void db_init(Db*, CatalogIf*, EvalIf*, void*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

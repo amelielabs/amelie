@@ -19,7 +19,6 @@
 #include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
-#include <amelie_user.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
@@ -69,7 +68,7 @@ recover_read(Recover* self, RecordMsg* msg)
 	if (str_empty(&name))
 		error("recover: user field not found");
 
-	return users_find(&self->db->users, &name, true);
+	return catalog_find_user(&self->db->users, &name, true);
 }
 
 void

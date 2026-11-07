@@ -20,41 +20,6 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-void
-catalog_init(Catalog*   self,
-             CatalogIf* iface,
-             void*      iface_arg,
-             Usage*     memory,
-             Str*       user)
-{
-	self->iface     = iface;
-	self->iface_arg = iface_arg;
-	self->memory    = memory;
-	self->user      = user;
-	rels_init(&self->rels);
-}
-
-void
-catalog_free(Catalog* self)
-{
-	rels_free(&self->rels);
-}
-
-void
-catalog_limit(Catalog* self, Tr* tr, RelType type, int limit_id)
-{
-	if (!tr->local || !tr->local->limits)
-		return;
-
-	auto limits = tr->local->limits;
-	if (! limits_is_set(limits, limit_id))
-		return;
-
-	auto count = rels_count(&self->rels, type);
-	if (unlikely(! limits_check(limits, limit_id, count + 1)))
-		error("{s}s: limit reached", rel_type_of(type));
-}
-
 bool
 catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 {
@@ -62,6 +27,96 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
+	case DDL_USER_CREATE:
+	{
+		auto config = user_op_create_read(op);
+		defer(user_config_free, config);
+
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = user_create(self, tr, config, if_not_exists);
+		break;
+	}
+	case DDL_USER_DROP:
+	{
+		Str  name;
+		bool cascade;
+		user_op_drop_read(op, &name, &cascade);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_drop(self, tr, &name, if_exists, cascade);
+		break;
+	}
+	case DDL_USER_RENAME:
+	{
+		Str name;
+		Str name_new;
+		user_op_rename_read(op, &name, &name_new);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_rename(self, tr, &name, &name_new, if_exists);
+		break;
+	}
+	case DDL_USER_REVOKE_TOKEN:
+	{
+		Str name;
+		Str revoked_at;
+		user_op_revoke_token_read(op, &name, &revoked_at);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_revoke_token(self, tr, &name, &revoked_at, if_exists);
+		break;
+	}
+	case DDL_USER_DESCRIBE:
+	{
+		Str name;
+		Str description;
+		user_op_describe_read(op, &name, &description);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_describe(self, tr, &name, &description, if_exists);
+		break;
+	}
+	case DDL_USER_LIMIT_SET:
+	{
+		Str    name;
+		Limits limits;
+		limits_init(&limits);
+		user_op_limit_set_read(op, &name, &limits);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_limit_set(self, tr, &name, &limits, if_exists);
+		break;
+	}
+	case DDL_USER_LIMIT_UNSET:
+	{
+		Str      name;
+		uint64_t mask;
+		user_op_limit_unset_read(op, &name, &mask);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_limit_unset(self, tr, &name, mask, if_exists);
+		break;
+	}
+	case DDL_USER_API_CREATE:
+	{
+		Str  name;
+		auto api = user_op_api_create_read(op, &name);
+		defer(api_free, api);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_api_create(self, tr, &name, api, if_exists);
+		break;
+	}
+	case DDL_USER_API_DROP:
+	{
+		Str name;
+		Str uri;
+		user_op_api_drop_read(op, &name, &uri);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = user_api_drop(self, tr, &name, &uri, if_exists);
+		break;
+	}
 	case DDL_DROP:
 	{
 		Str  name;

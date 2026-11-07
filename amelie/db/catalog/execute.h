@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void describe_user(User*, Buf*, int);
+bool catalog_execute(Catalog*, Tr*, uint8_t*, int);

@@ -11,8 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Users Users;
-typedef struct User  User;
+typedef struct User User;
 
 struct User
 {
@@ -23,20 +22,20 @@ struct User
 	uint32_t    inv_seq;
 	uint64_t    inv_revoked;
 	Task*       compute;
-	Users*      users;
+	Catalog*    users;
 	UserConfig* config;
 };
 
-bool user_create(Users*, Tr*, UserConfig*, bool);
-bool user_drop(Users*, Tr*, Str*, bool, bool);
-bool user_rename(Users*, Tr*, Str*, Str*, bool);
-bool user_revoke_token(Users*, Tr*, Str*, Str*, bool);
-bool user_grant(Users*, Tr*, Str*, bool, uint32_t, bool);
-bool user_describe(Users*, Tr*, Str*, Str*, bool);
-bool user_limit_set(Users*, Tr*, Str*, Limits*, bool);
-bool user_limit_unset(Users*, Tr*, Str*, uint64_t, bool);
-bool user_api_create(Users*, Tr*, Str*, Api*, bool);
-bool user_api_drop(Users*, Tr*, Str*, Str*, bool);
+bool user_create(Catalog*, Tr*, UserConfig*, bool);
+bool user_drop(Catalog*, Tr*, Str*, bool, bool);
+bool user_rename(Catalog*, Tr*, Str*, Str*, bool);
+bool user_revoke_token(Catalog*, Tr*, Str*, Str*, bool);
+bool user_grant(Catalog*, Tr*, Str*, bool, uint32_t, bool);
+bool user_describe(Catalog*, Tr*, Str*, Str*, bool);
+bool user_limit_set(Catalog*, Tr*, Str*, Limits*, bool);
+bool user_limit_unset(Catalog*, Tr*, Str*, uint64_t, bool);
+bool user_api_create(Catalog*, Tr*, Str*, Api*, bool);
+bool user_api_drop(Catalog*, Tr*, Str*, Str*, bool);
 
 always_inline static inline User*
 user_of(Rel* self)

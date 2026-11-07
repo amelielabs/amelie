@@ -53,7 +53,7 @@ ccreate_token(Vm* self, Op* op)
 	unpack_str(&pos, &interval);
 
 	// find user
-	auto user = users_find(&share()->db->users, &name, true);
+	auto user = catalog_find_user(&share()->db->users, &name, true);
 
 	// allow to create tokens only for child users (or anyone if superuser)
 	user_check_ownership(&self->gtr->tr, user);
@@ -166,22 +166,16 @@ crepl_unfollow(Vm* self, Op* op)
 void
 cddl(Vm* self, Op* op)
 {
-	// [op, flags]
+	// [op, flags, user_catalog]
 	unused(self);
 	auto pos = code_data_at(&self->program->code_data, op->a);
 
 	auto user = user_of(self->gtr->tr.user_);
 	auto flags = op->b;
-	catalog_execute(&user->catalog, &self->gtr->tr, pos, flags);
-}
 
-void
-cddl_user(Vm* self, Op* op)
-{
-	// [op, flags]
-	unused(self);
-	auto pos = code_data_at(&self->program->code_data, op->a);
-
-	auto flags = op->b;
-	users_execute(&share()->db->users, &self->gtr->tr, pos, flags);
+	// use user catalog or global users
+	Catalog* catalog = &user->catalog;
+	if  (! op->c)
+		catalog = &share()->db->users;
+	catalog_execute(catalog, &self->gtr->tr, pos, flags);
 }

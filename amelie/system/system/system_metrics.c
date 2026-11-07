@@ -106,7 +106,7 @@ system_metrics(System* self, Buf* buf)
 
 	// db
 	encode_raw(buf, "db", 2);
-	users_status(&self->db.users, buf);
+	encode_int(buf, self->db.users.rels.list_count);
 
 	// process
 	encode_raw(buf, "process", 7);

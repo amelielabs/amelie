@@ -85,7 +85,6 @@ include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
-include_directories("${AMELIE_ROOT}/db/user")
 include_directories("${AMELIE_ROOT}/db/wal")
 include_directories("${AMELIE_ROOT}/db/db")
 
@@ -195,19 +194,18 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/index/index_hash.c
     ${AMELIE_ROOT}/db/part/part.c
     ${AMELIE_ROOT}/db/part/part_op.c
+    ${AMELIE_ROOT}/db/catalog/user.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index_create.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/rel.c
-    ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/catalog/describe.c
     ${AMELIE_ROOT}/db/catalog/mcp.c
-    ${AMELIE_ROOT}/db/user/user.c
-    ${AMELIE_ROOT}/db/user/users.c
-    ${AMELIE_ROOT}/db/user/describe.c
+    ${AMELIE_ROOT}/db/catalog/execute.c
+
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_recovery.c
     ${AMELIE_ROOT}/db/wal/wal_write.c

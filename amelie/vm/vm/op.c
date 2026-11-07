@@ -328,7 +328,6 @@ OpDesc ops[] =
 
 	// ddl
 	{ CDDL, "ddl" },
-	{ CDDL_USER, "ddl_user" },
 
 	// var
 	{ CVAR, "var" },

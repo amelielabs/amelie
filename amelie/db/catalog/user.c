@@ -19,7 +19,6 @@
 #include <amelie_index.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
-#include <amelie_user.h>
 
 static void
 user_limits_sync(User* self)
@@ -50,13 +49,13 @@ static inline void
 user_show(User* self, Buf* buf, int flags)
 {
 	if (flags_has(flags, FCREATE))
-		describe_user(self, buf, flags);
+		describe(&self->rel, buf, flags);
 	else
 		user_config_write(self->config, buf, flags);
 }
 
 static inline User*
-user_allocate(Users* users, UserConfig* config)
+user_allocate(Catalog* users, UserConfig* config)
 {
 	User* self = am_malloc(sizeof(User));
 	self->config      = user_config_copy(config);
@@ -72,7 +71,7 @@ user_allocate(Users* users, UserConfig* config)
 
 	// prepare catalog
 	catalog_init(&self->catalog,
-	             users->iface_catalog,
+	             users->iface,
 	             users->iface_arg,
 	             &self->memory,
 	             &self->config->name);
@@ -103,7 +102,7 @@ user_sync_revoke(User* self)
 }
 
 bool
-user_create(Users*      self,
+user_create(Catalog*    self,
             Tr*         tr,
             UserConfig* config,
             bool        if_not_exists)
@@ -112,7 +111,7 @@ user_create(Users*      self,
 	check_permission(tr, PERM_CREATE_USER);
 
 	// make sure user does not exists
-	auto user = users_find(self, &config->name, false);
+	auto user = catalog_find_user(self, &config->name, false);
 	if (user)
 	{
 		if (! if_not_exists)
@@ -120,14 +119,12 @@ user_create(Users*      self,
 		return false;
 	}
 
-#if 0
 	// check limit
 	catalog_limit(self, tr, REL_USER, LIMIT_USERS);
-#endif
 
 	// create user
 	user = user_allocate(self, config);
-	rels_create(&self->users, tr, &user->rel);
+	rels_create(&self->rels, tr, &user->rel);
 
 	// update timestamps
 	user_sync_revoke(user);
@@ -138,13 +135,13 @@ user_create(Users*      self,
 }
 
 static void
-user_drop_of(Users* self,
-             Tr*    tr,
-             Rel*   user,
-             bool   cascade)
+user_drop_of(Catalog* self,
+             Tr*      tr,
+             Rel*     user,
+             bool     cascade)
 {
 	// check dependencies
-	list_foreach_safe(&self->users.list)
+	list_foreach_safe(&self->rels.list)
 	{
 		auto ref = user_of(list_at(Rel, link));
 		if (&ref->rel == user || !str_compare(&ref->config->parent, user->name))
@@ -159,17 +156,17 @@ user_drop_of(Users* self,
 	user_invalidate(user_of(user));
 
 	// drop user by object
-	rels_drop(&self->users, tr, user);
+	rels_drop(&self->rels, tr, user);
 }
 
 bool
-user_drop(Users* self,
-          Tr*    tr,
-          Str*   name,
-          bool   if_exists,
-          bool   cascade)
+user_drop(Catalog* self,
+          Tr*      tr,
+          Str*     name,
+          bool     if_exists,
+          bool     cascade)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -204,8 +201,8 @@ rename_if_abort(Log* self, LogOp* op)
 	Str name;
 	unpack_str(&pos, &name);
 
-	Users* catalog = op->iface_arg;
-	rels_rename(&catalog->users, op->rel, &name);
+	Catalog* catalog = op->iface_arg;
+	rels_rename(&catalog->rels, op->rel, &name);
 }
 
 static LogIf rename_if =
@@ -215,13 +212,13 @@ static LogIf rename_if =
 };
 
 bool
-user_rename(Users* self,
-            Tr*    tr,
-            Str*   name,
-            Str*   name_new,
-            bool   if_exists)
+user_rename(Catalog* self,
+            Tr*      tr,
+            Str*     name,
+            Str*     name_new,
+            bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -237,7 +234,7 @@ user_rename(Users* self,
 		error("user '{str}': system user cannot be renamed", name);
 
 	// ensure new user does not exists
-	if (users_find(self, name_new, false))
+	if (catalog_find_user(self, name_new, false))
 		error("user '{str}': already exists", name_new);
 
 	// invalidate tokens
@@ -250,7 +247,7 @@ user_rename(Users* self,
 	encode_str(&tr->log.data, name);
 
 	// set new name
-	rels_rename(&self->users, &user->rel, name_new);
+	rels_rename(&self->rels, &user->rel, name_new);
 	return true;
 }
 
@@ -279,14 +276,14 @@ static LogIf grant_if =
 };
 
 bool
-user_grant(Users*   self,
+user_grant(Catalog* self,
            Tr*      tr,
            Str*     name,
            bool     grant,
            uint32_t perms,
            bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -364,13 +361,13 @@ static LogIf revoke_token_if =
 };
 
 bool
-user_revoke_token(Users* self,
-                  Tr*    tr,
-                  Str*   name,
-                  Str*   revoked_at,
-                  bool   if_exists)
+user_revoke_token(Catalog* self,
+                  Tr*      tr,
+                  Str*     name,
+                  Str*     revoked_at,
+                  bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -428,13 +425,13 @@ static LogIf describe_if =
 };
 
 bool
-user_describe(Users* self,
-              Tr*    tr,
-              Str*   name,
-              Str*   description,
-              bool   if_exists)
+user_describe(Catalog* self,
+              Tr*      tr,
+              Str*     name,
+              Str*     description,
+              bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -489,13 +486,13 @@ static LogIf limit_set_if =
 };
 
 bool
-user_limit_set(Users*  self,
-               Tr*     tr,
-               Str*    name,
-               Limits* limits,
-               bool    if_exists)
+user_limit_set(Catalog* self,
+               Tr*      tr,
+               Str*     name,
+               Limits*  limits,
+               bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -520,13 +517,13 @@ user_limit_set(Users*  self,
 }
 
 bool
-user_limit_unset(Users*   self,
+user_limit_unset(Catalog* self,
                  Tr*      tr,
                  Str*     name,
                  uint64_t mask,
                  bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -575,16 +572,16 @@ static LogIf api_set_if =
 };
 
 bool
-user_api_create(Users* self,
-                Tr*    tr,
-                Str*   name,
-                Api*   api,
-                bool   if_exists)
+user_api_create(Catalog* self,
+                Tr*      tr,
+                Str*     name,
+                Api*     api,
+                bool     if_exists)
 {
 	// PERM_CREATE_API
 	check_permission(tr, PERM_CREATE_API);
 
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)
@@ -614,13 +611,13 @@ user_api_create(Users* self,
 }
 
 bool
-user_api_drop(Users* self,
-              Tr*    tr,
-              Str*   name,
-              Str*   uri,
-              bool   if_exists)
+user_api_drop(Catalog* self,
+              Tr*      tr,
+              Str*     name,
+              Str*     uri,
+              bool     if_exists)
 {
-	auto user = users_find(self, name, false);
+	auto user = catalog_find_user(self, name, false);
 	if (! user)
 	{
 		if (! if_exists)

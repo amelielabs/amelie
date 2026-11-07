@@ -29,4 +29,3 @@ void crepl_unfollow(Vm*, Op*);
 
 // ddl
 void cddl(Vm*, Op*);
-void cddl_user(Vm*, Op*);
