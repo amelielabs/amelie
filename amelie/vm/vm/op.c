@@ -79,7 +79,7 @@ OpDesc ops[] =
 	{ CVECTOR, "vector" },
 	{ CUUID, "uuid" },
 	{ CVALUE, "value" },
-	{ CUSER_CURRENT, "user_current" },
+	{ CDATABASE_CURRENT, "database_current" },
 
 	// argument
 	{ CEXCLUDED, "excluded" },

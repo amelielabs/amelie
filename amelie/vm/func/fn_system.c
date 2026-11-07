@@ -30,8 +30,8 @@ enum
 	SHOW_LIMITS,
 	SHOW_API,
 	SHOW_MEMORY,
-	SHOW_USERS,
-	SHOW_USER,
+	SHOW_DATABASES,
+	SHOW_DATABASE,
 	SHOW_TABLES,
 	SHOW_TABLE,
 	SHOW_FUNCTIONS,
@@ -77,15 +77,15 @@ static ShowCmd show_cmds[] =
 	{ SHOW_METRICS,       "metrics",       7,  SHOW_NO,    true  },
 	{ SHOW_LOCKS,         "locks",         5,  SHOW_NO,    false },
 
-	// user
+	// database
 	{ SHOW_LIMITS,        "limits",        6,  SHOW_NO,    true  },
 	{ SHOW_API,           "apis",          4,  SHOW_NO,    true  },
 	{ SHOW_API,           "api",           3,  SHOW_NO,    true  },
 	{ SHOW_MEMORY,        "memory",        6,  SHOW_NO,    true  },
 
 	// relations
-	{ SHOW_USERS,         "users",         5,  SHOW_NO,    false },
-	{ SHOW_USER,          "user",          4,  SHOW_YES,   true  },
+	{ SHOW_DATABASES,     "databases",     9,  SHOW_NO,    false },
+	{ SHOW_DATABASE,      "database",      8,  SHOW_YES,   true  },
 	{ SHOW_TABLES,        "tables",        6,  SHOW_NO,    false },
 	{ SHOW_TABLE,         "table",         5,  SHOW_YES,   true  },
 	{ SHOW_FUNCTIONS,     "functions",     9,  SHOW_NO,    false },
@@ -235,8 +235,8 @@ fn_show(Call* self)
 	if (wrap)
 		encode_array(buf);
 
-	auto user = catalog_find_user(&share()->db->users, &self->local->user, true);
-	auto catalog = &user->catalog;
+	auto database = catalog_find_database(&share()->db->databases, &self->local->database, true);
+	auto catalog = &database->catalog;
 	switch (cmd->id) {
 	case SHOW_REPLICAS:
 	{
@@ -272,28 +272,27 @@ fn_show(Call* self)
 	}
 	case SHOW_LIMITS:
 	{
-		limits_write(&user->config->limits, buf);
+		limits_write(&database->config->limits, buf);
 		break;
 	}
 	case SHOW_API:
 	{
-		apis_write(&user->config->apis, buf, flags);
+		apis_write(&database->config->apis, buf, flags);
 		break;
 	}
 	case SHOW_MEMORY:
 	{
-		usage_status(&user->memory, buf);
+		usage_status(&database->memory, buf);
 		break;
 	}
-	case SHOW_USERS:
+	case SHOW_DATABASES:
 	{
-		// created users
-		rels_list(&share()->db->users.rels, REL_USER, buf, NULL, flags);
+		rels_list(&share()->db->databases.rels, REL_DATABASE, buf, NULL, flags);
 		break;
 	}
-	case SHOW_USER:
+	case SHOW_DATABASE:
 	{
-		rels_list(&share()->db->users.rels, REL_USER, buf, &name, flags);
+		rels_list(&share()->db->databases.rels, REL_DATABASE, buf, &name, flags);
 		break;
 	}
 	case SHOW_TABLES:
@@ -328,8 +327,8 @@ fn_show(Call* self)
 	}
 	case SHOW_GRANTS:
 	{
-		// show grants [on user]
-		grants_write(&user->config->grants, buf, 0);
+		// show grants [on db]
+		grants_write(&database->config->grants, buf, 0);
 		break;
 	}
 	case SHOW_INDEXES:

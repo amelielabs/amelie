@@ -33,7 +33,7 @@ struct Compiler
 void compiler_init(Compiler*, SetCache*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
-void compiler_set(Compiler*, User*, Local*, Program*);
+void compiler_set(Compiler*, Database*, Local*, Program*);
 void compiler_parse(Compiler*, Str*);
 void compiler_parse_udf(Compiler*, Udf*);
 void compiler_parse_copy(Compiler*, Str*, Str*, Str*);

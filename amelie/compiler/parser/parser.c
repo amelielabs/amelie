@@ -24,7 +24,7 @@ parser_init(Parser* self, SetCache* set_cache)
 	self->profile   = false;
 	self->program   = NULL;
 	self->set_cache = set_cache;
-	self->user      = NULL;
+	self->database  = NULL;
 	self->local     = NULL;
 	namespaces_init(&self->nss);
 	lex_init(&self->lex, keywords_alpha);
@@ -41,11 +41,11 @@ parser_free(Parser* self)
 void
 parser_reset(Parser* self)
 {
-	self->explain = false;
-	self->profile = false;
-	self->program = NULL;
-	self->user    = NULL;
-	self->local   = NULL;
+	self->explain  = false;
+	self->profile  = false;
+	self->program  = NULL;
+	self->database = NULL;
+	self->local    = NULL;
 	for (auto ns = self->nss.list; ns; ns = ns->next)
 	{
 		vars_free(&ns->vars);
@@ -67,8 +67,8 @@ parser_reset(Parser* self)
 }
 
 void
-parser_prepare(Parser* self, User* user, Local* local)
+parser_prepare(Parser* self, Database* database, Local* local)
 {
-	self->user  = user;
-	self->local = local;
+	self->database = database;
+	self->local    = local;
 }

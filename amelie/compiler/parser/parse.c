@@ -28,16 +28,16 @@ parse_stmt_free(Stmt* stmt)
 			replica_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_USER:
+	case STMT_CREATE_DATABASE:
 	{
-		auto ast = ast_user_create_of(stmt->ast);
+		auto ast = ast_database_create_of(stmt->ast);
 		if (ast->config)
-			user_config_free(ast->config);
+			database_config_free(ast->config);
 		break;
 	}
-	case STMT_ALTER_USER:
+	case STMT_ALTER_DATABASE:
 	{
-		auto ast = ast_user_alter_of(stmt->ast);
+		auto ast = ast_database_alter_of(stmt->ast);
 		if (ast->api)
 			api_free(ast->api);
 		break;
@@ -252,15 +252,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_REPLICA;
 			parse_replica_create(self);
 		} else
-		if (stmt_if(self, KUSER))
+		if (stmt_if(self, KDATABASE))
 		{
-			self->id = STMT_CREATE_USER;
-			parse_user_create(self, false);
-		} else
-		if (stmt_if(self, KAGENT))
-		{
-			self->id = STMT_CREATE_USER;
-			parse_user_create(self, true);
+			self->id = STMT_CREATE_DATABASE;
+			parse_database_create(self);
 		} else
 		if (stmt_if(self, KAPI))
 		{
@@ -296,10 +291,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_REPLICA;
 			parse_replica_drop(self);
 		} else
-		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
+		if (stmt_if(self, KDATABASE))
 		{
-			self->id = STMT_DROP_USER;
-			parse_user_drop(self);
+			self->id = STMT_DROP_DATABASE;
+			parse_database_drop(self);
 		} else
 		if (stmt_if(self, KAPI))
 		{
@@ -335,10 +330,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_SYSTEM;
 			parse_system_alter(self);
 		} else
-		if (stmt_if(self, KUSER) || stmt_if(self, KAGENT))
+		if (stmt_if(self, KDATABASE))
 		{
-			self->id = STMT_ALTER_USER;
-			parse_user_alter(self);
+			self->id = STMT_ALTER_DATABASE;
+			parse_database_alter(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{

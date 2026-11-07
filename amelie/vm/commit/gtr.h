@@ -55,7 +55,7 @@ gtr_free(Gtr* self)
 }
 
 static inline void
-gtr_begin(Gtr* self, Local* local, User* user, Access* access)
+gtr_begin(Gtr* self, Local* local, Database* database, Access* access)
 {
 	self->local = local;
 
@@ -64,9 +64,9 @@ gtr_begin(Gtr* self, Local* local, User* user, Access* access)
 	if (limits && limits_is_set(limits, LIMIT_WRITE))
 		usage_set_limit(&self->usage, true, limits_get(limits, LIMIT_WRITE));
 
-	// set user
+	// set database
 	auto tr = &self->tr;
-	tr_set_user(tr, &user->rel);
+	tr_set_database(tr, &database->rel);
 	tr_set_local(tr, local);
 	tr_set_limit(tr, &self->usage);
 

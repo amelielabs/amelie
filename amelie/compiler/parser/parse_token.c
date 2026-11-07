@@ -26,7 +26,7 @@ parse_token_create(Stmt* self)
 	self->ret = &stmt->ret;
 
 	// name
-	stmt->user = stmt_expect(self, KNAME);
+	stmt->database = stmt_expect(self, KNAME);
 
 	// EXPIRE
 	if (stmt_if(self, KEXPIRE))
@@ -37,7 +37,7 @@ parse_token_create(Stmt* self)
 
 	// set returning column
 	auto column = column_allocate();
-	column_set_name(column, &stmt->user->string);
+	column_set_name(column, &stmt->database->string);
 	column_set_type(column, TYPE_JSON, -1);
 	columns_add(&stmt->ret.columns, column);
 }

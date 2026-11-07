@@ -55,13 +55,13 @@ commit(Commit* self, Gtr* gtr)
 {
 	cancel_pause();
 
-	auto user = user_of(gtr->tr.user_);
-	user->commit++;
+	auto database = database_of(gtr->tr.database);
+	database->commit++;
 
 	task_send(&self->task, &gtr->msg);
 	event_wait(&gtr->on_commit, -1);
 
-	user->commit--;
+	database->commit--;
 	cancel_resume();
 }
 

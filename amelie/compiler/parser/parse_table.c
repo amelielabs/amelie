@@ -629,7 +629,7 @@ parse_table_alter(Stmt* self)
 			stmt_expect(self, KDEFAULT);
 
 			// find table and column
-			auto table  = catalog_find_table(&self->parser->user->catalog, &stmt->name, false);
+			auto table  = catalog_find_table(&self->parser->database->catalog, &stmt->name, false);
 			if (! table)
 				stmt_error(self, name, "table not found");
 			auto column = columns_find(table_columns(table), &stmt->column_name);
@@ -715,7 +715,7 @@ parse_table_truncate(Stmt* self)
 	// name
 	auto name  = stmt_expect(self, KNAME);
 	stmt->name = name->string;
-	auto table = catalog_find_table(&self->parser->user->catalog, &stmt->name, false);
+	auto table = catalog_find_table(&self->parser->database->catalog, &stmt->name, false);
 	if (! table)
 		stmt_error(self, name, "table not found");
 }

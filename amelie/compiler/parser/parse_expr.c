@@ -96,8 +96,7 @@ priority_map[KEYWORD_MAX] =
 	[KDATE]                    = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
 	[KCURRENT_DATE]            = priority_value,
-	[KCURRENT_USER]            = priority_value,
-	[KCURRENT_AGENT]           = priority_value,
+	[KCURRENT_DATABASE]        = priority_value,
 	[KVECTOR]                  = priority_value,
 	[KUUID]                    = priority_value,
 	[KTRUE]                    = priority_value,
@@ -340,7 +339,7 @@ expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 	if (! func->fn)
 	{
 		// find udf
-		func->udf = catalog_find_udf(&self->parser->user->catalog, &name->string, false);
+		func->udf = catalog_find_udf(&self->parser->database->catalog, &name->string, false);
 		if (! func->udf)
 			stmt_error(self, name, "function not found");
 
@@ -778,8 +777,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	}
 	case KCURRENT_TIMESTAMP:
 	case KCURRENT_DATE:
-	case KCURRENT_USER:
-	case KCURRENT_AGENT:
+	case KCURRENT_DATABASE:
 		break;
 
 	case KVECTOR:

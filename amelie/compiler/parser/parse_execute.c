@@ -52,7 +52,7 @@ parse_args(Stmt* self, Udf* udf, Set* args)
 void
 parse_execute(Stmt* self)
 {
-	// EXECUTE [user.]function_name[(expr, ...)]
+	// EXECUTE function_name[(expr, ...)]
 	auto stmt = ast_execute_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -61,7 +61,7 @@ parse_execute(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 
 	// find function
-	stmt->udf = catalog_find_udf(&self->parser->user->catalog, &name->string, false);
+	stmt->udf = catalog_find_udf(&self->parser->database->catalog, &name->string, false);
 	if (! stmt->udf)
 		stmt_error(self, name, "function '{str}': not found", &name->string);
 	auto udf = stmt->udf;

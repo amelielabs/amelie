@@ -109,8 +109,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			}
 			case KCURRENT_TIMESTAMP:
 			case KCURRENT_DATE:
-			case KCURRENT_USER:
-			case KCURRENT_AGENT:
+			case KCURRENT_DATABASE:
 			{
 				name = ast(KNAME);
 				name->string = expr->string;

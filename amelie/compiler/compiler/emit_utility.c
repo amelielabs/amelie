@@ -94,68 +94,68 @@ emit_alter_table(Compiler* self)
 static void
 emit_ddl(Compiler* self)
 {
-	auto stmt   = compiler_stmt(self);
-	auto data   = &self->code_data->data;
-	auto offset = 0;
-	auto flags  = 0;
-	int  users  = false;
+	auto stmt      = compiler_stmt(self);
+	auto data      = &self->code_data->data;
+	auto offset    = 0;
+	auto flags     = 0;
+	int  databases = false;
 	switch (stmt->id) {
-	// user
-	case STMT_CREATE_USER:
+	// database
+	case STMT_CREATE_DATABASE:
 	{
-		auto arg = ast_user_create_of(stmt->ast);
-		offset = user_op_create(data, arg->config);
+		auto arg = ast_database_create_of(stmt->ast);
+		offset = database_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		users = true;
+		databases = true;
 		break;
 	}
-	case STMT_DROP_USER:
+	case STMT_DROP_DATABASE:
 	{
-		auto arg = ast_user_drop_of(stmt->ast);
-		offset = user_op_drop(data, &arg->name, arg->cascade);
+		auto arg = ast_database_drop_of(stmt->ast);
+		offset = database_op_drop(data, &arg->name, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		users = true;
+		databases = true;
 		break;
 	}
-	case STMT_ALTER_USER:
+	case STMT_ALTER_DATABASE:
 	{
-		auto arg = ast_user_alter_of(stmt->ast);
-		if (arg->type == USER_ALTER_RENAME)
-			offset = user_op_rename(data, &arg->name, &arg->name_new);
+		auto arg = ast_database_alter_of(stmt->ast);
+		if (arg->type == DATABASE_ALTER_RENAME)
+			offset = database_op_rename(data, &arg->name, &arg->name_new);
 		else
-		if (arg->type == USER_ALTER_REVOKE_TOKEN)
-			offset = user_op_revoke_token(data, &arg->name, &arg->revoked_at);
+		if (arg->type == DATABASE_ALTER_REVOKE_TOKEN)
+			offset = database_op_revoke_token(data, &arg->name, &arg->revoked_at);
 		else
-		if (arg->type == USER_ALTER_DESCRIPTION)
-			offset = user_op_describe(data, &arg->name, &arg->description);
+		if (arg->type == DATABASE_ALTER_DESCRIPTION)
+			offset = database_op_describe(data, &arg->name, &arg->description);
 		else
-		if (arg->type == USER_ALTER_LIMIT_SET)
-			offset = user_op_limit_set(data, &arg->name, &arg->limits);
+		if (arg->type == DATABASE_ALTER_LIMIT_SET)
+			offset = database_op_limit_set(data, &arg->name, &arg->limits);
 		else
-		if (arg->type == USER_ALTER_LIMIT_UNSET)
-			offset = user_op_limit_unset(data, &arg->name, arg->limits_mask);
+		if (arg->type == DATABASE_ALTER_LIMIT_UNSET)
+			offset = database_op_limit_unset(data, &arg->name, arg->limits_mask);
 		else
-		if (arg->type == USER_ALTER_API_ADD)
-			offset = user_op_api_create(data, &arg->name, arg->api);
+		if (arg->type == DATABASE_ALTER_API_ADD)
+			offset = database_op_api_create(data, &arg->name, arg->api);
 		else
-		if (arg->type == USER_ALTER_API_DROP)
-			offset = user_op_api_drop(data, &arg->name, &arg->api_uri);
+		if (arg->type == DATABASE_ALTER_API_DROP)
+			offset = database_op_api_drop(data, &arg->name, &arg->api_uri);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
-		users = true;
+		databases = true;
 		break;
 	}
 	case STMT_CREATE_API:
 	{
 		auto arg = ast_api_create_of(stmt->ast);
-		offset = user_op_api_create(data, &self->parser.local->user, arg->config);
-		users = true;
+		offset = database_op_api_create(data, &self->parser.local->database, arg->config);
+		databases = true;
 		break;
 	}
 	case STMT_DROP_API:
 	{
 		auto arg = ast_api_drop_of(stmt->ast);
-		offset = user_op_api_drop(data, &self->parser.local->user, &arg->uri);
-		users = true;
+		offset = database_op_api_drop(data, &self->parser.local->database, &arg->uri);
+		databases = true;
 		break;
 	}
 
@@ -256,7 +256,7 @@ emit_ddl(Compiler* self)
 		abort();
 		break;
 	}
-	op3(self, CDDL, offset, flags, users);
+	op3(self, CDDL, offset, flags, databases);
 }
 
 static int
@@ -356,7 +356,7 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_token_create_of(stmt->ast);
 		auto offset = buf_size(data);
-		encode_str(data, &arg->user->string);
+		encode_str(data, &arg->database->string);
 		Str str;
 		str_set_cstr(&str, "1 day");
 		if (arg->expire)

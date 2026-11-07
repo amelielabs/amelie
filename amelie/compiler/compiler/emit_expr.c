@@ -1038,9 +1038,8 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		return op1pin(self, CDATE_CURRENT, TYPE_DATE);
 
 	// system
-	case KCURRENT_USER:
-	case KCURRENT_AGENT:
-		return op1pin(self, CUSER_CURRENT, TYPE_STRING);
+	case KCURRENT_DATABASE:
+		return op1pin(self, CDATABASE_CURRENT, TYPE_STRING);
 
 	// vector
 	case KVECTOR:

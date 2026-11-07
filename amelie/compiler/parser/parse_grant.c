@@ -20,8 +20,8 @@
 void
 parse_grant(Stmt* self, bool grant)
 {
-	// GRANT  perm, ... [ON name] TO user
-	// REVOKE perm, ... [ON name] FROM user
+	// GRANT  perm, ... [ON name] TO database
+	// REVOKE perm, ... [ON name] FROM database
 	auto stmt = ast_grant_allocate();
 	self->ast = &stmt->ast;
 
@@ -60,15 +60,15 @@ parse_grant(Stmt* self, bool grant)
 	else
 		stmt_expect(self, KFROM);
 
-	// user
-	auto user = stmt_expect(self, KNAME);
-	stmt->to = user->string;
+	// database
+	auto database = stmt_expect(self, KNAME);
+	stmt->to = database->string;
 }
 
 void
 parse_grant_to_inline(Stmt* self, Grants* grants)
 {
-	// GRANT perm, ... TO user
+	// GRANT perm, ... TO database
 
 	// permissions
 	uint32_t perms = 0;
@@ -92,9 +92,9 @@ parse_grant_to_inline(Stmt* self, Grants* grants)
 	// TO
 	stmt_expect(self, KTO);
 
-	// user
-	auto user = stmt_expect(self, KNAME);
-	grants_add(grants, &user->string, perms);
+	// database
+	auto database = stmt_expect(self, KNAME);
+	grants_add(grants, &database->string, perms);
 }
 
 void

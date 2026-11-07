@@ -64,12 +64,12 @@ compiler_reset(Compiler* self)
 }
 
 void
-compiler_set(Compiler* self, User* user, Local* local, Program* program)
+compiler_set(Compiler* self, Database* database, Local* local, Program* program)
 {
 	self->program   = program;
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
-	parser_prepare(&self->parser, user, local);
+	parser_prepare(&self->parser, database, local);
 }
 
 static void
