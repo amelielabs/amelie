@@ -197,11 +197,12 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// index
+	// create index
 	case STMT_CREATE_INDEX:
 	{
-		// handled separately
-		abort();
+		auto arg    = ast_index_create_of(stmt->ast);
+		offset = table_op_index_create(data, &arg->table_name, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
 	case STMT_DROP_INDEX:
@@ -395,16 +396,6 @@ emit_utility(Compiler* self)
 	case STMT_UNFOLLOW:
 	{
 		op0(self, CREPL_UNFOLLOW);
-		break;
-	}
-
-	// create index
-	case STMT_CREATE_INDEX:
-	{
-		auto arg    = ast_index_create_of(stmt->ast);
-		auto offset = table_op_index_create(data, &arg->table_name, arg->config);
-		auto flags  = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
-		op2(self, CDDL_CREATE_INDEX, offset, flags);
 		break;
 	}
 

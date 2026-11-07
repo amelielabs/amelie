@@ -180,9 +180,15 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_INDEX_CREATE:
 	{
-		// create index has different processing path and must be
-		// done using the db_create_index()
-		abort();
+		Str  name;
+		auto pos = table_op_index_create_read(op, &name);
+
+		auto table  = catalog_find_table(self, &name, true);
+		auto config = index_config_read(table_columns(table), &pos);
+		errdefer(index_config_free, config);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = table_index_create(self, tr, table, config, if_exists);
 		break;
 	}
 	case DDL_INDEX_DROP:

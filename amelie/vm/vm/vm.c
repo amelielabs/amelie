@@ -394,7 +394,6 @@ vm_run(Vm*      self,
 		// ddl
 		&&cddl,
 		&&cddl_user,
-		&&cddl_create_index,
 
 		// var
 		&&cvar,
@@ -2139,10 +2138,6 @@ cddl:
 
 cddl_user:
 	cddl_user(self, op);
-	op_next;
-
-cddl_create_index:
-	cddl_create_index(self, op);
 	op_next;
 
 cvar:

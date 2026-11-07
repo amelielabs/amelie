@@ -19,6 +19,7 @@
 #include "catalog/table_op.h"
 #include "catalog/table.h"
 #include "catalog/table_alter.h"
+#include "catalog/table_index_create.h"
 #include "catalog/table_index.h"
 
 // udf

@@ -322,7 +322,6 @@ enum
 	// ddl
 	CDDL,
 	CDDL_USER,
-	CDDL_CREATE_INDEX,
 
 	// var
 	CVAR,

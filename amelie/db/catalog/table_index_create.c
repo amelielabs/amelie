@@ -19,10 +19,8 @@
 #include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
-#include <amelie_user.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
 
+#if 0
 static inline bool
 db_indexate_with_null(Index* index, Row* row)
 {
@@ -169,4 +167,16 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 
 	// attach index to the table
 	table_index_add(&user->catalog, table, tr, config);
+}
+#endif
+
+bool
+table_index_create(Catalog* self, Tr* tr, Table* table, IndexConfig* config, bool if_exists)
+{
+	(void)self;
+	(void)tr;
+	(void)table;
+	(void)config;
+	(void)if_exists;
+	return false;
 }

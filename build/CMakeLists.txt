@@ -197,6 +197,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/catalog/table.c
     ${AMELIE_ROOT}/db/catalog/table_alter.c
+    ${AMELIE_ROOT}/db/catalog/table_index_create.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/udf.c
     ${AMELIE_ROOT}/db/catalog/rel.c
@@ -219,7 +220,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/syncer.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_op.c
-    ${AMELIE_ROOT}/db/db/db_create_index.c
     ${AMELIE_ROOT}/db/db/recover.c
     ${AMELIE_ROOT}/db/db/backup.c)
 
