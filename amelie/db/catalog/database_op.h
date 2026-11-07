@@ -12,36 +12,36 @@
 //
 
 static inline int
-user_op_create(Buf* self, UserConfig* config)
+database_op_create(Buf* self, DatabaseConfig* config)
 {
 	// [op, config]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_CREATE);
-	user_config_write(config, self, 0);
+	encode_int(self, DDL_DATABASE_CREATE);
+	database_config_write(config, self, 0);
 	encode_array_end(self);
 	return offset;
 }
 
-static inline UserConfig*
-user_op_create_read(uint8_t* op)
+static inline DatabaseConfig*
+database_op_create_read(uint8_t* op)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_CREATE);
-	auto config = user_config_read(&op);
+	assert(cmd == DDL_DATABASE_CREATE);
+	auto config = database_config_read(&op);
 	unpack_array_end(&op);
 	return config;
 }
 
 static inline int
-user_op_drop(Buf* self, Str* name, bool cascade)
+database_op_drop(Buf* self, Str* name, bool cascade)
 {
 	// [op, name, cascade]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_DROP);
+	encode_int(self, DDL_DATABASE_DROP);
 	encode_str(self, name);
 	encode_bool(self, cascade);
 	encode_array_end(self);
@@ -49,24 +49,24 @@ user_op_drop(Buf* self, Str* name, bool cascade)
 }
 
 static inline void
-user_op_drop_read(uint8_t* op, Str* name, bool* cascade)
+database_op_drop_read(uint8_t* op, Str* name, bool* cascade)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_DROP);
+	assert(cmd == DDL_DATABASE_DROP);
 	unpack_str(&op, name);
 	unpack_bool(&op, cascade);
 	unpack_array_end(&op);
 }
 
 static inline int
-user_op_rename(Buf* self, Str* name, Str* name_new)
+database_op_rename(Buf* self, Str* name, Str* name_new)
 {
 	// [op, name, name_new]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_RENAME);
+	encode_int(self, DDL_DATABASE_RENAME);
 	encode_str(self, name);
 	encode_str(self, name_new);
 	encode_array_end(self);
@@ -74,24 +74,24 @@ user_op_rename(Buf* self, Str* name, Str* name_new)
 }
 
 static inline void
-user_op_rename_read(uint8_t* op, Str* name, Str* name_new)
+database_op_rename_read(uint8_t* op, Str* name, Str* name_new)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_RENAME);
+	assert(cmd == DDL_DATABASE_RENAME);
 	unpack_str(&op, name);
 	unpack_str(&op, name_new);
 	unpack_array_end(&op);
 }
 
 static inline int
-user_op_revoke_token(Buf* self, Str* name, Str* revoked_at)
+database_op_revoke_token(Buf* self, Str* name, Str* revoked_at)
 {
 	// [op, name, name_new]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_REVOKE_TOKEN);
+	encode_int(self, DDL_DATABASE_REVOKE_TOKEN);
 	encode_str(self, name);
 	encode_str(self, revoked_at);
 	encode_array_end(self);
@@ -99,24 +99,24 @@ user_op_revoke_token(Buf* self, Str* name, Str* revoked_at)
 }
 
 static inline void
-user_op_revoke_token_read(uint8_t* op, Str* name, Str* revoked_at)
+database_op_revoke_token_read(uint8_t* op, Str* name, Str* revoked_at)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_REVOKE_TOKEN);
+	assert(cmd == DDL_DATABASE_REVOKE_TOKEN);
 	unpack_str(&op, name);
 	unpack_str(&op, revoked_at);
 	unpack_array_end(&op);
 }
 
 static inline int
-user_op_describe(Buf* self, Str* name, Str* description)
+database_op_describe(Buf* self, Str* name, Str* description)
 {
 	// [op, name, description]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_DESCRIBE);
+	encode_int(self, DDL_DATABASE_DESCRIBE);
 	encode_str(self, name);
 	encode_str(self, description);
 	encode_array_end(self);
@@ -124,24 +124,24 @@ user_op_describe(Buf* self, Str* name, Str* description)
 }
 
 static inline void
-user_op_describe_read(uint8_t* op, Str* name, Str* description)
+database_op_describe_read(uint8_t* op, Str* name, Str* description)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_DESCRIBE);
+	assert(cmd == DDL_DATABASE_DESCRIBE);
 	unpack_str(&op, name);
 	unpack_str(&op, description);
 	unpack_array_end(&op);
 }
 
 static inline int
-user_op_limit_set(Buf* self, Str* name, Limits* limits)
+database_op_limit_set(Buf* self, Str* name, Limits* limits)
 {
 	// [op, name, limits]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_LIMIT_SET);
+	encode_int(self, DDL_DATABASE_LIMIT_SET);
 	encode_str(self, name);
 	limits_write(limits, self);
 	encode_array_end(self);
@@ -149,24 +149,24 @@ user_op_limit_set(Buf* self, Str* name, Limits* limits)
 }
 
 static inline void
-user_op_limit_set_read(uint8_t* op, Str* name, Limits* limits)
+database_op_limit_set_read(uint8_t* op, Str* name, Limits* limits)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_LIMIT_SET);
+	assert(cmd == DDL_DATABASE_LIMIT_SET);
 	unpack_str(&op, name);
 	limits_read(limits, &op);
 	unpack_array_end(&op);
 }
 
 static inline int
-user_op_limit_unset(Buf* self, Str* name, uint64_t mask)
+database_op_limit_unset(Buf* self, Str* name, uint64_t mask)
 {
 	// [op, name, mask]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_LIMIT_UNSET);
+	encode_int(self, DDL_DATABASE_LIMIT_UNSET);
 	encode_str(self, name);
 	encode_int(self, mask);
 	encode_array_end(self);
@@ -174,12 +174,12 @@ user_op_limit_unset(Buf* self, Str* name, uint64_t mask)
 }
 
 static inline void
-user_op_limit_unset_read(uint8_t* op, Str* name, uint64_t* mask)
+database_op_limit_unset_read(uint8_t* op, Str* name, uint64_t* mask)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_LIMIT_UNSET);
+	assert(cmd == DDL_DATABASE_LIMIT_UNSET);
 	unpack_str(&op, name);
 	int64_t value;
 	unpack_int(&op, &value);
@@ -188,12 +188,12 @@ user_op_limit_unset_read(uint8_t* op, Str* name, uint64_t* mask)
 }
 
 static inline int
-user_op_api_create(Buf* self, Str* name, Api* api)
+database_op_api_create(Buf* self, Str* name, Api* api)
 {
 	// [op, name, api]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_API_CREATE);
+	encode_int(self, DDL_DATABASE_API_CREATE);
 	encode_str(self, name);
 	api_write(api, self, 0);
 	encode_array_end(self);
@@ -201,12 +201,12 @@ user_op_api_create(Buf* self, Str* name, Api* api)
 }
 
 static inline Api*
-user_op_api_create_read(uint8_t* op, Str* name)
+database_op_api_create_read(uint8_t* op, Str* name)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_API_CREATE);
+	assert(cmd == DDL_DATABASE_API_CREATE);
 	unpack_str(&op, name);
 	auto api = api_read(&op);
 	unpack_array_end(&op);
@@ -214,12 +214,12 @@ user_op_api_create_read(uint8_t* op, Str* name)
 }
 
 static inline int
-user_op_api_drop(Buf* self, Str* name, Str* uri)
+database_op_api_drop(Buf* self, Str* name, Str* uri)
 {
 	// [op, name, uri]
 	auto offset = buf_size(self);
 	encode_array(self);
-	encode_int(self, DDL_USER_API_DROP);
+	encode_int(self, DDL_DATABASE_API_DROP);
 	encode_str(self, name);
 	encode_str(self, uri);
 	encode_array_end(self);
@@ -227,12 +227,12 @@ user_op_api_drop(Buf* self, Str* name, Str* uri)
 }
 
 static inline void
-user_op_api_drop_read(uint8_t* op, Str* name, Str* uri)
+database_op_api_drop_read(uint8_t* op, Str* name, Str* uri)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
-	assert(cmd == DDL_USER_API_DROP);
+	assert(cmd == DDL_DATABASE_API_DROP);
 	unpack_str(&op, name);
 	unpack_str(&op, uri);
 	unpack_array_end(&op);

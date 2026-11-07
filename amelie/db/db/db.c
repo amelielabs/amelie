@@ -22,22 +22,6 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
-#if 0
-
-void
-users_status(Users* self, Buf* buf)
-{
-	// {}
-	encode_obj(buf);
-
-	// users
-	encode_raw(buf, "users", 5);
-	encode_int(buf, self->users.list_count);
-
-	encode_obj_end(buf);
-}
-#endif
-
 void
 db_init(Db*        self,
         CatalogIf* iface,
@@ -46,7 +30,7 @@ db_init(Db*        self,
 {
 	unused(iface_eval);
 
-	catalog_init(&self->users, iface, iface_arg, NULL, NULL);
+	catalog_init(&self->databases, iface, iface_arg, NULL, NULL);
 	wal_init(&self->wal);
 	syncer_init(&self->syncer, self);
 }
@@ -54,7 +38,7 @@ db_init(Db*        self,
 void
 db_free(Db* self)
 {
-	catalog_free(&self->users);
+	catalog_free(&self->databases);
 	wal_free(&self->wal);
 }
 
@@ -70,16 +54,16 @@ db_bootstrap(Db* self)
 	defer(tr_free, &tr);
 	auto on_error = error_catch
 	(
-		// create amelie user
-		auto user_config = user_config_allocate();
-		defer(user_config_free, user_config);
+		// create amelie database
+		auto config = database_config_allocate();
+		defer(database_config_free, config);
 		Str name;
 		str_init(&name);
 		str_set_cstr(&name, "amelie");
-		user_config_set_name(user_config, &name);
-		user_config_set_parent(user_config, &name);
-		user_config_set_superuser(user_config, true);
-		user_create(&self->users, &tr, user_config, false);
+		database_config_set_name(config, &name);
+		database_config_set_parent(config, &name);
+		database_config_set_system(config, true);
+		database_create(&self->databases, &tr, config, false);
 
 		// commit
 		tr_commit(&tr);
@@ -101,7 +85,7 @@ db_open(Db* self, bool bootstrap)
 	// to the wal_truncate option
 	wal_open(&self->wal);
 
-	// create superuser
+	// create superdatabase
 	db_bootstrap(self);
 
 	// create initial checkpoint

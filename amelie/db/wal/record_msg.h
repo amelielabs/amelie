@@ -15,9 +15,9 @@ typedef struct RecordMsg RecordMsg;
 
 struct RecordMsg
 {
-	Msg    msg;
-	Buf*   msg_buf;
-	User*  user;
-	void*  arg;
-	Record record[];
+	Msg       msg;
+	Buf*      msg_buf;
+	Database* database;
+	void*     arg;
+	Record    record[];
 };

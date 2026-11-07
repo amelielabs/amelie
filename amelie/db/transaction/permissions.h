@@ -22,7 +22,7 @@ enum
 	PERM_GRANT               = 1ul << 1,
 
 	// DDL
-	PERM_CREATE_USER         = 1ul << 2,
+	PERM_CREATE_DATABASE     = 1ul << 2,
 	PERM_CREATE_TOKEN        = 1ul << 3,
 	PERM_CREATE_TABLE        = 1ul << 4,
 	PERM_CREATE_FUNCTION     = 1ul << 5,

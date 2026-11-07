@@ -27,94 +27,94 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
-	case DDL_USER_CREATE:
+	case DDL_DATABASE_CREATE:
 	{
-		auto config = user_op_create_read(op);
-		defer(user_config_free, config);
+		auto config = database_op_create_read(op);
+		defer(database_config_free, config);
 
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = user_create(self, tr, config, if_not_exists);
+		write = database_create(self, tr, config, if_not_exists);
 		break;
 	}
-	case DDL_USER_DROP:
+	case DDL_DATABASE_DROP:
 	{
 		Str  name;
 		bool cascade;
-		user_op_drop_read(op, &name, &cascade);
+		database_op_drop_read(op, &name, &cascade);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_drop(self, tr, &name, if_exists, cascade);
+		write = database_drop(self, tr, &name, if_exists, cascade);
 		break;
 	}
-	case DDL_USER_RENAME:
+	case DDL_DATABASE_RENAME:
 	{
 		Str name;
 		Str name_new;
-		user_op_rename_read(op, &name, &name_new);
+		database_op_rename_read(op, &name, &name_new);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_rename(self, tr, &name, &name_new, if_exists);
+		write = database_rename(self, tr, &name, &name_new, if_exists);
 		break;
 	}
-	case DDL_USER_REVOKE_TOKEN:
+	case DDL_DATABASE_REVOKE_TOKEN:
 	{
 		Str name;
 		Str revoked_at;
-		user_op_revoke_token_read(op, &name, &revoked_at);
+		database_op_revoke_token_read(op, &name, &revoked_at);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_revoke_token(self, tr, &name, &revoked_at, if_exists);
+		write = database_revoke_token(self, tr, &name, &revoked_at, if_exists);
 		break;
 	}
-	case DDL_USER_DESCRIBE:
+	case DDL_DATABASE_DESCRIBE:
 	{
 		Str name;
 		Str description;
-		user_op_describe_read(op, &name, &description);
+		database_op_describe_read(op, &name, &description);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_describe(self, tr, &name, &description, if_exists);
+		write = database_describe(self, tr, &name, &description, if_exists);
 		break;
 	}
-	case DDL_USER_LIMIT_SET:
+	case DDL_DATABASE_LIMIT_SET:
 	{
 		Str    name;
 		Limits limits;
 		limits_init(&limits);
-		user_op_limit_set_read(op, &name, &limits);
+		database_op_limit_set_read(op, &name, &limits);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_limit_set(self, tr, &name, &limits, if_exists);
+		write = database_limit_set(self, tr, &name, &limits, if_exists);
 		break;
 	}
-	case DDL_USER_LIMIT_UNSET:
+	case DDL_DATABASE_LIMIT_UNSET:
 	{
 		Str      name;
 		uint64_t mask;
-		user_op_limit_unset_read(op, &name, &mask);
+		database_op_limit_unset_read(op, &name, &mask);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_limit_unset(self, tr, &name, mask, if_exists);
+		write = database_limit_unset(self, tr, &name, mask, if_exists);
 		break;
 	}
-	case DDL_USER_API_CREATE:
+	case DDL_DATABASE_API_CREATE:
 	{
 		Str  name;
-		auto api = user_op_api_create_read(op, &name);
+		auto api = database_op_api_create_read(op, &name);
 		defer(api_free, api);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_api_create(self, tr, &name, api, if_exists);
+		write = database_api_create(self, tr, &name, api, if_exists);
 		break;
 	}
-	case DDL_USER_API_DROP:
+	case DDL_DATABASE_API_DROP:
 	{
 		Str name;
 		Str uri;
-		user_op_api_drop_read(op, &name, &uri);
+		database_op_api_drop_read(op, &name, &uri);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = user_api_drop(self, tr, &name, &uri, if_exists);
+		write = database_api_drop(self, tr, &name, &uri, if_exists);
 		break;
 	}
 	case DDL_DROP:

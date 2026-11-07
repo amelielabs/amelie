@@ -15,7 +15,7 @@ typedef struct Db Db;
 
 struct Db
 {
-	Catalog users;
+	Catalog databases;
 	Wal     wal;
 	Syncer  syncer;
 	// checkpoints
