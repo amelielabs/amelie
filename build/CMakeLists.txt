@@ -75,13 +75,16 @@ include_directories("${AMELIE_ROOT}/server/http")
 include_directories("${AMELIE_ROOT}/server/client")
 include_directories("${AMELIE_ROOT}/server/server")
 
+# heap
+include_directories("${AMELIE_ROOT}/heap")
+include_directories("${AMELIE_ROOT}/heap/type")
+include_directories("${AMELIE_ROOT}/heap/page")
+include_directories("${AMELIE_ROOT}/heap/flat")
+include_directories("${AMELIE_ROOT}/heap/heap")
+include_directories("${AMELIE_ROOT}/heap/index")
+
 # db
 include_directories("${AMELIE_ROOT}/db")
-include_directories("${AMELIE_ROOT}/db/type")
-include_directories("${AMELIE_ROOT}/db/page")
-include_directories("${AMELIE_ROOT}/db/flat")
-include_directories("${AMELIE_ROOT}/db/heap")
-include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/part")
 include_directories("${AMELIE_ROOT}/db/catalog")
@@ -181,17 +184,19 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/server.c
     ${AMELIE_ROOT}/server/server/servers.c)
 
+set(AMELIE_SOURCES_HEAP
+    ${AMELIE_ROOT}/heap/page/page.c
+    ${AMELIE_ROOT}/heap/page/pages.c
+    ${AMELIE_ROOT}/heap/flat/flat.c
+    ${AMELIE_ROOT}/heap/heap/heap.c
+    ${AMELIE_ROOT}/heap/heap/row_encode.c
+    ${AMELIE_ROOT}/heap/index/tree.c
+    ${AMELIE_ROOT}/heap/index/index_tree.c
+    ${AMELIE_ROOT}/heap/index/index_hash.c)
+
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/page/page.c
-    ${AMELIE_ROOT}/db/page/pages.c
-    ${AMELIE_ROOT}/db/flat/flat.c
-    ${AMELIE_ROOT}/db/heap/heap.c
-    ${AMELIE_ROOT}/db/heap/row_encode.c
     ${AMELIE_ROOT}/db/transaction/permissions.c
     ${AMELIE_ROOT}/db/transaction/rels.c
-    ${AMELIE_ROOT}/db/index/tree.c
-    ${AMELIE_ROOT}/db/index/index_tree.c
-    ${AMELIE_ROOT}/db/index/index_hash.c
     ${AMELIE_ROOT}/db/part/part.c
     ${AMELIE_ROOT}/db/part/part_op.c
     ${AMELIE_ROOT}/db/catalog/user.c
@@ -342,6 +347,7 @@ set(AMELIE_SOURCES_SYSTEM
 set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
+    ${AMELIE_SOURCES_HEAP}
     ${AMELIE_SOURCES_DB}
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}

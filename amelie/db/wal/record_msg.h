@@ -12,6 +12,7 @@
 //
 
 typedef struct RecordMsg RecordMsg;
+typedef struct User      User;
 
 struct RecordMsg
 {

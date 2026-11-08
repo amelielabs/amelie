@@ -11,10 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_type.h>
-#include <amelie_page.h>
-#include <amelie_flat.h>
-#include <amelie_heap.h>
+#include <amelie_heap>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_part.h>
