@@ -271,7 +271,7 @@ session_run_utility(Session* self)
 		WriteList write_list;
 		write_list_init(&write_list);
 		write_list_add(&write_list, &write);
-		db_write(share()->db, &write_list);
+		storage_write(share()->storage, &write_list);
 	}
 
 #if 0

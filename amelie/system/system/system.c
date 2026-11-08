@@ -26,7 +26,7 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
 	System* system = catalog->iface_arg;
 
-	auto user = catalog_find_user(&system->db.users, catalog->user, true);
+	auto user = catalog_find_user(&system->storage.users, catalog->user, true);
 	Local local;
 	local_init(&local);
 	local.user    = user->config->name;
@@ -200,7 +200,7 @@ system_create(void)
 	share->commit         = &self->commit;
 	share->repl           = &self->repl;
 	share->functions      = &self->functions;
-	share->db             = &self->db;
+	share->storage        = &self->storage;
 
 	// share shared context globally
 	am_share = share;
@@ -212,16 +212,16 @@ system_create(void)
 	computes_init(&self->computes);
 
 	// transactions
-	commit_init(&self->commit, &self->db);
+	commit_init(&self->commit, &self->storage);
 
 	// vm
 	functions_init(&self->functions);
 
-	// db
-	db_init(&self->db, &catalog_if, &eval_if, self);
+	// storage
+	storage_init(&self->storage, &catalog_if, &eval_if, self);
 
 	// replication
-	repl_init(&self->repl, &self->db);
+	repl_init(&self->repl, &self->storage);
 	return self;
 }
 
@@ -230,7 +230,7 @@ system_free(System* self)
 {
 	repl_free(&self->repl);
 	commit_free(&self->commit);
-	db_free(&self->db);
+	storage_free(&self->storage);
 	functions_free(&self->functions);
 	servers_free(&self->servers);
 	am_free(self);
@@ -246,13 +246,13 @@ system_recover(System* self, bool bootstrap)
 	opt_int_set(&state()->recover, RECOVER_CHECKPOINT);
 
 	// restore catalog
-	db_open(&self->db, bootstrap);
+	storage_open(&self->storage, bootstrap);
 
 	opt_int_set(&state()->recover, RECOVER_WAL);
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, false);
+	recover_init(&recover, &self->storage, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");
@@ -296,7 +296,7 @@ system_start(System* self, bool bootstrap)
 	system_recover(self, bootstrap);
 
 	// start periodic wal syncer
-	syncer_start(&self->db.syncer);
+	syncer_start(&self->storage.syncer);
 
 	// configure system and replicas
 	system_state_read(self);
@@ -326,8 +326,8 @@ system_stop(System* self)
 	// stop commit worker
 	commit_stop(&self->commit);
 
-	// stop db
-	db_close(&self->db);
+	// stop storage
+	storage_close(&self->storage);
 }
 
 static void

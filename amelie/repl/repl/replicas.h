@@ -15,12 +15,12 @@ typedef struct Replicas Replicas;
 
 struct Replicas
 {
-	int  list_count;
-	List list;
-	Db*  db;
+	int      list_count;
+	List     list;
+	Storage* storage;
 };
 
-void replicas_init(Replicas*, Db*);
+void replicas_init(Replicas*, Storage*);
 void replicas_free(Replicas*);
 void replicas_start(Replicas*);
 void replicas_stop(Replicas*);

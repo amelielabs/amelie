@@ -29,15 +29,15 @@ struct Backup
 	CheckpointRef* checkpoint;
 	Buf            wal_files;
 	WalSlot        wal_snapshot;
-	Db*            db;
+	Storage*       storage;
 };
 
 static void
-backup_init(Backup* self, Db* db, Uuid* id)
+backup_init(Backup* self, Storage* storage, Uuid* id)
 {
 	self->id         = id;
 	self->checkpoint = NULL;
-	self->db         = db;
+	self->storage    = storage;
 	buf_init(&self->config);
 	buf_init(&self->state);
 	buf_init(&self->wal_files);
@@ -47,14 +47,14 @@ backup_init(Backup* self, Db* db, Uuid* id)
 static void
 backup_free(Backup* self)
 {
-	auto db = self->db;
+	auto storage = self->storage;
 
 	// detach wal slot
-	wal_detach(&db->wal, &self->wal_snapshot);
+	wal_detach(&storage->wal, &self->wal_snapshot);
 
 	// detach checkpoint
 	if (self->checkpoint)
-		checkpoints_unref(&db->checkpoints, self->checkpoint);
+		checkpoints_unref(&storage->checkpoints, self->checkpoint);
 
 	buf_free(&self->config);
 	buf_free(&self->state);
@@ -76,10 +76,10 @@ backup_prepare(Backup* self)
 	control_state_read(&self->state);
 
 	// take checkpoint snapshot
-	self->checkpoint = checkpoints_ref(&self->db->checkpoints);
+	self->checkpoint = checkpoints_ref(&self->storage->checkpoints);
 
 	// get wal snapshot and the file list
-	wal_snapshot(&self->db->wal, &self->wal_snapshot, &self->wal_files);
+	wal_snapshot(&self->storage->wal, &self->wal_snapshot, &self->wal_files);
 }
 
 static void
@@ -188,7 +188,7 @@ backup_job(intptr_t* argv)
 #endif
 
 void
-backup(Db* self, Uuid* id)
+backup(Storage* self, Uuid* id)
 {
 	(void)self;
 	(void)id;

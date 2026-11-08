@@ -19,7 +19,7 @@ struct System
 	Functions functions;
 	Repl      repl;
 	Computes  computes;
-	Db        db;
+	Storage   storage;
 	Commit    commit;
 	Servers   servers;
 	RuntimeIf runtime_if;

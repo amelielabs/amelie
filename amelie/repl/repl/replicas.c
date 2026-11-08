@@ -18,9 +18,9 @@
 #include <amelie_repl.h>
 
 void
-replicas_init(Replicas* self, Db* db)
+replicas_init(Replicas* self, Storage* storage)
 {
-	self->db         = db;
+	self->storage    = storage;
 	self->list_count = 0;
 	list_init(&self->list);
 }
@@ -31,7 +31,7 @@ replicas_free(Replicas* self)
 	list_foreach_safe(&self->list)
 	{
 		auto replica = list_at(Replica, link);
-		wal_detach(&self->db->wal, &replica->wal_slot);
+		wal_detach(&self->storage->wal, &replica->wal_slot);
 		replica_free(replica);
 	}
 }
@@ -70,12 +70,12 @@ replicas_create(Replicas* self, ReplicaConfig* config, bool if_not_exists)
 		}
 		return;
 	}
-	replica = replica_allocate(config, &self->db->wal);
+	replica = replica_allocate(config, &self->storage->wal);
 	list_append(&self->list, &replica->link);
 	self->list_count++;
 
 	// register wal slot
-	wal_attach(&self->db->wal, &replica->wal_slot);
+	wal_attach(&self->storage->wal, &replica->wal_slot);
 
 	// start streamer
 	replica_start(replica);
@@ -102,7 +102,7 @@ replicas_drop(Replicas* self, Uuid* id, bool if_exists)
 	replica_stop(replica);
 
 	// unregister wal slot
-	wal_detach(&self->db->wal, &replica->wal_slot);
+	wal_detach(&self->storage->wal, &replica->wal_slot);
 	replica_free(replica);
 }
 

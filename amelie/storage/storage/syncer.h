@@ -11,16 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Db     Db;
-typedef struct Syncer Syncer;
+typedef struct Syncer  Syncer;
+typedef struct Storage Storage;
 
 struct Syncer
 {
-	int     interval_us;
-	int64_t coroutine_id;
-	Db*     db;
+	int      interval_us;
+	int64_t  coroutine_id;
+	Storage* storage;
 };
 
-void syncer_init(Syncer*, Db*);
+void syncer_init(Syncer*, Storage*);
 void syncer_start(Syncer*);
 void syncer_stop(Syncer*);

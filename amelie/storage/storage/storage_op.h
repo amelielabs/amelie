@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-void db_checkpoint(Db*);
-void db_gc(Db*);
-void db_sync(Db*, uint64_t, bool);
-void db_write(Db*, WriteList*);
-void db_write_recover(Db*, Buf*, uint64_t);
+void storage_checkpoint(Storage*);
+void storage_gc(Storage*);
+void storage_sync(Storage*, uint64_t, bool);
+void storage_write(Storage*, WriteList*);
+void storage_write_recover(Storage*, Buf*, uint64_t);

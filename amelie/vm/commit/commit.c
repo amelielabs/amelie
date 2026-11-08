@@ -44,7 +44,7 @@ commit_main(void* arg)
 
 		// wal write
 		if (batch.write.list_count)
-			db_write(self->db, &batch.write);
+			storage_write(self->storage, &batch.write);
 
 		// wakeup transactions
 		batch_complete(&batch);
@@ -67,9 +67,9 @@ commit(Commit* self, Gtr* gtr)
 }
 
 void
-commit_init(Commit* self, Db* db)
+commit_init(Commit* self, Storage* storage)
 {
-	self->db = db;
+	self->storage = storage;
 	task_init(&self->task);
 }
 

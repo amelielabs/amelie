@@ -18,44 +18,27 @@
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 
-#if 0
-
 void
-users_status(Users* self, Buf* buf)
-{
-	// {}
-	encode_obj(buf);
-
-	// users
-	encode_raw(buf, "users", 5);
-	encode_int(buf, self->users.list_count);
-
-	encode_obj_end(buf);
-}
-#endif
-
-void
-db_init(Db*        self,
-        CatalogIf* iface,
-        EvalIf*    iface_eval,
-        void*      iface_arg)
+storage_init(Storage*   self,
+             CatalogIf* iface,
+             EvalIf*    iface_eval,
+             void*      iface_arg)
 {
 	unused(iface_eval);
-
 	catalog_init(&self->users, iface, iface_arg, NULL, NULL);
 	wal_init(&self->wal);
 	syncer_init(&self->syncer, self);
 }
 
 void
-db_free(Db* self)
+storage_free(Storage* self)
 {
 	catalog_free(&self->users);
 	wal_free(&self->wal);
 }
 
 static void
-db_bootstrap(Db* self)
+storage_bootstrap(Storage* self)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -88,7 +71,7 @@ db_bootstrap(Db* self)
 }
 
 void
-db_open(Db* self, bool bootstrap)
+storage_open(Storage* self, bool bootstrap)
 {
 	state_lsn_set(1);
 	state_checkpoint_set(0);
@@ -98,13 +81,13 @@ db_open(Db* self, bool bootstrap)
 	wal_open(&self->wal);
 
 	// create superuser
-	db_bootstrap(self);
+	storage_bootstrap(self);
 
 	// create initial checkpoint
 	if (bootstrap)
 	{
 		// create initial checkpoint
-		// db_checkpoint(self);
+		// storage_checkpoint(self);
 		return;
 	}
 
@@ -112,7 +95,7 @@ db_open(Db* self, bool bootstrap)
 }
 
 void
-db_close(Db* self)
+storage_close(Storage* self)
 {
 	// stop syncer
 	syncer_stop(&self->syncer);
@@ -122,7 +105,7 @@ db_close(Db* self)
 }
 
 void
-db_state(Db* self, Buf* buf)
+storage_state(Storage* self, Buf* buf)
 {
 	unused(self);
 

@@ -19,17 +19,17 @@
 #include <amelie_storage.h>
 
 void
-db_checkpoint(Db* self)
+storage_checkpoint(Storage* self)
 {
 	// create new checkpoint
 	// checkpoint(&self->checkpoints, &self->catalog);
 
-	// run db cleanup
-	db_gc(self);
+	// run storage cleanup
+	storage_gc(self);
 }
 
 void
-db_gc(Db* self)
+storage_gc(Storage* self)
 {
 	// remove wal files < lsn
 	auto lsn = state_checkpoint();
@@ -40,12 +40,12 @@ db_gc(Db* self)
 }
 
 static void
-db_sync_job(intptr_t* argv)
+storage_sync_job(intptr_t* argv)
 {
-	auto db      = (Db*)argv[0];
+	auto storage = (Storage*)argv[0];
 	auto id      = argv[1];
 	auto close   = argv[2];
-	auto file = wal_find(&db->wal, id, false);
+	auto file = wal_find(&storage->wal, id, false);
 	if (! file)
 		return;
 	defer(wal_file_unpin_defer, file);
@@ -55,13 +55,13 @@ db_sync_job(intptr_t* argv)
 }
 
 void
-db_sync(Db* self, uint64_t id, bool close)
+storage_sync(Storage* self, uint64_t id, bool close)
 {
-	run(db_sync_job, 3, self, id, close);
+	run(storage_sync_job, 3, self, id, close);
 }
 
 hot void
-db_write(Db* self, WriteList* write_list)
+storage_write(Storage* self, WriteList* write_list)
 {
 	if (! write_list->list_count)
 		return;
@@ -93,7 +93,7 @@ db_write(Db* self, WriteList* write_list)
 }
 
 void
-db_write_recover(Db* self, Buf* recover, uint64_t lsn)
+storage_write_recover(Storage* self, Buf* recover, uint64_t lsn)
 {
 	WalContext context =
 	{

@@ -15,14 +15,14 @@ typedef struct Receiver Receiver;
 
 struct Receiver
 {
-	Uuid primary;
-	List list;
-	int  list_count;
-	Db*  db;
-	Task task;
+	Uuid     primary;
+	List     list;
+	int      list_count;
+	Storage* storage;
+	Task     task;
 };
 
-void receiver_init(Receiver*, Db*);
+void receiver_init(Receiver*, Storage*);
 void receiver_free(Receiver*);
 void receiver_start(Receiver*, Uuid*);
 void receiver_stop(Receiver*);

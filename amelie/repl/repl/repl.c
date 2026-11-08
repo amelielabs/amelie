@@ -28,11 +28,11 @@ repl_role_of(ReplRole role)
 }
 
 void
-repl_init(Repl* self, Db* db)
+repl_init(Repl* self, Storage* storage)
 {
 	self->role = REPL_PRIMARY;
-	replicas_init(&self->replicas, db);
-	receiver_init(&self->receiver, db);
+	replicas_init(&self->replicas, storage);
+	receiver_init(&self->receiver, storage);
 }
 
 void

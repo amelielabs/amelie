@@ -105,17 +105,13 @@ system_metrics(System* self, Buf* buf)
 	encode_raw(buf, "compute", 7);
 	encode_int(buf, opt_int_of(&config()->compute));
 
-	// db
-	encode_raw(buf, "db", 2);
-	encode_int(buf, self->db.users.rels.list_count);
-
 	// process
 	encode_raw(buf, "process", 7);
 	system_metrics_process(self, buf);
 
 	// wal
 	encode_raw(buf, "wal", 3);
-	wal_status(&self->db.wal, buf);
+	wal_status(&self->storage.wal, buf);
 
 	// repl
 	encode_raw(buf, "repl", 4);

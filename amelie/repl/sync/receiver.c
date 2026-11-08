@@ -27,7 +27,7 @@ receiver_main(void* arg)
 	client_accept(client);
 
 	Node node;
-	node_init(&node, self->db, &self->primary, client);
+	node_init(&node, self->storage, &self->primary, client);
 
 	list_append(&self->list, &node.link);
 	self->list_count++;
@@ -76,10 +76,10 @@ receiver_task_main(void* arg)
 }
 
 void
-receiver_init(Receiver* self, Db* db)
+receiver_init(Receiver* self, Storage* storage)
 {
 	self->list_count = 0;
-	self->db         = db;
+	self->storage    = storage;
 	uuid_init(&self->primary);
 	task_init(&self->task);
 	list_init(&self->list);

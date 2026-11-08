@@ -54,7 +54,7 @@ ccreate_token(Vm* self, Op* op)
 	unpack_str(&pos, &interval);
 
 	// find user
-	auto user = catalog_find_user(&share()->db->users, &name, true);
+	auto user = catalog_find_user(&share()->storage->users, &name, true);
 
 	// allow to create tokens only for child users (or anyone if superuser)
 	user_check_ownership(&self->gtr->tr, user);
@@ -89,7 +89,7 @@ ccheckpoint(Vm* self, Op* op)
 	// PERM_SYSTEM
 	check_permission(&self->gtr->tr, PERM_SYSTEM);
 
-	db_checkpoint(share()->db);
+	storage_checkpoint(share()->storage);
 }
 
 void
@@ -101,7 +101,7 @@ cbackup(Vm* self, Op* op)
 	// PERM_SYSTEM
 	check_permission(&self->gtr->tr, PERM_SYSTEM);
 
-	backup(share()->db, id);
+	backup(share()->storage, id);
 }
 
 void
@@ -177,6 +177,6 @@ cddl(Vm* self, Op* op)
 	// use user catalog or global users
 	Catalog* catalog = &user->catalog;
 	if  (op->c)
-		catalog = &share()->db->users;
+		catalog = &share()->storage->users;
 	catalog_execute(catalog, &self->gtr->tr, pos, flags);
 }

@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Db Db;
+typedef struct Storage Storage;
 
-struct Db
+struct Storage
 {
 	Catalog users;
 	Wal     wal;
@@ -21,8 +21,8 @@ struct Db
 	// checkpoints
 };
 
-void db_init(Db*, CatalogIf*, EvalIf*, void*);
-void db_free(Db*);
-void db_open(Db*, bool);
-void db_close(Db*);
-void db_state(Db*, Buf*);
+void storage_init(Storage*, CatalogIf*, EvalIf*, void*);
+void storage_free(Storage*);
+void storage_open(Storage*, bool);
+void storage_close(Storage*);
+void storage_state(Storage*, Buf*);

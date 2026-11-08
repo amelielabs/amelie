@@ -17,13 +17,13 @@
 #include <amelie_sync.h>
 
 void
-node_init(Node* self, Db* db, Uuid* primary, Client* client)
+node_init(Node* self, Storage* storage, Uuid* primary, Client* client)
 {
 	self->coroutine_id = am_self()->id;
 	self->client       = client;
 	self->primary      = primary;
 	list_init(&self->link);
-	recover_init(&self->recover, db, true);
+	recover_init(&self->recover, storage, true);
 }
 
 void
@@ -60,7 +60,7 @@ node_replay(Node* self, Buf* batch)
 	}
 
 	// wal write (update global lsn)
-	db_write_recover(self->recover.db, batch, lsn);
+	storage_write_recover(self->recover.storage, batch, lsn);
 
 	// execute
 	pos = batch->start;

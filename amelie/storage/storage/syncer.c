@@ -31,17 +31,17 @@ syncer_main(void* arg)
 		auto lsn = state_lsn();
 		if (lsn == lsn_last)
 			continue;
-		db_sync(self->db, UINT64_MAX, false);
+		storage_sync(self->storage, UINT64_MAX, false);
 		lsn_last = lsn;
 	}
 }
 
 void
-syncer_init(Syncer* self, Db* db)
+syncer_init(Syncer* self, Storage* storage)
 {
 	self->interval_us  =  0;
 	self->coroutine_id = -1;
-	self->db           = db;
+	self->storage      = storage;
 }
 
 void

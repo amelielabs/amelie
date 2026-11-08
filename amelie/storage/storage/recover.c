@@ -19,9 +19,9 @@
 #include <amelie_storage.h>
 
 void
-recover_init(Recover* self, Db* db, bool panic)
+recover_init(Recover* self, Storage* storage, bool panic)
 {
-	self->db = db;
+	self->storage = storage;
 	self->panic = panic;
 	recover_sync_init(&self->sync);
 }
@@ -64,7 +64,7 @@ recover_read(Recover* self, RecordMsg* msg)
 	if (str_empty(&name))
 		error("recover: user field not found");
 
-	return catalog_find_user(&self->db->users, &name, true);
+	return catalog_find_user(&self->storage->users, &name, true);
 }
 
 void
@@ -72,7 +72,7 @@ recover_next(Recover* self, RecordMsg* msg)
 {
 	auto user = recover_read(self, msg);
 
-	// sync on ddl and multi-user transactions (wait for completion)
+	// sync on ddl (wait for completion)
 	auto sync = &self->sync;
 	auto sync_after = false;
 	if (unlikely((msg->record->flags & RECORD_UTILITY) > 0))
@@ -96,7 +96,7 @@ recover_next(Recover* self, RecordMsg* msg)
 static void
 recover_wal_main(Recover* self)
 {
-	auto wal = &self->db->wal;
+	auto wal = &self->storage->wal;
 	auto wal_crc = opt_int_of(&config()->wal_crc);
 
 	// replay wals starting after last checkpoint

@@ -17,10 +17,10 @@ struct Recover
 {
 	RecoverSync sync;
 	bool        panic;
-	Db*         db;
+	Storage*    storage;
 };
 
-void recover_init(Recover*, Db*, bool);
+void recover_init(Recover*, Storage*, bool);
 void recover_free(Recover*);
 void recover_wait(Recover*);
 void recover_next(Recover*, RecordMsg*);

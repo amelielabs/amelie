@@ -15,10 +15,10 @@ typedef struct Share Share;
 
 struct Share
 {
+	Storage*   storage;
 	Commit*    commit;
 	Repl*      repl;
 	Functions* functions;
-	Db*        db;
 };
 
 #define share() ((Share*)am_share)
