@@ -26,7 +26,7 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
 	System* system = catalog->iface_arg;
 
-	auto db = catalog_find_db(&system->storage.databases, catalog->db, true);
+	auto db = catalog_find_db(&system->storage.databases, catalog->parent->name, true);
 	Local local;
 	local_init(&local);
 	local.db      = db->config->name;

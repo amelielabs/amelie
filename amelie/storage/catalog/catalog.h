@@ -30,7 +30,7 @@ struct Catalog
 {
 	Rels       rels;
 	Usage*     memory;
-	Str*       db;
+	Rel*       parent;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
@@ -40,12 +40,12 @@ catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
              Usage*     memory,
-             Str*       db)
+             Rel*       parent)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	self->memory    = memory;
-	self->db        = db;
+	self->parent    = parent;
 	rels_init(&self->rels);
 }
 

@@ -86,7 +86,7 @@ db_allocate(Catalog* databases, DbConfig* config)
 	             databases->iface,
 	             databases->iface_arg,
 	             &self->memory,
-	             &self->config->name);
+	             &self->rel);
 
 	// set relation
 	auto rel = &self->rel;

@@ -45,21 +45,11 @@ usage_set_limit(Usage* self, bool limit_enable, uint64_t limit)
 	self->limit_enable = limit_enable;
 }
 
-hot static inline uint64_t
-usage_sync(Usage* self, int64_t size)
-{
-	int64_t usage = __sync_fetch_and_add(&self->usage, size);
-	usage += size;
-	assert(usage >= 0);
-	return usage;
-}
-
 hot static inline void
 usage_update(Usage* self, int64_t size)
 {
-	if (likely(! size))
-		return;
-	usage_sync(self, size);
+	self->usage += size;
+	assert(self->usage >= 0);
 }
 
 hot static inline void
@@ -67,8 +57,8 @@ usage_add(Usage* self, int64_t size)
 {
 	if (likely(! size))
 		return;
-	auto usage = usage_sync(self, size);
-	if (unlikely(self->limit_enable && usage > self->limit))
+	usage_update(self, size);
+	if (unlikely(self->limit_enable && (uint64_t)self->usage > self->limit))
 		error("{s} limit reached", self->name);
 }
 
@@ -77,7 +67,7 @@ usage_add_reserve(Usage* self, int64_t size)
 {
 	if (likely(! size))
 		return;
-	auto usage = usage_sync(self, 0) + size;
+	uint64_t usage = self->usage + size;
 	if (unlikely(self->limit_enable && usage > self->limit))
 		error("{s} limit reached", self->name);
 }
@@ -90,7 +80,7 @@ usage_status(Usage* self, Buf* buf)
 
 	// usage
 	encode_raw(buf, "usage", 5);
-	encode_int(buf, __sync_fetch_and_add(&self->usage, 0));
+	encode_int(buf, self->usage);
 
 	// limit_enable
 	encode_raw(buf, "limit_enabled", 13);
