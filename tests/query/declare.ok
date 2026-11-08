@@ -318,7 +318,7 @@ main
   1   int                 0      -      0     # 1
   2   var_set             0      0      0
   3   set                 0      1      0
-  4   table_open          1      0      13    # amelie.test (heap) 
+  4   table_open          1      0      13    # test (heap) 
   5   var                 2      0      0
   6   var                 3      0      0
   7   equii               4      2      3
@@ -331,7 +331,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare id int;
 	id := 1;
@@ -356,7 +356,7 @@ main
   2   var_set             0      0      0
   3   set                 0      1      0
   4   push_var            0      0      0
-  5   table_open          1      0      13    # amelie.test (primary) point_lookup
+  5   table_open          1      0      13    # test (primary) point_lookup
   6   table_readi32       2      1      -     # id
   7   var                 3      0      0
   8   equii               4      2      3
@@ -368,7 +368,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare id int; id := 1;
 	select * from test where test.id = id;
@@ -406,7 +406,7 @@ main
   2   var_set             0      0      0
   3   set                 0      1      0
   4   push_var            0      0      0
-  5   table_open          1      0      13    # amelie.test (primary) point_lookup
+  5   table_open          1      0      13    # test (primary) point_lookup
   6   table_readi32       2      1      -     # id
   7   var                 3      0      0
   8   equii               4      2      3
@@ -418,7 +418,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: := with cte
 begin
 	declare x int;
@@ -751,7 +751,7 @@ explain
 main
   0   push_nulls          1      0      0
   1   set                 0      2      0
-  2   table_open          1      0      9     # amelie.test (heap) 
+  2   table_open          1      0      9     # test (heap) 
   3   table_readi32       2      1      -     # id
   4   push                2      0      0
   5   table_readi32       2      1      -     # data
@@ -774,7 +774,7 @@ main
  22   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x table (a int, b int);
 	select * into x from test;

@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: truncate parsing
 truncate;
-error: truncate❰;❱ ⟵ target name expected
+error: truncate❰;❱ ⟵ name expected
 truncate if not;
-error: truncate ❰if❱ ⟵ target name expected
+error: truncate ❰if❱ ⟵ name expected
 # test: truncate
 create table test (id int primary key);
 insert into test values (1),(2),(3),(4),(5);

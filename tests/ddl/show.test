@@ -8,16 +8,16 @@ show;
 show all junk;
 show 1234;
 
-# test: show users
-create user test;
-#show users abc;
-#show users;
+# test: show database
+create database test;
+#show databases abc;
+#show databases;
 
-# test: show user
-#show user;
-#show user unknown;
-#show user test;
-#show user test;
+# test: show database
+#show database;
+#show database unknown;
+#show database test;
+#show database test;
 
 # test: show limits
 show limits;

@@ -36,7 +36,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -45,7 +45,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id;
 
 id
@@ -78,7 +78,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (primary) 
+  1   table_open          1      0      6     # test (primary) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -87,7 +87,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id asc;
 
 id
@@ -120,7 +120,7 @@ explain
 
 main
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (heap) 
+  1   table_open          1      1      8     # test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -132,7 +132,7 @@ main
  10   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id desc;
 
 id
@@ -166,7 +166,7 @@ explain
 main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
-  2   table_open          2      0      8     # amelie.test (primary) 
+  2   table_open          2      0      8     # test (primary) 
   3   cjltd               8      1      0
   4   table_readi64       3      2      -     # id
   5   push                3      0      0
@@ -176,7 +176,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id limit 1;
 
 id
@@ -250,7 +250,7 @@ explain
 main
   0   set                 0      1      0
   1   int                 1      -      0     # 0
-  2   table_open          2      0      8     # amelie.test (primary) 
+  2   table_open          2      0      8     # test (primary) 
   3   cjltd               8      1      0
   4   table_readi64       3      2      -     # id
   5   push                3      0      0
@@ -260,7 +260,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id limit 0;
 
 id
@@ -275,7 +275,7 @@ explain
 
 main
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (heap) 
+  1   table_open          1      1      8     # test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -291,7 +291,7 @@ main
  14   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id desc limit 1;
 
 id
@@ -366,7 +366,7 @@ main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
   2   int                 2      -      0     # 0
-  3   table_open          3      0      10    # amelie.test (primary) 
+  3   table_open          3      0      10    # test (primary) 
   4   cjgted              9      2      0
   5   cjltd               10     1      0
   6   table_readi64       4      3      -     # id
@@ -377,7 +377,7 @@ main
  11   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id limit 1 offset 0;
 
 id
@@ -393,7 +393,7 @@ main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
   2   int                 2      -      0     # 1
-  3   table_open          3      0      10    # amelie.test (primary) 
+  3   table_open          3      0      10    # test (primary) 
   4   cjgted              9      2      0
   5   cjltd               10     1      0
   6   table_readi64       4      3      -     # id
@@ -404,7 +404,7 @@ main
  11   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id limit 1 offset 1;
 
 id
@@ -433,7 +433,7 @@ explain
 
 main
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (heap) 
+  1   table_open          1      1      8     # test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -451,7 +451,7 @@ main
  16   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id desc limit 1 offset 1;
 
 id
@@ -481,7 +481,7 @@ explain
 main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
-  2   table_open          2      0      8     # amelie.test (primary) 
+  2   table_open          2      0      8     # test (primary) 
   3   cjgted              7      1      0
   4   table_readi64       3      2      -     # id
   5   push                3      0      0
@@ -491,7 +491,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id offset 1;
 
 id
@@ -612,7 +612,7 @@ explain
 
 main
   0   set_ordered         0      1      1
-  1   table_open          1      1      8     # amelie.test (heap) 
+  1   table_open          1      1      8     # test (heap) 
   2   table_readi64       2      1      -     # id
   3   push                2      0      0
   4   table_readi64       2      1      -     # id
@@ -628,7 +628,7 @@ main
  14   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test order by id desc offset 1;
 
 id

@@ -44,7 +44,7 @@ state
   "compute": 1,
   "lsn": 1,
   "psn": 0,
-  "checkpoint": 1
+  "checkpoint": 0
 }
 # test: ensure uuid recover
 disconnect S0;
@@ -94,7 +94,7 @@ state
   "compute": 1,
   "lsn": 1,
   "psn": 0,
-  "checkpoint": 1
+  "checkpoint": 0
 }
 disconnect S0;
 close E0;

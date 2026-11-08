@@ -103,7 +103,7 @@ explain
 main
   0   push_nulls          1      0      0
   1   set                 0      1      0
-  2   table_open          1      0      7     # amelie.test (heap) 
+  2   table_open          1      0      7     # test (heap) 
   3   table_readi32       2      1      -     # id
   4   push                2      0      0
   5   set_add             0      0      0
@@ -115,7 +115,7 @@ main
  11   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin declare x int; select id into x from test; select x; end;
 
 col1
@@ -144,13 +144,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -169,13 +169,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -196,13 +196,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   string              0      0      0     # 123
@@ -231,13 +231,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -258,13 +258,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -285,13 +285,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   null                0      0      0
@@ -319,13 +319,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   null                0      0      0
@@ -347,13 +347,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -401,13 +401,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -428,13 +428,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -454,13 +454,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   null                0      0      0
@@ -482,13 +482,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   set                 0      2      0
@@ -506,7 +506,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   set                 0      2      0
@@ -532,13 +532,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -554,7 +554,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -579,13 +579,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -606,7 +606,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -664,13 +664,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -686,7 +686,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -709,13 +709,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -733,7 +733,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -760,13 +760,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -797,13 +797,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -836,13 +836,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -875,13 +875,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -918,19 +918,19 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   set                 0      1      0
-  2   table_open          1      0      7     # amelie.src (heap) 
+  2   table_open          1      0      7     # src (heap) 
   3   table_readi32       2      1      -     # id
   4   push                2      0      0
   5   set_add             0      0      0
@@ -950,7 +950,7 @@ main
  19   ret                 1      0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -973,19 +973,19 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   set                 0      1      0
-  2   table_open          1      0      7     # amelie.src (heap) 
+  2   table_open          1      0      7     # src (heap) 
   3   table_readi32       2      1      -     # id
   4   push                2      0      0
   5   set_add             0      0      0
@@ -1005,7 +1005,7 @@ main
  19   ret                 1      0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -1027,21 +1027,21 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   bool                0      1      0
   2   jntr                14     0      0
   3   set                 0      1      0
-  4   table_open          1      0      9     # amelie.src (heap) 
+  4   table_open          1      0      9     # src (heap) 
   5   table_readi32       2      1      -     # id
   6   push                2      0      0
   7   set_add             0      0      0
@@ -1055,7 +1055,7 @@ main
  15   ret                 1      0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -1077,21 +1077,21 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   bool                0      0      0
   2   jntr                14     0      0
   3   set                 0      1      0
-  4   table_open          1      0      9     # amelie.src (heap) 
+  4   table_open          1      0      9     # src (heap) 
   5   table_readi32       2      1      -     # id
   6   push                2      0      0
   7   set_add             0      0      0
@@ -1105,7 +1105,7 @@ main
  15   ret                 1      0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -1130,21 +1130,21 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   set                 0      1      0
-  4   table_open          1      0      9     # amelie.src (heap) 
+  4   table_open          1      0      9     # src (heap) 
   5   table_readi32       2      1      -     # id
   6   push                2      0      0
   7   set_add             0      0      0
@@ -1169,7 +1169,7 @@ main
  26   ret                 -1     0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -1194,21 +1194,21 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   set                 0      1      0
-  4   table_open          1      0      9     # amelie.src (heap) 
+  4   table_open          1      0      9     # src (heap) 
   5   table_readi32       2      1      -     # id
   6   push                2      0      0
   7   set_add             0      0      0
@@ -1233,7 +1233,7 @@ main
  26   ret                 -1     0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -1257,13 +1257,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1310,13 +1310,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1358,24 +1358,24 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [insert]
+  •   test [execute]
+  •   src [insert]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   set_ptr             0      -      0
-  1   insert              -      -      -     # amelie.src
+  1   insert              -      -      -     # src
   2   ret                 -1     0      -
   3   int                 0      -      0     # 1
   4   ret                 -1     0      -
 
 access
-  •   amelie.src [insert]
+  •   src [insert]
 select test();
 
 test
@@ -1394,19 +1394,19 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [insert, select]
+  •   test [execute]
+  •   src [insert, select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   set_ptr             0      -      0
   1   set                 1      1      0
-  2   upsert_open         2      -      -     # amelie.src
+  2   upsert_open         2      -      -     # src
   3   jmp                 10     0      0
   4   string              3      0      0     # unique key constraint violation
   5   push                3      0      0
@@ -1421,7 +1421,7 @@ main
  14   ret                 -1     0      -
 
 access
-  •   amelie.src [insert, select]
+  •   src [insert, select]
 select test();
 
 test
@@ -1451,20 +1451,20 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [insert, select]
+  •   test [execute]
+  •   src [insert, select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   set_ptr             0      -      0
   2   set                 1      1      0
-  3   upsert_open         2      -      -     # amelie.src
+  3   upsert_open         2      -      -     # src
   4   jmp                 11     0      0
   5   string              3      0      0     # unique key constraint violation
   6   push                3      0      0
@@ -1479,7 +1479,7 @@ main
  15   ret                 0      0      -
 
 access
-  •   amelie.src [insert, select]
+  •   src [insert, select]
 select test();
 
 test
@@ -1502,14 +1502,14 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [insert, select]
+  •   test [execute]
+  •   src [insert, select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1517,7 +1517,7 @@ main
   2   jntr                18     0      0
   3   set_ptr             0      -      0
   4   set                 1      1      0
-  5   upsert_open         2      -      -     # amelie.src
+  5   upsert_open         2      -      -     # src
   6   jmp                 13     0      0
   7   string              3      0      0     # unique key constraint violation
   8   push                3      0      0
@@ -1534,7 +1534,7 @@ main
  19   ret                 1      0      -
 
 access
-  •   amelie.src [insert, select]
+  •   src [insert, select]
 select test();
 
 test
@@ -1557,14 +1557,14 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [insert, select]
+  •   test [execute]
+  •   src [insert, select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1572,7 +1572,7 @@ main
   2   jntr                18     0      0
   3   set_ptr             0      -      0
   4   set                 1      1      0
-  5   upsert_open         2      -      -     # amelie.src
+  5   upsert_open         2      -      -     # src
   6   jmp                 13     0      0
   7   string              3      0      0     # unique key constraint violation
   8   push                3      0      0
@@ -1589,7 +1589,7 @@ main
  19   ret                 1      0      -
 
 access
-  •   amelie.src [insert, select]
+  •   src [insert, select]
 select test();
 
 test
@@ -1601,7 +1601,7 @@ create function test() return json
 begin
 	declare list json := [];
 	for it in (show('tables')) do
-		list := list::append([it.user, it.name]);
+		list := list::append([it.name]);
 	end;
 	return list;
 end;
@@ -1611,13 +1611,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1626,41 +1626,37 @@ main
   3   free                0      0      0
   4   push_string         2      0      0     # tables
   5   call                0      -      1     # show()
-  6   json_open           1      0      22
+  6   json_open           1      0      18
   7   push_var            0      0      0
-  8   string              2      9      0     # user
+  8   string              2      9      0     # name
   9   json_read           3      1      0
  10   dotjs               4      3      2
  11   push                4      0      0
- 12   string              2      14     0     # name
- 13   json_read           3      1      0
- 14   dotjs               4      3      2
- 15   push                4      0      0
- 16   json_array          2      2      0
- 17   push                2      0      0
- 18   call                2      -      2     # append()
- 19   var_set             0      0      2
- 20   free                2      0      0
- 21   json_next           1      7      0
- 22   free                0      0      0
- 23   var                 0      0      0
- 24   ret                 0      0      -
+ 12   json_array          2      1      0
+ 13   push                2      0      0
+ 14   call                2      -      2     # append()
+ 15   var_set             0      0      2
+ 16   free                2      0      0
+ 17   json_next           1      7      0
+ 18   free                0      0      0
+ 19   var                 0      0      0
+ 20   ret                 0      0      -
 select test();
 
 test
 ────
-[["amelie", "src"]]
+[["src"]]
 drop function test;
-select `user`, name from amelie.show('tables');
+select name from show tables;
 
-user      name
-─────────────────
-"amelie"  "src"
+name
+────
+"src"
 create function test() return json
 begin
 	declare list json := [];
 	for it in (show('tables')) do
-		list := list::append({"schema": it.user, "name": it.name});
+		list := list::append({"name": it.name});
 	end;
 	return list;
 end;
@@ -1670,13 +1666,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1685,57 +1681,48 @@ main
   3   free                0      0      0
   4   push_string         2      0      0     # tables
   5   call                0      -      1     # show()
-  6   json_open           1      0      24
+  6   json_open           1      0      19
   7   push_var            0      0      0
-  8   push_string         9      0      0     # schema
-  9   string              2      16     0     # user
+  8   push_string         9      0      0     # name
+  9   string              2      14     0     # name
  10   json_read           3      1      0
  11   dotjs               4      3      2
  12   push                4      0      0
- 13   push_string         21     0      0     # name
- 14   string              2      26     0     # name
- 15   json_read           3      1      0
- 16   dotjs               4      3      2
- 17   push                4      0      0
- 18   json_obj            2      4      0
- 19   push                2      0      0
- 20   call                2      -      2     # append()
- 21   var_set             0      0      2
- 22   free                2      0      0
- 23   json_next           1      7      0
- 24   free                0      0      0
- 25   var                 0      0      0
- 26   ret                 0      0      -
+ 13   json_obj            2      2      0
+ 14   push                2      0      0
+ 15   call                2      -      2     # append()
+ 16   var_set             0      0      2
+ 17   free                2      0      0
+ 18   json_next           1      7      0
+ 19   free                0      0      0
+ 20   var                 0      0      0
+ 21   ret                 0      0      -
 select test();
 
 test
 ────
 [{
-  "schema": "amelie",
   "name": "src"
 }]
 drop function test;
 select
 [] -> self::append ({
-	"user": it.user,
 	"name": it.name
 })
-from
-	amelie.show('tables') as it;
+from show tables as it;
 
 col1
 ────
 [{
-  "user": "amelie",
   "name": "src"
 }]
 create function test() return json
 begin
 	declare list json;
 	select
-		[] -> self::append({"schema": it.user, "name": it.name})
+		[] -> self::append({"name": it.name})
 	into
-		list from amelie.show('tables') as it;
+		list from `show`('tables') as it;
 	return list;
 end;
 explain select test();
@@ -1744,13 +1731,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1758,61 +1745,55 @@ main
   2   json                1      0      0
   3   push_string         2      0      0     # tables
   4   call                2      -      1     # show()
-  5   json_open           3      2      26
+  5   json_open           3      2      21
   6   push_bool           1      0      0
   7   set_get             4      0      0
   8   self                5      0      4
   9   push                5      0      0
- 10   push_string         17     0      0     # schema
- 11   string              5      24     0     # user
+ 10   push_string         17     0      0     # name
+ 11   string              5      22     0     # name
  12   json_read           6      3      0
  13   dotjs               7      6      5
  14   push                7      0      0
- 15   push_string         29     0      0     # name
- 16   string              5      34     0     # name
- 17   json_read           6      3      0
- 18   dotjs               7      6      5
- 19   push                7      0      0
- 20   json_obj            5      4      0
- 21   push                5      0      0
- 22   call                5      -      2     # append()
- 23   push                5      0      0
- 24   set_agg             0      4      9
- 25   json_next           3      6      0
- 26   free                2      0      0
- 27   push_bool           1      0      0
- 28   set_get             2      0      0
- 29   push_nulls          1      0      0
- 30   set_agg             0      2      9
- 31   free                1      0      0
- 32   set_agg_merge       0      9      0
- 33   set                 1      1      0
- 34   store_open          2      0      39
- 35   store_read          3      2      0
- 36   push                3      0      0
- 37   set_add             1      0      0
- 38   store_next          2      35     0
- 39   free                2      0      0
- 40   free                0      0      0
- 41   var_set             0      0      1
- 42   free                1      0      0
- 43   var                 0      0      0
- 44   ret                 0      0      -
+ 15   json_obj            5      2      0
+ 16   push                5      0      0
+ 17   call                5      -      2     # append()
+ 18   push                5      0      0
+ 19   set_agg             0      4      9
+ 20   json_next           3      6      0
+ 21   free                2      0      0
+ 22   push_bool           1      0      0
+ 23   set_get             2      0      0
+ 24   push_nulls          1      0      0
+ 25   set_agg             0      2      9
+ 26   free                1      0      0
+ 27   set_agg_merge       0      9      0
+ 28   set                 1      1      0
+ 29   store_open          2      0      34
+ 30   store_read          3      2      0
+ 31   push                3      0      0
+ 32   set_add             1      0      0
+ 33   store_next          2      30     0
+ 34   free                2      0      0
+ 35   free                0      0      0
+ 36   var_set             0      0      1
+ 37   free                1      0      0
+ 38   var                 0      0      0
+ 39   ret                 0      0      -
 select test();
 
 test
 ────
 [{
-  "schema": "amelie",
   "name": "src"
 }]
 drop function test;
 create function test() return json
 begin
 	declare list json;
-	select [] -> append(self, {"schema": it.user, "name": it.name})
+	select [] -> append(self, {"name": it.name})
 	  into list
-	  from amelie.show('tables') as it;
+	  from `show`('tables') as it;
 	return list;
 end;
 explain select test();
@@ -1821,13 +1802,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
@@ -1835,52 +1816,46 @@ main
   2   json                1      0      0
   3   push_string         2      0      0     # tables
   4   call                2      -      1     # show()
-  5   json_open           3      2      26
+  5   json_open           3      2      21
   6   push_bool           1      0      0
   7   set_get             4      0      0
   8   self                5      0      4
   9   push                5      0      0
- 10   push_string         17     0      0     # schema
- 11   string              5      24     0     # user
+ 10   push_string         17     0      0     # name
+ 11   string              5      22     0     # name
  12   json_read           6      3      0
  13   dotjs               7      6      5
  14   push                7      0      0
- 15   push_string         29     0      0     # name
- 16   string              5      34     0     # name
- 17   json_read           6      3      0
- 18   dotjs               7      6      5
- 19   push                7      0      0
- 20   json_obj            5      4      0
- 21   push                5      0      0
- 22   call                5      -      2     # append()
- 23   push                5      0      0
- 24   set_agg             0      4      9
- 25   json_next           3      6      0
- 26   free                2      0      0
- 27   push_bool           1      0      0
- 28   set_get             2      0      0
- 29   push_nulls          1      0      0
- 30   set_agg             0      2      9
- 31   free                1      0      0
- 32   set_agg_merge       0      9      0
- 33   set                 1      1      0
- 34   store_open          2      0      39
- 35   store_read          3      2      0
- 36   push                3      0      0
- 37   set_add             1      0      0
- 38   store_next          2      35     0
- 39   free                2      0      0
- 40   free                0      0      0
- 41   var_set             0      0      1
- 42   free                1      0      0
- 43   var                 0      0      0
- 44   ret                 0      0      -
+ 15   json_obj            5      2      0
+ 16   push                5      0      0
+ 17   call                5      -      2     # append()
+ 18   push                5      0      0
+ 19   set_agg             0      4      9
+ 20   json_next           3      6      0
+ 21   free                2      0      0
+ 22   push_bool           1      0      0
+ 23   set_get             2      0      0
+ 24   push_nulls          1      0      0
+ 25   set_agg             0      2      9
+ 26   free                1      0      0
+ 27   set_agg_merge       0      9      0
+ 28   set                 1      1      0
+ 29   store_open          2      0      34
+ 30   store_read          3      2      0
+ 31   push                3      0      0
+ 32   set_add             1      0      0
+ 33   store_next          2      30     0
+ 34   free                2      0      0
+ 35   free                0      0      0
+ 36   var_set             0      0      1
+ 37   free                1      0      0
+ 38   var                 0      0      0
+ 39   ret                 0      0      -
 select test();
 
 test
 ────
 [{
-  "schema": "amelie",
   "name": "src"
 }]
 drop function test;
@@ -1896,19 +1871,19 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.src [select]
+  •   test [execute]
+  •   src [select]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0
   1   set                 0      1      0
-  2   table_open          1      0      7     # amelie.src (heap) 
+  2   table_open          1      0      7     # src (heap) 
   3   table_readi32       2      1      -     # id
   4   push                2      0      0
   5   set_add             0      0      0
@@ -1919,7 +1894,7 @@ main
  10   ret                 0      0      -
 
 access
-  •   amelie.src [select]
+  •   src [select]
 select test();
 
 test
@@ -1958,13 +1933,13 @@ explain
 
 main
   0   push_int            -      0      0     # 123
-  1   call_udf            0      -      -     # amelie.test()
+  1   call_udf            0      -      -     # test()
   2   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   var                 0      0      1
@@ -1992,13 +1967,13 @@ explain
 
 main
   0   push_int            -      0      0     # -1
-  1   call_udf            0      -      -     # amelie.test()
+  1   call_udf            0      -      -     # test()
   2   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          1      0      0

@@ -154,7 +154,7 @@ main
   1   push_int            -      0      0     # 3
   2   push_int            -      0      0     # 5
   3   set                 1      1      0
-  4   table_open          2      0      9     # amelie.test (heap) 
+  4   table_open          2      0      9     # test (heap) 
   5   table_readi32       3      2      -     # id
   6   push                3      0      0
   7   set_add             1      0      0
@@ -166,7 +166,7 @@ main
  13   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select 0 in (3,5, (select * from test));
 
 col1

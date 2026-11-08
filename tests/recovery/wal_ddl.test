@@ -193,9 +193,9 @@ select show('state').lsn;
 select * from test2;
 show tables;
 
-# test: create user
-create user test;
-select show('user', 'test').name;
+# test: create database
+create database test;
+select show('database', 'test').name;
 select show('state').lsn;
 
 # test: restart
@@ -206,12 +206,12 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test').name;
+select show('database', 'test').name;
 
-# test: alter user rename
-alter user test rename to test2;
-select show('user', 'test').name;
-select show('user', 'test2').name;
+# test: alter database rename
+alter database test rename to test2;
+select show('database', 'test').name;
+select show('database', 'test2').name;
 select show('state').lsn;
 
 # test: restart
@@ -222,10 +222,10 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
-# test: alter user set limit
-alter user test2 set limit write = 10000;
+# test: alter database set limit
+alter database test2 set limit write = 10000;
 select show('state').lsn;
 
 # test: restart
@@ -236,10 +236,10 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test2', null, "verbose").limits;
+select show('database', 'test2', null, "verbose").limits;
 
-# test: alter user unset limit
-alter user test2 unset limit write;
+# test: alter database unset limit
+alter database test2 unset limit write;
 select show('state').lsn;
 
 # test: restart
@@ -250,12 +250,12 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test2', null, "verbose").limits;
+select show('database', 'test2', null, "verbose").limits;
 
-# test: drop user
-drop user test2;
+# test: drop database
+drop database test2;
 select show('state').lsn;
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 # test: restart
 disconnect S0;
@@ -265,8 +265,8 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 select show('state').lsn;
-select show('user', 'test').name;
-select show('user', 'test2').name;
+select show('database', 'test').name;
+select show('database', 'test2').name;
 
 # test: create function
 create function reverse(array json) return json
@@ -363,9 +363,9 @@ show functions verbose;
 select show('state').lsn;
 
 # test: limit
-alter user amelie set limit tables = 1;
+alter database amelie set limit tables = 1;
 create table test (id int primary key);
-alter user amelie set limit tables = 0;
+alter database amelie set limit tables = 0;
 create table test2 (id int primary key);
 
 # test: restart
@@ -378,7 +378,7 @@ connect E0 S0 127.0.0.1:3485;
 show rels;
 show limits;
 drop table test;
-alter user amelie unset limit tables;
+alter database amelie unset limit tables;
 
 disconnect S0;
 close E0;

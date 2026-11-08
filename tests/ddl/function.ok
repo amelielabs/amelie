@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: create function parsing
 create function;
-error: create function❰;❱ ⟵ target name expected
+error: create function❰;❱ ⟵ name expected
 create function test;
 error: create function test❰;❱ ⟵ ( expected
 create function test (;
@@ -34,14 +34,12 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "",
   "text": "begin end",
   "type": 0,
   "args": [],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 explain select test();
 
@@ -49,13 +47,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -69,7 +67,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -85,13 +83,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -105,17 +103,12 @@ select test()::type;
 type
 ────
 null
-select amelie.test();
-
-test
-────
-null
 explain execute test();
 
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   ret                 -1     0      -
@@ -137,13 +130,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -158,7 +151,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -185,13 +178,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -206,7 +199,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -230,7 +223,6 @@ show functions;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "test test"
 }
@@ -243,7 +235,6 @@ show functions;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "test test"
 }
@@ -259,13 +250,13 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -280,7 +271,7 @@ explain execute test();
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   int                 0      -      0     # 123
@@ -395,7 +386,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "",
   "text": "begin\nend",
@@ -422,8 +412,7 @@ functions
     "size_flat": 0,
     "dropped": false,
     "constraints": []
-  }],
-  "grants": []
+  }]
 }
 drop function test;
 create function test () return table(a int, a int)
@@ -477,13 +466,13 @@ explain
 
 main
   0   push_int            -      0      0     # 123
-  1   call_udf            0      -      -     # amelie.test()
+  1   call_udf            0      -      -     # test()
   2   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   var                 0      0      1
@@ -531,13 +520,13 @@ explain
 
 main
   0   push_int            -      0      0     # 10
-  1   call_udf            0      -      -     # amelie.test()
+  1   call_udf            0      -      -     # test()
   2   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
+  •   test [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          2      0      0
@@ -571,7 +560,7 @@ explain execute test(10);
 explain
 ───────
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
   0   push_nulls          2      0      0
@@ -614,13 +603,13 @@ explain
 
 main
   0   push_json           0      0      0
-  1   call_udf            0      -      -     # amelie.reverse()
+  1   call_udf            0      -      -     # reverse()
   2   ret                 0      0      -
 
 access
-  •   amelie.reverse [execute]
+  •   reverse [execute]
 
-FUNCTION amelie.reverse
+FUNCTION reverse
 
 main
   0   push_nulls          1      0      0
@@ -672,7 +661,7 @@ explain execute reverse([1,2,3]);
 explain
 ───────
 
-FUNCTION amelie.reverse
+FUNCTION reverse
 
 main
   0   push_nulls          1      0      0
@@ -728,7 +717,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "",
   "text": "begin\n\tdeclare total int := 0;\n\tdeclare i int := 0;\n\twhile i < x do\n\t\ttotal := total + i;\n\t\ti := i + 1;\n\tend;\n\treturn total;\nend",
@@ -741,11 +729,9 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 {
-  "user": "amelie",
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
@@ -758,8 +744,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 explain select [1,2,3]::reverse;
 
@@ -768,13 +753,13 @@ explain
 
 main
   0   push_json           0      0      0
-  1   call_udf            0      -      -     # amelie.reverse()
+  1   call_udf            0      -      -     # reverse()
   2   ret                 0      0      -
 
 access
-  •   amelie.reverse [execute]
+  •   reverse [execute]
 
-FUNCTION amelie.reverse
+FUNCTION reverse
 
 main
   0   push_nulls          1      0      0
@@ -803,7 +788,7 @@ explain execute reverse([1,2,3]);
 explain
 ───────
 
-FUNCTION amelie.reverse
+FUNCTION reverse
 
 main
   0   push_nulls          1      0      0
@@ -839,14 +824,12 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "",
   "text": "begin\n\treturn 123;\nend",
   "type": 2,
   "args": [],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select test();
 
@@ -863,14 +846,12 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "",
   "text": "begin\n\treturn 321;\nend",
   "type": 2,
   "args": [],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select test();
 
@@ -991,7 +972,7 @@ tables
 # test: drop function
 create function test () begin end;
 drop function;
-error: drop function❰;❱ ⟵ target name expected
+error: drop function❰;❱ ⟵ name expected
 drop function test;
 drop function test;
 error: function 'test': not exists
@@ -1006,28 +987,28 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.test_dep [execute]
+  •   test [execute]
+  •   test_dep [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
-  0   call_udf            0      -      -     # amelie.test_dep()
+  0   call_udf            0      -      -     # test_dep()
   1   ret                 -1     0      -
 
 access
-  •   amelie.test_dep [execute]
+  •   test_dep [execute]
 
-FUNCTION amelie.test_dep
+FUNCTION test_dep
 
 main
   0   ret                 -1     0      -
 drop function test_dep;
-error: function 'test_dep': depends on function 'amelie.test'
+error: function 'test_dep': depends on function 'test'
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
@@ -1040,28 +1021,28 @@ explain
 ───────
 
 main
-  0   call_udf            0      -      -     # amelie.test()
+  0   call_udf            0      -      -     # test()
   1   ret                 0      0      -
 
 access
-  •   amelie.test [execute]
-  •   amelie.test_dep [execute]
+  •   test [execute]
+  •   test_dep [execute]
 
-FUNCTION amelie.test
+FUNCTION test
 
 main
-  0   call_udf            0      -      -     # amelie.test_dep()
+  0   call_udf            0      -      -     # test_dep()
   1   ret                 -1     0      -
 
 access
-  •   amelie.test_dep [execute]
+  •   test_dep [execute]
 
-FUNCTION amelie.test_dep
+FUNCTION test_dep
 
 main
   0   ret                 -1     0      -
 drop function test_dep;
-error: function 'test_dep': depends on function 'amelie.test'
+error: function 'test_dep': depends on function 'test'
 drop function test_dep cascade;
 show functions;
 
@@ -1077,7 +1058,7 @@ begin
   return select leaf();
 end;
 drop function leaf;
-error: function 'leaf': depends on function 'amelie.wrapper'
+error: function 'leaf': depends on function 'wrapper'
 execute wrapper();
 
 wrapper
@@ -1088,12 +1069,10 @@ show functions;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "leaf",
   "description": ""
 }
 {
-  "user": "amelie",
   "name": "wrapper",
   "description": ""
 }
@@ -1107,15 +1086,15 @@ functions
 alter;
 error: alter❰;❱ ⟵ relation type expected
 alter function;
-error: alter function❰;❱ ⟵ target name expected
+error: alter function❰;❱ ⟵ name expected
 alter function 123;
-error: alter function ❰123❱ ⟵ target name expected
+error: alter function ❰123❱ ⟵ name expected
 alter function if;
 error: alter function if❰;❱ ⟵ EXISTS expected
 alter function if exists;
-error: alter function if exists❰;❱ ⟵ target name expected
+error: alter function if exists❰;❱ ⟵ name expected
 alter function if exists 123;
-error: alter function if exists ❰123❱ ⟵ target name expected
+error: alter function if exists ❰123❱ ⟵ name expected
 # test: alter function if exists
 create function test() begin end;
 alter function test rename to test2;
@@ -1125,7 +1104,6 @@ show functions;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "test2",
   "description": ""
 }
@@ -1151,7 +1129,7 @@ drop function test;
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 alter function test_dep rename to test_dep2;
-error: function 'amelie.test' depends on function 'test_dep'
+error: function 'test' depends on function 'test_dep'
 # test: alter function rename after after dep drop
 drop function test;
 alter function test_dep rename to test_dep2;
@@ -1163,7 +1141,6 @@ show function test;
 function
 ────────
 {
-  "user": "amelie",
   "name": "test",
   "description": ""
 }
@@ -1173,7 +1150,6 @@ show function test;
 function
 ────────
 {
-  "user": "amelie",
   "name": "test",
   "description": "test test"
 }

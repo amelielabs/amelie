@@ -394,13 +394,13 @@ main
   0   bool                0      1      0
   1   jntr                6      0      0
   2   set_ptr             0      -      0
-  3   insert              -      -      -     # amelie.test
+  3   insert              -      -      -     # test
   4   set_ptr             0      -      0
-  5   insert              -      -      -     # amelie.test
+  5   insert              -      -      -     # test
   6   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 begin
 	if true then
 		insert into test values (1);
@@ -427,13 +427,13 @@ main
   0   bool                0      1      0
   1   jntr                4      0      0
   2   set_ptr             0      -      0
-  3   insert              -      -      -     # amelie.test
+  3   insert              -      -      -     # test
   4   bool                0      0      0
   5   jntr                8      0      0
   6   set_ptr             0      -      0
-  7   insert              -      -      -     # amelie.test
+  7   insert              -      -      -     # test
   8   set                 0      1      0
-  9   table_open          1      0      14    # amelie.test (heap) 
+  9   table_open          1      0      14    # test (heap) 
  10   table_readi32       2      1      -     # id
  11   push                2      0      0
  12   set_add             0      0      0
@@ -442,7 +442,7 @@ main
  15   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	if true then
 		insert into test values (1);
@@ -489,12 +489,12 @@ main
   0   bool                0      1      0
   1   jntr                5      0      0
   2   set_ptr             0      -      0
-  3   insert              -      -      -     # amelie.test
+  3   insert              -      -      -     # test
   4   jmp                 7      0      0
   5   set_ptr             0      -      0
-  6   insert              -      -      -     # amelie.test
+  6   insert              -      -      -     # test
   7   set                 0      1      0
-  8   table_open          1      0      13    # amelie.test (heap) 
+  8   table_open          1      0      13    # test (heap) 
   9   table_readi32       2      1      -     # id
  10   push                2      0      0
  11   set_add             0      0      0
@@ -503,7 +503,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	if true then
 		insert into test values (1);
@@ -556,19 +556,19 @@ main
   5   equii               2      0      1
   6   jntr                10     2      0
   7   set_ptr             0      -      0
-  8   insert              -      -      -     # amelie.test
+  8   insert              -      -      -     # test
   9   jmp                 19     0      0
  10   var                 0      0      0
  11   int                 1      -      0     # 1
  12   equii               2      0      1
  13   jntr                17     2      0
  14   set_ptr             0      -      0
- 15   insert              -      -      -     # amelie.test
+ 15   insert              -      -      -     # test
  16   jmp                 19     0      0
  17   set_ptr             0      -      0
- 18   insert              -      -      -     # amelie.test
+ 18   insert              -      -      -     # test
  19   set                 0      1      0
- 20   table_open          1      0      25    # amelie.test (heap) 
+ 20   table_open          1      0      25    # test (heap) 
  21   table_readi32       2      1      -     # id
  22   push                2      0      0
  23   set_add             0      0      0
@@ -577,7 +577,7 @@ main
  26   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	declare x int := 0;
 	if x = 0 then
@@ -648,7 +648,7 @@ main
   4   jntr                18     0      0
   5   set_ptr             0      -      0
   6   set                 1      1      0
-  7   upsert_open         2      -      -     # amelie.test
+  7   upsert_open         2      -      -     # test
   8   jmp                 15     0      0
   9   string              3      0      0     # unique key constraint violation
  10   push                3      0      0
@@ -663,7 +663,7 @@ main
  19   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	declare x int := 0;
 	if true then;
@@ -697,9 +697,9 @@ main
   4   jntr                8      0      0
   5   set_ptr             0      -      0
   6   push_var            0      0      1
-  7   insert              -      -      -     # amelie.test
+  7   insert              -      -      -     # test
   8   set                 0      1      0
-  9   table_open          1      0      14    # amelie.test (heap) 
+  9   table_open          1      0      14    # test (heap) 
  10   table_readi32       2      1      -     # id
  11   push                2      0      0
  12   set_add             0      0      0
@@ -708,7 +708,7 @@ main
  15   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	declare x int := 0;
 	if true then
@@ -742,7 +742,7 @@ main
   3   bool                0      1      0
   4   jntr                14     0      0
   5   set                 0      1      0
-  6   table_open          1      0      11    # amelie.test (heap) 
+  6   table_open          1      0      11    # test (heap) 
   7   table_readi32       2      1      -     # id
   8   push                2      0      0
   9   set_add             0      0      0
@@ -754,7 +754,7 @@ main
  15   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x int := 0;
 	if true then
@@ -784,7 +784,7 @@ main
   3   bool                0      1      0
   4   jntr                28     0      0
   5   set                 0      1      1
-  6   table_open          1      0      12    # amelie.test (heap) 
+  6   table_open          1      0      12    # test (heap) 
   7   push_bool           1      0      0
   8   set_get             2      0      0
   9   push_int            -      0      0     # 1
@@ -810,7 +810,7 @@ main
  29   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x int := 0;
 	if true then
@@ -842,7 +842,7 @@ main
   4   jntr                6      0      0
   5   jmp                 29     0      0
   6   set                 0      1      1
-  7   table_open          1      0      13    # amelie.test (heap) 
+  7   table_open          1      0      13    # test (heap) 
   8   push_bool           1      0      0
   9   set_get             2      0      0
  10   push_int            -      0      0     # 1
@@ -868,7 +868,7 @@ main
  30   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x int := 0;
 	if false then
@@ -902,7 +902,7 @@ main
   4   jntr                6      0      0
   5   jmp                 29     0      0
   6   set                 0      1      1
-  7   table_open          1      0      13    # amelie.test (heap) 
+  7   table_open          1      0      13    # test (heap) 
   8   push_bool           1      0      0
   9   set_get             2      0      0
  10   push_int            -      0      0     # 1
@@ -929,7 +929,7 @@ main
  31   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x int := 0;
 	if false then
@@ -964,7 +964,7 @@ main
   4   jntr                6      0      0
   5   jmp                 29     0      0
   6   set                 0      1      1
-  7   table_open          1      0      13    # amelie.test (heap) 
+  7   table_open          1      0      13    # test (heap) 
   8   push_bool           1      0      0
   9   set_get             2      0      0
  10   push_int            -      0      0     # 1
@@ -987,7 +987,7 @@ main
  27   var_set             0      0      1
  28   free                1      0      0
  29   set                 0      1      0
- 30   table_open          1      32     35    # amelie.test (heap) 
+ 30   table_open          1      32     35    # test (heap) 
  31   table_readi32       2      1      -     # id
  32   push                2      0      0
  33   set_add             0      0      0
@@ -997,7 +997,7 @@ main
  37   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x int := 0;
 	if false then
@@ -1033,7 +1033,7 @@ main
   5   bool                0      0      0
   6   jntr                16     0      0
   7   set                 0      1      0
-  8   table_open          1      0      13    # amelie.test (heap) 
+  8   table_open          1      0      13    # test (heap) 
   9   table_readi32       2      1      -     # id
  10   push                2      0      0
  11   set_add             0      0      0
@@ -1045,7 +1045,7 @@ main
  17   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare x int := 0;
 	if true then

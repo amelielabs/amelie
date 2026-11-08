@@ -6,11 +6,11 @@ error: insert❰;❱ ⟵ INTO expected
 insert junk;
 error: insert ❰junk❱ ⟵ INTO expected
 insert into;
-error: insert into❰;❱ ⟵ target name expected
+error: insert into❰;❱ ⟵ name expected
 insert into "name";
-error: insert into ❰"name"❱ ⟵ target name expected
+error: insert into ❰"name"❱ ⟵ name expected
 insert into 1;
-error: insert into ❰1❱ ⟵ target name expected
+error: insert into ❰1❱ ⟵ name expected
 insert into name;
 error: insert into ❰name❱ ⟵ relation not found
 create table test (id int primary key);
@@ -66,7 +66,7 @@ insert into test values (123);
 error: insert into test values (123)❰;❱ ⟵ row has incorrect number of columns
 insert into test values (1, 2, 3);
 error: insert into test values (1, 2, ❰3❱ ⟵ row has incorrect number of columns
-insert into amelie.test values (1, 2);
+insert into test values (1, 2);
 select * from test;
 
 id  id2
@@ -289,7 +289,7 @@ explain
 main
   0   set_ptr             0      -      0
   1   set                 1      1      0
-  2   upsert_open         2      -      -     # amelie.test
+  2   upsert_open         2      -      -     # test
   3   jmp                 10     0      0
   4   string              3      0      0     # unique key constraint violation
   5   push                3      0      0
@@ -301,7 +301,7 @@ main
  11   ret                 1      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 insert into test values (1),(2),(3) returning *;
 
 id
@@ -588,7 +588,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (heap) 
+  1   table_open          1      0      12    # test (heap) 
   2   table_readt         2      1      -     # ts
   3   value               3      -      0     # timestamp
   4   gtii                4      2      3
@@ -603,7 +603,7 @@ main
  13   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 
 id  ts
@@ -618,7 +618,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (heap) 
+  1   table_open          1      0      12    # test (heap) 
   2   table_readt         2      1      -     # ts
   3   timestamp           3      -      0     # 4379909090
   4   gtii                4      2      3
@@ -633,7 +633,7 @@ main
  13   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 
 id  ts
@@ -677,7 +677,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readt         2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -686,7 +686,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test;
 
 id
@@ -723,7 +723,7 @@ explain
 main
   0   set                 0      1      0
   1   push_timestamp      -      0      0     # 1000002
-  2   table_open          1      0      11    # amelie.test (primary) 
+  2   table_open          1      0      11    # test (primary) 
   3   table_readt         2      1      -     # id
   4   timestamp           3      -      0     # 1000002
   5   gtii                4      2      3
@@ -736,7 +736,7 @@ main
  12   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 
 id
@@ -754,7 +754,7 @@ explain
 main
   0   set                 0      1      0
   1   push_timestamp      -      0      0     # 1000002
-  2   table_open          1      0      11    # amelie.test (primary) 
+  2   table_open          1      0      11    # test (primary) 
   3   table_readt         2      1      -     # id
   4   timestamp           3      -      0     # 1000002
   5   gteii               4      2      3
@@ -767,7 +767,7 @@ main
  12   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 
 id
@@ -781,7 +781,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      14    # amelie.test (primary) 
+  1   table_open          1      0      14    # test (primary) 
   2   table_readt         2      1      -     # id
   3   timestamp           3      -      0     # 1000003
   4   ltii                4      2      3
@@ -798,7 +798,7 @@ main
  15   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 
 id
@@ -812,7 +812,7 @@ explain
 main
   0   set                 0      1      0
   1   push_timestamp      -      0      0     # 1000003
-  2   table_open          1      0      10    # amelie.test (primary) point_lookup
+  2   table_open          1      0      10    # test (primary) point_lookup
   3   table_readt         2      1      -     # id
   4   timestamp           3      -      0     # 1000003
   5   equii               4      2      3
@@ -824,7 +824,7 @@ main
  11   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 drop table test;
 # test: insert column (interval)
 create table test (id int primary key, i interval);
@@ -851,7 +851,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (heap) 
+  1   table_open          1      0      12    # test (heap) 
   2   table_readl         2      1      -     # i
   3   value               3      -      0     # interval
   4   gtll                4      2      3
@@ -866,7 +866,7 @@ main
  13   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where i = "1 year 1 day 12 hours 500 us"::interval;
 
 id  i
@@ -924,7 +924,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      12    # amelie.test (heap) 
+  1   table_open          1      0      12    # test (heap) 
   2   table_readd         2      1      -     # d
   3   date                3      2440588 0
   4   gteii               4      2      3
@@ -939,7 +939,7 @@ main
  13   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 drop table test;
 # test: insert column (date auto cast)
 create table test (id int primary key, d date);
@@ -1072,7 +1072,7 @@ explain
 main
   0   set                 0      1      0
   1   push_uuid           0      0      0
-  2   table_open          1      16     10    # amelie.test (primary) point_lookup
+  2   table_open          1      16     10    # test (primary) point_lookup
   3   table_readu         2      1      -     # id
   4   uuid                3      40     0
   5   equuu               4      2      3
@@ -1084,7 +1084,7 @@ main
  11   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 drop table test;
 # test: insert column (not exists)
 create table test (id uuid primary key);
@@ -1155,11 +1155,11 @@ main
   2   int                 2      -      0     # 2
   3   mulii               3      1      2
   4   push_ref            3      0      1
-  5   insert              -      -      -     # amelie.test
+  5   insert              -      -      -     # test
   6   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test (id) values (2 * 2);
 select * from test;
 
@@ -1174,11 +1174,11 @@ explain
 
 main
   0   set_ptr             0      -      0
-  1   insert              -      -      -     # amelie.test
+  1   insert              -      -      -     # test
   2   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test (id) values (-2);
 select * from test;
 
@@ -1194,11 +1194,11 @@ explain
 
 main
   0   set_ptr             0      -      0
-  1   insert              -      -      -     # amelie.test
+  1   insert              -      -      -     # test
   2   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test (id) values (8::string::int);
 select * from test;
 
@@ -1218,11 +1218,11 @@ main
   2   int                 2      -      0     # 2
   3   mulii               3      1      2
   4   push_ref            3      0      1
-  5   insert              -      -      -     # amelie.test
+  5   insert              -      -      -     # test
   6   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test (id) values (8::string::int * 2);
 select * from test;
 
@@ -1248,11 +1248,11 @@ main
   6   push                1      0      0
   7   call                1      -      1     # int()
   8   push_ref            1      0      1
-  9   insert              -      -      -     # amelie.test
+  9   insert              -      -      -     # test
  10   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test values ( string(8 * 8)::int, 5 + 5);
 select * from test;
 
@@ -1279,7 +1279,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -1290,7 +1290,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test;
 
 id  data
@@ -1307,7 +1307,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (i) 
+  1   table_open          1      0      8     # test (i) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -1318,7 +1318,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test index i;
 
 id  data
@@ -1359,11 +1359,11 @@ main
   2   push_int            -      0      0     # 0
   3   set_add             0      0      0
   4   dup                 1      0      0
-  5   insert              -      -      -     # amelie.test
+  5   insert              -      -      -     # test
   6   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test select 1, 0;
 select * from test;
 
@@ -1395,11 +1395,11 @@ main
  13   free                3      0      0
  14   free                2      0      0
  15   dup                 2      1      0
- 16   insert              -      -      -     # amelie.test
+ 16   insert              -      -      -     # test
  17   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
+  •   test [insert]
 insert into test select * from (select 2, 0) t;
 select * from test;
 
@@ -1417,7 +1417,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.src (heap) 
+  1   table_open          1      0      8     # src (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -1426,12 +1426,12 @@ main
   7   table_next          1      2      0
   8   free                1      0      0
   9   dup                 1      0      0
- 10   insert              -      -      -     # amelie.test
+ 10   insert              -      -      -     # test
  11   ret                 -1     0      -
 
 access
-  •   amelie.test [insert]
-  •   amelie.src [select]
+  •   test [insert]
+  •   src [select]
 insert into test select * from src returning *;
 
 id  data

@@ -12,15 +12,15 @@ error: select null ❰1❱ ⟵ ; expected
 select from;
 error: select ❰from❱ ⟵ bad expression
 select 1 from;
-error: select 1 from❰;❱ ⟵ target name expected
+error: select 1 from❰;❱ ⟵ name expected
 select 1 from "test";
-error: select 1 from ❰"test"❱ ⟵ target name expected
+error: select 1 from ❰"test"❱ ⟵ name expected
 select 1 from name;
 error: select 1 from ❰name❱ ⟵ relation not found
 select 1 from 1 where;
-error: select 1 from ❰1❱ ⟵ target name expected
+error: select 1 from ❰1❱ ⟵ name expected
 select 1 from 1 where null;
-error: select 1 from ❰1❱ ⟵ target name expected
+error: select 1 from ❰1❱ ⟵ name expected
 # test: select expr
 select 1;
 
@@ -92,7 +92,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -101,7 +101,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test;
 
 id
@@ -159,7 +159,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -170,7 +170,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select id, data from test;
 
 id  data
@@ -205,7 +205,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      24     0     # data
   4   dotjs               4      2      3
@@ -216,7 +216,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select data.data from test;
 
 col1
@@ -244,7 +244,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      24     0     # data.data
   4   dotjs               4      2      3
@@ -255,7 +255,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select data.data.data from test;
 
 col1
@@ -276,7 +276,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -287,7 +287,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select test.id, test.data from test;
 
 col1  col2
@@ -308,7 +308,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      24     0     # data
   4   dotjs               4      2      3
@@ -319,7 +319,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select test.data.data from test;
 
 col1
@@ -361,7 +361,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -372,7 +372,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select alias.id, alias.data from test alias;
 
 col1  col2
@@ -393,7 +393,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readj         2      1      -     # data
   3   string              3      24     0     # data
   4   dotjs               4      2      3
@@ -404,7 +404,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select alias.data.data from test alias;
 
 col1
@@ -439,7 +439,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -450,7 +450,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select alias.id, alias.* from test alias;
 
 col1  id  data
@@ -467,87 +467,6 @@ drop table test;
 # test: select * from function() (missing)
 select * from unknown();
 error: select * from ❰unknown❱ ⟵ function not found
-# test: select * from function() (unsupported json type)
-select * from main.show('wal');
-error: FROM: json array expected
-select * from main.show('users');
-
-show
-────
-{
-  "name": "amelie",
-  "parent": "amelie",
-  "description": ""
-}
-explain select * from main.show('users');
-
-explain
-───────
-
-main
-  0   set                 0      1      0
-  1   push_string         0      0      0     # users
-  2   call                1      -      1     # show()
-  3   json_open           2      1      8
-  4   json_read           3      2      0
-  5   push                3      0      0
-  6   set_add             0      0      0
-  7   json_next           2      4      0
-  8   free                1      0      0
-  9   ret                 0      0      -
-# test: select column from function()
-create user test;
-select name from main.show('users');
-
-name
-────
-"amelie"
-"test"
-explain select name from main.show('users');
-
-explain
-───────
-
-main
-  0   set                 0      1      0
-  1   push_string         0      0      0     # users
-  2   call                1      -      1     # show()
-  3   json_open           2      1      10
-  4   string              3      6      0     # name
-  5   json_read           4      2      0
-  6   dotjs               5      4      3
-  7   push                5      0      0
-  8   set_add             0      0      0
-  9   json_next           2      4      0
- 10   free                1      0      0
- 11   ret                 0      0      -
-select non_exists_column from main.show('users');
-
-non_exists_column
-─────────────────
-null
-null
-# test: select alias.column from function()
-select t.name from main.show('users') t;
-
-col1
-────
-"amelie"
-"test"
-drop user test;
-# test: select target.column.path from function()
-create table test (id int primary key);
-select indexes[0].type from main.show('tables', null, null, "verbose");
-
-type
-────
-2
-select t.indexes[0].type from main.show('tables', null, null, "verbose") t;
-
-type
-────
-2
-drop table test;
 # test: select * from (expr)
 select * from (;
 error: select * from (❰;❱ ⟵ bad expression
@@ -609,8 +528,8 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      11    # amelie.a (heap) 
-  2   table_open          2      24     9     # amelie.b (heap) 
+  1   table_open          1      0      11    # a (heap) 
+  2   table_open          2      24     9     # b (heap) 
   3   table_readi32       3      1      -     # x
   4   push                3      0      0
   5   table_readi32       3      2      -     # y
@@ -623,8 +542,8 @@ main
  12   ret                 0      0      -
 
 access
-  •   amelie.a [select]
-  •   amelie.b [select]
+  •   a [select]
+  •   b [select]
 select x, y from a, b;
 
 x  y

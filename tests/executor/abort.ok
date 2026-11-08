@@ -56,7 +56,7 @@ explain
 ───────
 
 main
-  0   table_open          0      0      3     # amelie.test (primary) 
+  0   table_open          0      0      3     # test (primary) 
   1   delete              0      0      0
   2   table_next          0      1      0
   3   free                0      0      0
@@ -65,7 +65,7 @@ main
   6   ret                 0      0      -
 
 access
-  •   amelie.test [delete]
+  •   test [delete]
 begin
 	delete from test;
 	select error("abort");
@@ -89,7 +89,7 @@ explain
 ───────
 
 main
-  0   table_open          0      0      7     # amelie.test (primary) 
+  0   table_open          0      0      7     # test (primary) 
   1   int                 1      -      0     # 1
   2   push                1      0      0
   3   table_readi32       1      0      -     # id
@@ -102,7 +102,7 @@ main
  10   ret                 0      0      -
 
 access
-  •   amelie.test [update]
+  •   test [update]
 begin
 	update test set data = id;
 	select error("abort");
@@ -127,7 +127,7 @@ explain
 
 main
   0   set_ptr             0      -      0
-  1   upsert_open         1      -      -     # amelie.test
+  1   upsert_open         1      -      -     # test
   2   jmp                 8      0      0
   3   int                 2      -      0     # 1
   4   push                2      0      0
@@ -140,7 +140,7 @@ main
  11   ret                 0      0      -
 
 access
-  •   amelie.test [insert, update]
+  •   test [insert, update]
 begin
 	insert into test values(1, 0) on conflict do update set data = id;
 	select error("abort");
@@ -179,11 +179,11 @@ explain
 
 main
   0   set_ptr             0      -      0
-  1   insert              -      -      -     # amelie.b
+  1   insert              -      -      -     # b
   2   ret                 -1     0      -
 
 access
-  •   amelie.b [insert]
+  •   b [insert]
 insert into b (id) values (10), (20), (30);
 select * from a;
 
@@ -214,7 +214,7 @@ explain
 ───────
 
 main
-  0   table_open          0      0      7     # amelie.a (primary) 
+  0   table_open          0      0      7     # a (primary) 
   1   int                 1      -      0     # 1
   2   push                1      0      0
   3   table_readi32       1      0      -     # id
@@ -222,7 +222,7 @@ main
   5   update              0      1      0
   6   table_next          0      1      0
   7   free                0      0      0
-  8   table_open          0      24     15    # amelie.b (primary) 
+  8   table_open          0      24     15    # b (primary) 
   9   int                 1      -      0     # 1
  10   push                1      0      0
  11   table_readi32       1      0      -     # id
@@ -231,7 +231,7 @@ main
  14   table_next          0      9      0
  15   free                0      0      0
  16   set                 0      2      0
- 17   table_open          1      48     24    # amelie.a (heap) 
+ 17   table_open          1      48     24    # a (heap) 
  18   table_readi32       2      1      -     # id
  19   push                2      0      0
  20   table_readi32       2      1      -     # data
@@ -240,7 +240,7 @@ main
  23   table_next          1      18     0
  24   free                1      0      0
  25   set                 1      2      0
- 26   table_open          2      72     33    # amelie.b (heap) 
+ 26   table_open          2      72     33    # b (heap) 
  27   table_readi32       3      2      -     # id
  28   push                3      0      0
  29   table_readi32       3      2      -     # data
@@ -253,8 +253,8 @@ main
  36   ret                 2      0      -
 
 access
-  •   amelie.a [update, select]
-  •   amelie.b [update, select]
+  •   a [update, select]
+  •   b [update, select]
 begin
 	update a set data = id;
 	update b set data = id;
@@ -291,7 +291,7 @@ explain
 
 main
   0   set_ptr             0      -      0
-  1   upsert_open         1      -      -     # amelie.a
+  1   upsert_open         1      -      -     # a
   2   jmp                 8      0      0
   3   int                 2      -      0     # 1
   4   push                2      0      0
@@ -299,7 +299,7 @@ main
   6   push                2      0      0
   7   update              1      1      0
   8   upsert              1      3      -1
-  9   table_open          0      0      18    # amelie.b (primary) 
+  9   table_open          0      0      18    # b (primary) 
  10   int                 1      -      0     # 1
  11   push                1      0      0
  12   table_readi32       1      0      -     # data
@@ -310,7 +310,7 @@ main
  17   table_next          0      10     0
  18   free                0      0      0
  19   set                 0      2      0
- 20   table_open          1      24     27    # amelie.a (heap) 
+ 20   table_open          1      24     27    # a (heap) 
  21   table_readi32       2      1      -     # id
  22   push                2      0      0
  23   table_readi32       2      1      -     # data
@@ -323,8 +323,8 @@ main
  30   ret                 1      0      -
 
 access
-  •   amelie.a [insert, update, select]
-  •   amelie.b [update]
+  •   a [insert, update, select]
+  •   b [update]
 begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;
 	update b set data = data * 2;

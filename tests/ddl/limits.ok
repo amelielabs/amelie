@@ -10,14 +10,14 @@ limits
 }
 # test: write
 create table test (id int primary key);
-alter user amelie set limit write = 1;
+alter database amelie set limit write = 1;
 insert into test values (123);
 insert into test values (124), (125);
 error: write limit reached
 drop table test;
-alter user amelie unset limit write;
+alter database amelie unset limit write;
 # test: send
-alter user amelie set limit send = 0;
+alter database amelie set limit send = 0;
 show limits;
 
 limits
@@ -25,7 +25,7 @@ limits
 {
   "send": 0
 }
-alter user amelie unset limit send;
+alter database amelie unset limit send;
 show limits;
 
 limits
@@ -42,41 +42,26 @@ disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-# test: users
-alter user amelie set limit users = 0;
-create user test;
-error: user 'amelie': users limit reached
-alter user amelie set limit users = 2;
-show limits;
-
-limits
-──────
-{
-  "send": 3145728,
-  "users": 2
-}
-create user test;
-drop user test;
 # test: tables
-alter user amelie set limit tables = 0;
+alter database amelie set limit tables = 0;
 create table test (id int primary key);
-error: user 'amelie': tables limit reached
-alter user amelie set limit tables = 1;
+error: tables: limit reached
+alter database amelie set limit tables = 1;
 create table test (id int primary key);
 drop table test;
 # test: indexes
 create table test (id int primary key);
-alter user amelie set limit indexes = 1;
+alter database amelie set limit indexes = 1;
 create index i on test (id);
 error: table 'test': indexes limit reached
-alter user amelie set limit indexes = 2;
+alter database amelie set limit indexes = 2;
 create index i on test (id);
 drop table test;
 # test: functions
-alter user amelie set limit functions = 0;
+alter database amelie set limit functions = 0;
 create function test () begin end;
-error: user 'amelie': functions limit reached
-alter user amelie set limit functions = 1;
+error: functions: limit reached
+alter database amelie set limit functions = 1;
 create function test () begin end;
 select test();
 
@@ -85,40 +70,40 @@ test
 null
 drop function test;
 # test: columns
-alter user amelie set limit columns = 1;
+alter database amelie set limit columns = 1;
 create table test (id int primary key);
 create table test2 (id int primary key, data int);
 error: create table test2 (id int primary key, ❰data❱ ⟵ columns limit reached
 drop table test;
-alter user amelie unset limit columns;
+alter database amelie unset limit columns;
 # test: keys
-alter user amelie set limit keys = 1;
+alter database amelie set limit keys = 1;
 create table test (id int primary key);
 drop table test;
 create table test (id int, data int, primary key (id, data));
 error: create table test (id int, data int, primary key (id, ❰data❱ ⟵ key limit reached
-alter user amelie unset limit keys;
+alter database amelie unset limit keys;
 # test: args
-alter user amelie set limit args = 0;
+alter database amelie set limit args = 0;
 create function test() begin end;
 create function test2(id int) begin end;
 error: create function test2(❰id❱ ⟵ arguments limit reached
 drop function test;
-alter user amelie unset limit args;
+alter database amelie unset limit args;
 # test: values
-alter user amelie set limit values = 1;
+alter database amelie set limit values = 1;
 create table test (id int primary key);
 insert into test values (1);
 insert into test values (2), (3);
 error: insert into test values (2), (3)❰;❱ ⟵ values limit reached
 drop table test;
 # test: vector
-alter user amelie set limit vector = 1;
+alter database amelie set limit vector = 1;
 create table test (id int primary key, v vector(1));
 create table test2 (id int primary key, v vector(3));
 error: create table test2 (id int primary key, v vector(❰3❱ ⟵ vector size limit
 drop table test;
-alter user amelie unset limit vector;
+alter database amelie unset limit vector;
 show limits;
 
 limits
@@ -127,7 +112,7 @@ limits
   "send": 3145728
 }
 # test: compute
-alter user amelie set limit compute = 100;
+alter database amelie set limit compute = 100;
 explain while 1 do end;
 
 explain
@@ -185,7 +170,7 @@ memory
   "limit_enabled": false,
   "limit": 0
 }
-alter user amelie set limit memory = 128;
+alter database amelie set limit memory = 128;
 show memory;
 
 memory
@@ -210,7 +195,7 @@ select * from test;
 
 id  data
 ──────────
-alter user amelie unset limit memory;
+alter database amelie unset limit memory;
 show memory;
 
 memory

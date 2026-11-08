@@ -129,14 +129,14 @@ show
   "limit_enabled": false,
   "limit": 0
 }
-# test: users
-select show('users')[0].name;
+# test: databases
+select show('databases')[0].name;
 
 name
 ────
 "amelie"
-# test: user
-select show('user', 'amelie').name;
+# test: database
+select show('database', 'amelie').name;
 
 name
 ────
@@ -205,14 +205,14 @@ select show('metrics')::size;
 
 size
 ────
-7
+6
 # test: locks
 select show('locks');
 
 show
 ────
 [{
-  "resource": "users",
+  "resource": "storage",
   "lock": "shared",
   "waiting": false,
   "function": "portal_lock"

@@ -63,22 +63,20 @@ col1
 ────
 [1, 2, 3]
 # test: select (select function())
-select show('users');
+select show('databases');
 
 show
 ────
 [{
   "name": "amelie",
-  "parent": "amelie",
   "description": ""
 }]
-select select (show('users'));
+select select (show('databases'));
 
 col1
 ────
 [{
   "name": "amelie",
-  "parent": "amelie",
   "description": ""
 }]
 # test: select (select {})
@@ -122,7 +120,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -131,7 +129,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select test.*) from test;
 
 col1
@@ -159,7 +157,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -168,7 +166,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select test.id) from test;
 
 col1
@@ -191,7 +189,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -200,7 +198,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select t.id) from test;
 error: select (select ❰t.id❱ ⟵ target not found
 select (select t.id) from test t;
@@ -338,7 +336,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -356,7 +354,7 @@ main
  16   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: select target.* from (select from table)
 select test.* from (select * from test);
 error: select test.* from (select * from test)❰;❱ ⟵ subquery must have an alias
@@ -488,7 +486,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -498,7 +496,7 @@ main
   8   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select * from test);
 
 col1
@@ -518,9 +516,9 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      13    # amelie.test (heap) 
+  1   table_open          1      0      13    # test (heap) 
   2   set                 2      1      0
-  3   table_open          3      24     8     # amelie.test (heap) 
+  3   table_open          3      24     8     # test (heap) 
   4   table_readi32       4      3      -     # id
   5   push                4      0      0
   6   set_add             2      0      0
@@ -534,7 +532,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select * from test) from test;
 
 col1
@@ -564,10 +562,10 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      15    # amelie.test (heap) 
+  1   table_open          1      0      15    # test (heap) 
   2   set                 2      1      0
   3   int                 3      -      0     # 1
-  4   table_open          4      24     10    # amelie.test (heap) 
+  4   table_open          4      24     10    # test (heap) 
   5   cjltd               10     3      0
   6   table_readi32       5      4      -     # id
   7   push                5      0      0
@@ -582,7 +580,7 @@ main
  16   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: select (select from table) from table #2
 explain select (select i.* from test i where test.id = i.id) from test;
 
@@ -591,11 +589,11 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      18    # amelie.test (heap) 
+  1   table_open          1      0      18    # test (heap) 
   2   set                 2      1      0
   3   table_readi32       3      1      -     # id
   4   push                3      0      0
-  5   table_open          3      24     13    # amelie.test (primary) point_lookup
+  5   table_open          3      24     13    # test (primary) point_lookup
   6   table_readi32       4      1      -     # id
   7   table_readi32       5      3      -     # id
   8   equii               6      4      5
@@ -612,7 +610,7 @@ main
  19   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select i.* from test i where test.id = i.id) from test;
 
 col1
@@ -653,11 +651,11 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      21    # amelie.a (heap) 
+  1   table_open          1      0      21    # a (heap) 
   2   set                 2      1      0
   3   table_readi32       3      1      -     # id
   4   push                3      0      0
-  5   table_open          3      24     12    # amelie.b (primary) point_lookup
+  5   table_open          3      24     12    # b (primary) point_lookup
   6   table_readi32       4      1      -     # id
   7   table_readi32       5      3      -     # id
   8   equii               6      4      5
@@ -677,8 +675,8 @@ main
  22   ret                 0      0      -
 
 access
-  •   amelie.a [select]
-  •   amelie.b [select]
+  •   a [select]
+  •   b [select]
 select * from a where (select true from b where a.id = b.id);
 
 id  data
@@ -701,7 +699,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -728,7 +726,7 @@ main
  25   ret                 2      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: select from (select from), (select from)
 select * from (select * from a) a, (select * from a) b;
 

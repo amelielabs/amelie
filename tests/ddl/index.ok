@@ -17,7 +17,7 @@ error: create index i❰;❱ ⟵ ON expected
 create index i 1;
 error: create index i ❰1❱ ⟵ ON expected
 create index i on;
-error: create index i on❰;❱ ⟵ target name expected
+error: create index i on❰;❱ ⟵ name expected
 create index i on test;
 error: create index i on test❰;❱ ⟵ ( expected
 create index i on test 1;
@@ -250,9 +250,9 @@ error: drop index i❰;❱ ⟵ ON expected
 drop index i 1;
 error: drop index i ❰1❱ ⟵ ON expected
 drop index i on;
-error: drop index i on❰;❱ ⟵ target name expected
+error: drop index i on❰;❱ ⟵ name expected
 drop index i on 1;
-error: drop index i on ❰1❱ ⟵ target name expected
+error: drop index i on ❰1❱ ⟵ name expected
 drop index i on test;
 error: table 'test' index 'i': not exists
 # test: drop index
@@ -313,17 +313,15 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "dep",
   "description": "",
   "text": "begin insert into test values (1,2,3); end",
   "type": 0,
   "args": [],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 drop index i on test;
-error: function 'amelie.dep' depends on table 'test'
+error: function 'dep' depends on table 'test'
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;
@@ -371,7 +369,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.t (heap) 
+  1   table_open          1      0      6     # t (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -380,7 +378,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.t [select]
+  •   t [select]
 drop index `primary` on t;
 select show('table', 'test', null, "verbose").indexes;
 
@@ -404,7 +402,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.t (heap) 
+  1   table_open          1      0      6     # t (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -413,7 +411,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.t [select]
+  •   t [select]
 select * from t;
 
 id
@@ -440,7 +438,7 @@ error: alter index i❰;❱ ⟵ ON expected
 alter index i 1;
 error: alter index i ❰1❱ ⟵ ON expected
 alter index i on;
-error: alter index i on❰;❱ ⟵ target name expected
+error: alter index i on❰;❱ ⟵ name expected
 alter index i on test;
 error: alter index i on test❰;❱ ⟵ 'RENAME | SET | UNSET' expected
 alter index i on test 1;
@@ -722,7 +720,7 @@ explain
 ───────
 
 main
-  0   ddl_create_index    0      0      0
+  0   ddl                 0      0      0
   1   ret                 -1     0      -
 select show('table', 'test', null, "verbose").columns;
 

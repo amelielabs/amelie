@@ -16,7 +16,6 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 
-#if 0
 static inline bool
 db_indexate_with_null(Index* index, Row* row)
 {
@@ -97,28 +96,21 @@ db_indexate(Part* part, IndexConfig* config)
 	info("create index: ({.2f} MiB)", total);
 }
 
-void
-db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
+bool
+table_index_create(Catalog*     self,
+                   Tr*          tr,
+                   Table*       table,
+                   IndexConfig* config,
+                   bool         if_not_exists)
 {
-	(void)self;
+	unused(self);
 
-	Str  name;
-	auto pos = table_op_index_create_read(op, &name);
-
-	// find table
-	auto user  = user_of(tr->user_);
-	auto table = catalog_find_table(&user->catalog, &name, false);
-	if (! table)
-		error("table '{str}': not exists", &name);
-
+	// check for retention
 	if (table->config->retention >= 0)
-		error("table '{str}': indexes cannot be used with retention", &name);
-
-	auto config = index_config_read(table_columns(table), &pos);
-	errdefer(index_config_free, config);
+		error("table '{str}': indexes cannot be used with retention",
+		       &table->config->name);
 
 	// find index
-	auto if_not_exists = ddl_if_not_exists(flags);
 	auto index = table_index_find(table, &config->name, false);
 	if (index)
 	{
@@ -128,7 +120,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 			      &config->name);
 
 		index_config_free(config);
-		return;
+		return false;
 	}
 
 	// check limit
@@ -142,6 +134,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 		db_indexate(part, config);
 	);
 
+	auto db = db_of(tr->db);
 	if (on_error)
 	{
 		// abort index creation
@@ -152,7 +145,7 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 			index_free(part->in_progress, &io);
 			part->in_progress = NULL;
 		}
-		usage_update(&user_of(tr->user_)->memory, io.delta);
+		usage_update(&db->memory, io.delta);
 		rethrow();
 	}
 
@@ -162,17 +155,6 @@ db_create_index(Db* self, Tr* tr, uint8_t* op, int flags)
 	part->in_progress = NULL;
 
 	// attach index to the table
-	table_index_add(&user->catalog, table, tr, config);
-}
-#endif
-
-bool
-table_index_create(Catalog* self, Tr* tr, Table* table, IndexConfig* config, bool if_exists)
-{
-	(void)self;
-	(void)tr;
-	(void)table;
-	(void)config;
-	(void)if_exists;
-	return false;
+	table_index_add(&db->catalog, table, tr, config);
+	return true;
 }

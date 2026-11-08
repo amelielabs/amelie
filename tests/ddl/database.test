@@ -3,174 +3,109 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: ensure system users exists
-select show('users')[0].name;
-select current_user;
-select current_agent;
+# test: ensure system databases exists
+select show('databases')[0].name;
+select current_database;
 
-# test: create user statement parsing
+# test: create database statement parsing
 create;
-create user;
-create user 123;
-create user if;
-create user if not;
-create user if not 123;
-create user if not exists;
-create user test abc;
+create database;
+create database 123;
+create database if;
+create database if not;
+create database if not 123;
+create database if not exists;
+create database test abc;
 
-# test: create user
-create user test;
-select show('user', 'test').name;
+# test: create database
+create database test;
+select show('database', 'test').name;
 
-# test: create user if not exists
-create user test;
-create user if not exists test;
-select show('user', 'test').name;
+# test: create database if not exists
+create database test;
+create database if not exists test;
+select show('database', 'test').name;
 
-# test: create user description
-create user test_with_desc description 'test test!';
-show users;
+# test: create database description
+create database test_with_desc description 'test test!';
+show databases;
 
-# test: create user limit
-create user test_limit limit;
-create user test_limit limit name;
-create user test_limit limit name;
-create user test_limit limit name to;
-create user test_limit limit name =;
-create user test_limit limit name = value;
-create user test_limit limit name = 123;
-create user test_limit limit send = 123;
-select show('user', 'test_limit', null, "verbose").limits;
+# test: create database limit
+create database test_limit limit;
+create database test_limit limit name;
+create database test_limit limit name;
+create database test_limit limit name to;
+create database test_limit limit name =;
+create database test_limit limit name = value;
+create database test_limit limit name = 123;
+create database test_limit limit send = 123;
+select show('database', 'test_limit', null, "verbose").limits;
 
-# test: drop user statement parsing
-drop user;
-drop user 123;
-drop user if;
-drop user if exists;
-drop user test abc;
+# test: drop database statement parsing
+drop database;
+drop database 123;
+drop database if;
+drop database if exists;
+drop database test abc;
 
-# test: drop user
-drop user test;
-select show('user', 'test').name;
-drop user test_with_desc;
-drop user test_limit;
+# test: drop database
+drop database test;
+select show('database', 'test').name;
+drop database test_with_desc;
+drop database test_limit;
 
-# test: drop user if exists
-drop user test;
-drop user if exists test;
-select show('user', 'test').name;
+# test: drop database if exists
+drop database test;
+drop database if exists test;
+select show('database', 'test').name;
 
-# test: drop amelie user
-drop user amelie;
-select show('user', 'test').name;
-select show('user', 'amelie').name;
+# test: drop amelie database
+drop database amelie;
+select show('database', 'test').name;
+select show('database', 'amelie').name;
 
-# test: drop user cascade
-create user test;
-drop user test cascade;
-select show('user', 'test').name;
-
-# test: drop connected user
-create user test;
-select show('user', 'test').name;
+# test: drop connected database
+create database test;
+select show('database', 'test').name;
 
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
-select current_user;
-select current_agent;
+select current_database;
 
-drop user test;
-select show('user', 'test').name;
-select 1;
-
+drop database test;
 disconnect S1;
 switch S0;
-select current_user;
-select current_agent;
 
-drop user test;
+select current_database;
+show databases;
 
-# test: drop user cascade (with relations)
-create user test;
-connect E0 S1 test@127.0.0.1:3485;
-switch S1;
+drop database test;
+drop database if exists test;
 
-create table a(id int primary key);
-create table b(id int primary key);
-create function fn() begin select * from a; end;
+# test: alter database statment parsing
+alter database;
+alter database 123;
+alter database test;
+alter database test rename;
+alter database test rename to;
+alter database test rename "hello";
 
-switch S0;
-drop user test;
+# test: alter database rename
+create database test;
+select show('database', 'test').name;
+select show('database', 'hello').name;
 
-switch S1;
-drop function fn;
+alter database test rename to test2;
+select show('database', 'test').name;
+select show('database', 'test2').name;
+drop database test2;
 
-switch S0;
-drop user test;
+# test: alter database amelie
+alter database amelie rename to _public;
+select show('database', 'amelie').name;
 
-drop user test cascade;
-select 1;
-disconnect S1;
-
-show tables;
-show functions;
-select show('user', 'test').name;
-select show('user', 'amelie').name;
-
-# test: drop user cascade (with child users)
-create user test;
-grant create_user to test;
-
-connect E0 S1 test@127.0.0.1:3485;
-switch S1;
-
-create table a(id int primary key);
-create table b(id int primary key);
-create function fn() begin select * from a; end;
-
-create user test2;
-
-connect E0 S2 test2@127.0.0.1:3485;
-switch S2;
-
-create table a(id int primary key);
-create table b(id int primary key);
-create function fn() begin select * from a; end;
-
-switch S0;
-show users;
-
-drop user test;
-drop user test cascade;
-show users;
-
-disconnect S2;
-disconnect S1;
-
-# test: alter user statment parsing
-alter user;
-alter user 123;
-alter user test;
-alter user test rename;
-alter user test rename to;
-alter user test rename "hello";
-
-# test: alter user rename
-create user test;
-select show('user', 'test').name;
-select show('user', 'hello').name;
-
-alter user test rename to test2;
-select show('user', 'test').name;
-select show('user', 'test2').name;
-drop user test2;
-
-# test: alter user amelie
-alter user amelie rename to _public;
-select show('user', 'amelie').name;
-
-# test: alter user rename cascade (udf dep)
-create user test;
+# test: alter database rename cascade (udf dep)
+create database test;
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 
@@ -188,10 +123,10 @@ select fn();
 
 drop function fn;
 
-# test: alter user rename cascade
+# test: alter database rename cascade
 switch S0;
 
-alter user test rename to test2;
+alter database test rename to test2;
 select 1;
 
 switch S1;
@@ -201,78 +136,55 @@ switch S1;
 
 show tables;
 show functions;
-select show('user', 'amelie').name;
-select show('user', 'test2').name;
+select show('database', 'amelie').name;
+select show('database', 'test2').name;
 
 disconnect S1;
 switch S0;
 
 show tables;
 show functions;
-select show('user', 'amelie').name;
-select show('user', 'test2').name;
+select show('database', 'amelie').name;
+select show('database', 'test2').name;
 
-drop user test2;
-drop user test2 cascade;
+drop database test2;
+drop database test2 cascade;
 
-# test: alter user description
-create user test;
-alter user test description;
-alter user test description 123;
-alter user test description 'test test';
-show users;
-alter user test description '';
-show users;
-drop user test;
+# test: alter database description
+create database test;
+alter database test description;
+alter database test description 123;
+alter database test description 'test test';
+show databases;
+alter database test description '';
+show databases;
+drop database test;
 
-# test: alter user set limit
-create user test;
-alter user test set;
-alter user test set 123;
-alter user test set limit;
-alter user test set limit write;
-alter user test set limit write =;
-alter user test set limit write = 123;
-select show('user', 'test', null, "verbose").limits;
-alter user test set limit write = 123,;
-alter user test set limit write = 123, send = 123;
-select show('user', 'test', null, "verbose").limits;
+# test: alter database set limit
+create database test;
+alter database test set;
+alter database test set 123;
+alter database test set limit;
+alter database test set limit write;
+alter database test set limit write =;
+alter database test set limit write = 123;
+select show('database', 'test', null, "verbose").limits;
+alter database test set limit write = 123,;
+alter database test set limit write = 123, send = 123;
+select show('database', 'test', null, "verbose").limits;
 
-# test: alter user unset limit
-alter user test unset;
-alter user test unset 123;
-alter user test unset limit;
+# test: alter database unset limit
+alter database test unset;
+alter database test unset 123;
+alter database test unset limit;
 # unknown
-alter user test unset limit name;
-alter user test unset limit write;
-select show('user', 'test', null, "verbose").limits;
-alter user test unset limit write,;
-alter user test unset limit write, send;
-select show('user', 'test', null, "verbose").limits;
-drop user test;
-
-# test: create agent
-create agent test description 'agent test';
-select show('user', 'amelie').name;
-select show('user', 'test').name;
-select show('user', 'test').description;
-drop agent test;
-
-# test: drop user (with child)
-create user parent;
-grant create_user to parent;
-connect E0 S1 parent@127.0.0.1:3485;
-switch S1;
-create user child;
-switch S0;
-show all users;
-# error
-drop user parent;
-show all users;
-
-drop user parent cascade;
-show all users;
-disconnect S1;
+alter database test unset limit name;
+alter database test unset limit write;
+select show('database', 'test', null, "verbose").limits;
+alter database test unset limit write,;
+alter database test unset limit write, send;
+select show('database', 'test', null, "verbose").limits;
+drop database test;
 
 disconnect S0;
 close E0;

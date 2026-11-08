@@ -8,9 +8,9 @@ error: delete ❰junk❱ ⟵ FROM expected
 delete 1;
 error: delete ❰1❱ ⟵ FROM expected
 delete from 1;
-error: delete from ❰1❱ ⟵ target name expected
+error: delete from ❰1❱ ⟵ name expected
 delete from "name";
-error: delete from ❰"name"❱ ⟵ target name expected
+error: delete from ❰"name"❱ ⟵ name expected
 delete from test junk;
 error: delete from ❰test❱ ⟵ relation not found
 delete from test where true limit;
@@ -19,7 +19,7 @@ error: delete from ❰test❱ ⟵ relation not found
 create table test(id int primary key);
 insert into test values (0);
 insert into test values (1);
-insert into amelie.test values (2);
+insert into test values (2);
 select * from test;
 
 id
@@ -45,7 +45,7 @@ explain
 
 main
   0   push_int            -      0      0     # 3
-  1   table_open          0      0      7     # amelie.test (primary) point_lookup
+  1   table_open          0      0      7     # test (primary) point_lookup
   2   table_readi32       1      0      -     # id
   3   int                 2      -      0     # 3
   4   equii               3      1      2
@@ -55,7 +55,7 @@ main
   8   ret                 -1     0      -
 
 access
-  •   amelie.test [delete]
+  •   test [delete]
 delete from test where id = 3;
 select * from test;
 
@@ -131,7 +131,7 @@ explain
 
 main
   0   push_int            -      0      0     # 0
-  1   table_open          0      0      16    # amelie.test (primary) 
+  1   table_open          0      0      16    # test (primary) 
   2   table_readi32       1      0      -     # id
   3   int                 2      -      0     # 1
   4   ltii                3      1      2
@@ -150,7 +150,7 @@ main
  17   ret                 -1     0      -
 
 access
-  •   amelie.test [delete]
+  •   test [delete]
 delete from test where id > 0 and id < 1;
 select * from test;
 
@@ -293,7 +293,7 @@ explain
 ───────
 
 main
-  0   table_open          0      0      7     # amelie.test (primary) 
+  0   table_open          0      0      7     # test (primary) 
   1   table_readi32       1      0      -     # a
   2   int                 2      -      0     # 10
   3   equii               3      1      2
@@ -304,7 +304,7 @@ main
   8   ret                 -1     0      -
 
 access
-  •   amelie.test [delete]
+  •   test [delete]
 delete from test where a = 10;
 explain select * from test where id = 10;
 
@@ -314,7 +314,7 @@ explain
 main
   0   set                 0      3      0
   1   push_int            -      0      0     # 10
-  2   table_open          1      0      14    # amelie.test (primary) point_lookup
+  2   table_open          1      0      14    # test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 10
   5   equii               4      2      3
@@ -330,7 +330,7 @@ main
  15   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where id = 10;
 
 id  a  b

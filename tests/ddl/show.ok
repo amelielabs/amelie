@@ -7,9 +7,9 @@ show all junk;
 error: show() ⟵ option 'junk' is not found
 show 1234;
 error: show ❰1234❱ ⟵ name expected
-# test: show users
-create user test;
-# test: show user
+# test: show database
+create database test;
+# test: show database
 # test: show limits
 show limits;
 
@@ -479,7 +479,7 @@ show locks;
 locks
 ─────
 {
-  "resource": "users",
+  "resource": "storage",
   "lock": "shared",
   "waiting": false,
   "function": "portal_lock"

@@ -10,7 +10,7 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      8     # amelie.test (heap) 
+  1   table_open          1      0      8     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   table_readi32       2      1      -     # data
@@ -21,7 +21,7 @@ main
   9   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test;
 
 id  data
@@ -38,7 +38,7 @@ explain
 main
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      13    # amelie.test (primary) 
+  2   table_open          1      0      13    # test (primary) 
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   gtii                4      2      3
@@ -53,7 +53,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where id > 1;
 
 id  data
@@ -78,7 +78,7 @@ explain
 main
   0   set                 0      2      0
   1   push_int            -      0      0     # 1
-  2   table_open          1      0      12    # amelie.test (primary) point_lookup
+  2   table_open          1      0      12    # test (primary) point_lookup
   3   table_readi32       2      1      -     # id
   4   int                 3      -      0     # 1
   5   equii               4      2      3
@@ -92,7 +92,7 @@ main
  13   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select * from test where id = 1;
 
 id  data
@@ -132,7 +132,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -141,7 +141,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select (select (test.id))) from test;
 
 col1
@@ -156,7 +156,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      6     # amelie.test (heap) 
+  1   table_open          1      0      6     # test (heap) 
   2   table_readi32       2      1      -     # id
   3   push                2      0      0
   4   set_add             0      0      0
@@ -165,7 +165,7 @@ main
   7   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select (select (select test.id)) from test;
 
 col1
@@ -181,9 +181,9 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      13    # amelie.test (heap) 
+  1   table_open          1      0      13    # test (heap) 
   2   set                 2      1      0
-  3   table_open          3      24     8     # amelie.test (heap) 
+  3   table_open          3      24     8     # test (heap) 
   4   table_readi32       4      3      -     # id
   5   push                4      0      0
   6   set_add             2      0      0
@@ -197,7 +197,7 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: select (select (select from table)) from table
 create table ref (id int primary key, data int default 0);
 insert into ref (id) values (1), (2), (3);
@@ -208,9 +208,9 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      13    # amelie.test (heap) 
+  1   table_open          1      0      13    # test (heap) 
   2   set                 2      1      0
-  3   table_open          3      24     8     # amelie.ref (heap) 
+  3   table_open          3      24     8     # ref (heap) 
   4   table_readi32       4      3      -     # id
   5   push                4      0      0
   6   set_add             2      0      0
@@ -224,8 +224,8 @@ main
  14   ret                 0      0      -
 
 access
-  •   amelie.ref [select]
-  •   amelie.test [select]
+  •   ref [select]
+  •   test [select]
 select (select (select id from ref)) from test;
 
 col1
@@ -243,9 +243,9 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      17    # amelie.test (heap) 
+  1   table_open          1      0      17    # test (heap) 
   2   set                 2      1      0
-  3   table_open          3      24     8     # amelie.test (heap) 
+  3   table_open          3      24     8     # test (heap) 
   4   table_readi32       4      3      -     # id
   5   push                4      0      0
   6   set_add             2      0      0
@@ -263,7 +263,7 @@ main
  18   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: select from table where (select from table)
 explain select * from test where (select id from ref);
 
@@ -272,9 +272,9 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      17    # amelie.test (heap) 
+  1   table_open          1      0      17    # test (heap) 
   2   set                 2      1      0
-  3   table_open          3      24     8     # amelie.ref (heap) 
+  3   table_open          3      24     8     # ref (heap) 
   4   table_readi32       4      3      -     # id
   5   push                4      0      0
   6   set_add             2      0      0
@@ -292,8 +292,8 @@ main
  18   ret                 0      0      -
 
 access
-  •   amelie.test [select]
-  •   amelie.ref [select]
+  •   test [select]
+  •   ref [select]
 select * from test where (select id from ref);
 
 id  data
@@ -309,11 +309,11 @@ explain
 
 main
   0   set                 0      2      0
-  1   table_open          1      0      21    # amelie.test (heap) 
+  1   table_open          1      0      21    # test (heap) 
   2   set                 2      1      0
   3   table_readi32       3      1      -     # id
   4   push                3      0      0
-  5   table_open          3      24     12    # amelie.ref (primary) point_lookup
+  5   table_open          3      24     12    # ref (primary) point_lookup
   6   table_readi32       4      1      -     # id
   7   table_readi32       5      3      -     # id
   8   equii               6      4      5
@@ -333,8 +333,8 @@ main
  22   ret                 0      0      -
 
 access
-  •   amelie.test [select]
-  •   amelie.ref [select]
+  •   test [select]
+  •   ref [select]
 select * from test where exists (select 1 from ref where test.id = ref.id);
 
 id  data

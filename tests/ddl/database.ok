@@ -1,322 +1,212 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: ensure system users exists
-select show('users')[0].name;
+# test: ensure system databases exists
+select show('databases')[0].name;
 
 name
 ────
 "amelie"
-select current_user;
+select current_database;
 
-current_user
-────────────
+current_database
+────────────────
 amelie
-select current_agent;
-
-current_agent
-─────────────
-amelie
-# test: create user statement parsing
+# test: create database statement parsing
 create;
 error: create❰;❱ ⟵ relation type expected
-create user;
-error: create user❰;❱ ⟵ target name expected
-create user 123;
-error: create user ❰123❱ ⟵ target name expected
-create user if;
-error: create user if❰;❱ ⟵ NOT expected
-create user if not;
-error: create user if not❰;❱ ⟵ EXISTS expected
-create user if not 123;
-error: create user if not ❰123❱ ⟵ EXISTS expected
-create user if not exists;
-error: create user if not exists❰;❱ ⟵ target name expected
-create user test abc;
-error: create user test ❰abc❱ ⟵ unrecognized option
-# test: create user
-create user test;
-select show('user', 'test').name;
+create database;
+error: create database❰;❱ ⟵ name expected
+create database 123;
+error: create database ❰123❱ ⟵ name expected
+create database if;
+error: create database if❰;❱ ⟵ NOT expected
+create database if not;
+error: create database if not❰;❱ ⟵ EXISTS expected
+create database if not 123;
+error: create database if not ❰123❱ ⟵ EXISTS expected
+create database if not exists;
+error: create database if not exists❰;❱ ⟵ name expected
+create database test abc;
+error: create database test ❰abc❱ ⟵ unrecognized option
+# test: create database
+create database test;
+select show('database', 'test').name;
 
 name
 ────
 "test"
-# test: create user if not exists
-create user test;
-error: user 'test': already exists
-create user if not exists test;
-select show('user', 'test').name;
+# test: create database if not exists
+create database test;
+error: db 'test': already exists
+create database if not exists test;
+select show('database', 'test').name;
 
 name
 ────
 "test"
-# test: create user description
-create user test_with_desc description 'test test!';
-show users;
+# test: create database description
+create database test_with_desc description 'test test!';
+show databases;
 
-users
-─────
+databases
+─────────
 {
   "name": "amelie",
-  "parent": "amelie",
   "description": ""
 }
 {
   "name": "test",
-  "parent": "amelie",
   "description": ""
 }
 {
   "name": "test_with_desc",
-  "parent": "amelie",
   "description": "test test!"
 }
-# test: create user limit
-create user test_limit limit;
-error: create user test_limit limit❰;❱ ⟵ limit name expected
-create user test_limit limit name;
-error: create user test_limit limit name❰;❱ ⟵ = expected
-create user test_limit limit name;
-error: create user test_limit limit name❰;❱ ⟵ = expected
-create user test_limit limit name to;
-error: create user test_limit limit name ❰to❱ ⟵ = expected
-create user test_limit limit name =;
-error: create user test_limit limit name =❰;❱ ⟵ int expected
-create user test_limit limit name = value;
-error: create user test_limit limit name = ❰value❱ ⟵ int expected
-create user test_limit limit name = 123;
-error: create user test_limit limit ❰name❱ ⟵ failed to find the limit
-create user test_limit limit send = 123;
-select show('user', 'test_limit', null, "verbose").limits;
+# test: create database limit
+create database test_limit limit;
+error: create database test_limit limit❰;❱ ⟵ limit name expected
+create database test_limit limit name;
+error: create database test_limit limit name❰;❱ ⟵ = expected
+create database test_limit limit name;
+error: create database test_limit limit name❰;❱ ⟵ = expected
+create database test_limit limit name to;
+error: create database test_limit limit name ❰to❱ ⟵ = expected
+create database test_limit limit name =;
+error: create database test_limit limit name =❰;❱ ⟵ int expected
+create database test_limit limit name = value;
+error: create database test_limit limit name = ❰value❱ ⟵ int expected
+create database test_limit limit name = 123;
+error: create database test_limit limit ❰name❱ ⟵ failed to find the limit
+create database test_limit limit send = 123;
+select show('database', 'test_limit', null, "verbose").limits;
 
 limits
 ──────
 {
   "send": 123
 }
-# test: drop user statement parsing
-drop user;
-error: drop user❰;❱ ⟵ name expected
-drop user 123;
-error: drop user ❰123❱ ⟵ name expected
-drop user if;
-error: drop user if❰;❱ ⟵ EXISTS expected
-drop user if exists;
-error: drop user if exists❰;❱ ⟵ name expected
-drop user test abc;
-error: drop user test ❰abc❱ ⟵ ; expected
-# test: drop user
-drop user test;
-select show('user', 'test').name;
+# test: drop database statement parsing
+drop database;
+error: drop database❰;❱ ⟵ name expected
+drop database 123;
+error: drop database ❰123❱ ⟵ name expected
+drop database if;
+error: drop database if❰;❱ ⟵ EXISTS expected
+drop database if exists;
+error: drop database if exists❰;❱ ⟵ name expected
+drop database test abc;
+error: drop database test ❰abc❱ ⟵ ; expected
+# test: drop database
+drop database test;
+select show('database', 'test').name;
 
 name
 ────
 null
-drop user test_with_desc;
-drop user test_limit;
-# test: drop user if exists
-drop user test;
-error: user 'test': not exists
-drop user if exists test;
-select show('user', 'test').name;
+drop database test_with_desc;
+drop database test_limit;
+# test: drop database if exists
+drop database test;
+error: db 'test': not exists
+drop database if exists test;
+select show('database', 'test').name;
 
 name
 ────
 null
-# test: drop amelie user
-drop user amelie;
-error: user 'amelie': system user cannot be dropped
-select show('user', 'test').name;
+# test: drop amelie database
+drop database amelie;
+error: db 'amelie': system db cannot be dropped
+select show('database', 'test').name;
 
 name
 ────
 null
-select show('user', 'amelie').name;
+select show('database', 'amelie').name;
 
 name
 ────
 "amelie"
-# test: drop user cascade
-create user test;
-drop user test cascade;
-select show('user', 'test').name;
-
-name
-────
-null
-# test: drop connected user
-create user test;
-select show('user', 'test').name;
+# test: drop connected database
+create database test;
+select show('database', 'test').name;
 
 name
 ────
 "test"
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
-select current_user;
+select current_database;
 
-current_user
-────────────
+current_database
+────────────────
 test
-select current_agent;
-
-current_agent
-─────────────
-test
-drop user test;
-error: user 'test': permission denied
-select show('user', 'test').name;
-
-name
-────
-"test"
-select 1;
-
-col1
-────
-1
+drop database test;
 disconnect S1;
 switch S0;
-select current_user;
+select current_database;
 
-current_user
-────────────
+current_database
+────────────────
 amelie
-select current_agent;
+show databases;
 
-current_agent
-─────────────
-amelie
-drop user test;
-# test: drop user cascade (with relations)
-create user test;
-connect E0 S1 test@127.0.0.1:3485;
-switch S1;
-create table a(id int primary key);
-create table b(id int primary key);
-create function fn() begin select * from a; end;
-switch S0;
-drop user test;
-error: function 'test.fn' depends on user 'test'
-switch S1;
-drop function fn;
-switch S0;
-drop user test;
-error: user 'test' still has table 'a'
-drop user test cascade;
-select 1;
-
-col1
-────
-1
-disconnect S1;
-show tables;
-
-tables
-──────
-show functions;
-
-functions
+databases
 ─────────
-select show('user', 'test').name;
-
-name
-────
-null
-select show('user', 'amelie').name;
-
-name
-────
-"amelie"
-# test: drop user cascade (with child users)
-create user test;
-grant create_user to test;
-connect E0 S1 test@127.0.0.1:3485;
-switch S1;
-create table a(id int primary key);
-create table b(id int primary key);
-create function fn() begin select * from a; end;
-create user test2;
-connect E0 S2 test2@127.0.0.1:3485;
-switch S2;
-create table a(id int primary key);
-create table b(id int primary key);
-create function fn() begin select * from a; end;
-switch S0;
-show users;
-
-users
-─────
 {
   "name": "amelie",
-  "parent": "amelie",
   "description": ""
 }
-{
-  "name": "test",
-  "parent": "amelie",
-  "description": ""
-}
-drop user test;
-error: function 'test.fn' depends on user 'test'
-drop user test cascade;
-show users;
-
-users
-─────
-{
-  "name": "amelie",
-  "parent": "amelie",
-  "description": ""
-}
-disconnect S2;
-disconnect S1;
-# test: alter user statment parsing
-alter user;
-error: alter user❰;❱ ⟵ name expected
-alter user 123;
-error: alter user ❰123❱ ⟵ name expected
-alter user test;
-error: alter user test❰;❱ ⟵ operation name expected
-alter user test rename;
-error: alter user test rename❰;❱ ⟵ TO expected
-alter user test rename to;
-error: alter user test rename to❰;❱ ⟵ name expected
-alter user test rename "hello";
-error: alter user test rename ❰"hello"❱ ⟵ TO expected
-# test: alter user rename
-create user test;
-select show('user', 'test').name;
+drop database test;
+error: db 'test': not exists
+drop database if exists test;
+# test: alter database statment parsing
+alter database;
+error: alter database❰;❱ ⟵ name expected
+alter database 123;
+error: alter database ❰123❱ ⟵ name expected
+alter database test;
+error: alter database test❰;❱ ⟵ operation name expected
+alter database test rename;
+error: alter database test rename❰;❱ ⟵ TO expected
+alter database test rename to;
+error: alter database test rename to❰;❱ ⟵ name expected
+alter database test rename "hello";
+error: alter database test rename ❰"hello"❱ ⟵ TO expected
+# test: alter database rename
+create database test;
+select show('database', 'test').name;
 
 name
 ────
 "test"
-select show('user', 'hello').name;
+select show('database', 'hello').name;
 
 name
 ────
 null
-alter user test rename to test2;
-select show('user', 'test').name;
+alter database test rename to test2;
+select show('database', 'test').name;
 
 name
 ────
 null
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
 "test2"
-drop user test2;
-# test: alter user amelie
-alter user amelie rename to _public;
-error: user 'amelie': system user cannot be renamed
-select show('user', 'amelie').name;
+drop database test2;
+# test: alter database amelie
+alter database amelie rename to _public;
+error: db 'amelie': system db cannot be renamed
+select show('database', 'amelie').name;
 
 name
 ────
 "amelie"
-# test: alter user rename cascade (udf dep)
-create user test;
+# test: alter database rename cascade (udf dep)
+create database test;
 connect E0 S1 test@127.0.0.1:3485;
 switch S1;
 create table a(id int primary key);
@@ -334,9 +224,9 @@ fn
 ──
 3
 drop function fn;
-# test: alter user rename cascade
+# test: alter database rename cascade
 switch S0;
-alter user test rename to test2;
+alter database test rename to test2;
 select 1;
 
 col1
@@ -351,12 +241,10 @@ show tables;
 tables
 ──────
 {
-  "user": "test2",
   "name": "a",
   "description": ""
 }
 {
-  "user": "test2",
   "name": "b",
   "description": ""
 }
@@ -364,12 +252,12 @@ show functions;
 
 functions
 ─────────
-select show('user', 'amelie').name;
+select show('database', 'amelie').name;
 
 name
 ────
 "amelie"
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
@@ -384,70 +272,66 @@ show functions;
 
 functions
 ─────────
-select show('user', 'amelie').name;
+select show('database', 'amelie').name;
 
 name
 ────
 "amelie"
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
 "test2"
-drop user test2;
-error: user 'test2' still has table 'a'
-drop user test2 cascade;
-# test: alter user description
-create user test;
-alter user test description;
-error: alter user test description❰;❱ ⟵ string expected
-alter user test description 123;
-error: alter user test description ❰123❱ ⟵ string expected
-alter user test description 'test test';
-show users;
+drop database test2;
+drop database test2 cascade;
+error: drop database test2 ❰cascade❱ ⟵ ; expected
+# test: alter database description
+create database test;
+alter database test description;
+error: alter database test description❰;❱ ⟵ string expected
+alter database test description 123;
+error: alter database test description ❰123❱ ⟵ string expected
+alter database test description 'test test';
+show databases;
 
-users
-─────
+databases
+─────────
 {
   "name": "amelie",
-  "parent": "amelie",
   "description": ""
 }
 {
   "name": "test",
-  "parent": "amelie",
   "description": "test test"
 }
-alter user test description '';
-show users;
+alter database test description '';
+show databases;
 
-users
-─────
+databases
+─────────
 {
   "name": "amelie",
-  "parent": "amelie",
   "description": ""
 }
 {
   "name": "test",
-  "parent": "amelie",
   "description": ""
 }
-drop user test;
-# test: alter user set limit
-create user test;
-alter user test set;
-error: alter user test set❰;❱ ⟵ LIMIT expected
-alter user test set 123;
-error: alter user test set ❰123❱ ⟵ LIMIT expected
-alter user test set limit;
-error: alter user test set limit❰;❱ ⟵ limit name expected
-alter user test set limit write;
-error: alter user test set limit write❰;❱ ⟵ = expected
-alter user test set limit write =;
-error: alter user test set limit write =❰;❱ ⟵ int expected
-alter user test set limit write = 123;
-select show('user', 'test', null, "verbose").limits;
+drop database test;
+# test: alter database set limit
+create database test;
+alter database test set;
+error: alter database test set❰;❱ ⟵ LIMIT expected
+alter database test set 123;
+error: alter database test set ❰123❱ ⟵ LIMIT expected
+alter database test set limit;
+error: alter database test set limit❰;❱ ⟵ limit name expected
+alter database test set limit write;
+error: alter database test set limit write❰;❱ ⟵ = expected
+alter database test set limit write =;
+error: alter database test set limit write =❰;❱ ⟵ int expected
+alter database test set limit write = 123;
+select show('database', 'test', null, "verbose").limits;
 
 limits
 ──────
@@ -455,10 +339,10 @@ limits
   "send": 3145728,
   "write": 123
 }
-alter user test set limit write = 123,;
-error: alter user test set limit write = 123,❰;❱ ⟵ limit name expected
-alter user test set limit write = 123, send = 123;
-select show('user', 'test', null, "verbose").limits;
+alter database test set limit write = 123,;
+error: alter database test set limit write = 123,❰;❱ ⟵ limit name expected
+alter database test set limit write = 123, send = 123;
+select show('database', 'test', null, "verbose").limits;
 
 limits
 ──────
@@ -466,107 +350,31 @@ limits
   "send": 123,
   "write": 123
 }
-# test: alter user unset limit
-alter user test unset;
-error: alter user test unset❰;❱ ⟵ LIMIT expected
-alter user test unset 123;
-error: alter user test unset ❰123❱ ⟵ LIMIT expected
-alter user test unset limit;
-error: alter user test unset limit❰;❱ ⟵ limit name expected
-alter user test unset limit name;
-error: alter user test unset limit ❰name❱ ⟵ failed to find the limit
-alter user test unset limit write;
-select show('user', 'test', null, "verbose").limits;
+# test: alter database unset limit
+alter database test unset;
+error: alter database test unset❰;❱ ⟵ LIMIT expected
+alter database test unset 123;
+error: alter database test unset ❰123❱ ⟵ LIMIT expected
+alter database test unset limit;
+error: alter database test unset limit❰;❱ ⟵ limit name expected
+alter database test unset limit name;
+error: alter database test unset limit ❰name❱ ⟵ failed to find the limit
+alter database test unset limit write;
+select show('database', 'test', null, "verbose").limits;
 
 limits
 ──────
 {
   "send": 123
 }
-alter user test unset limit write,;
-error: alter user test unset limit write,❰;❱ ⟵ limit name expected
-alter user test unset limit write, send;
-select show('user', 'test', null, "verbose").limits;
+alter database test unset limit write,;
+error: alter database test unset limit write,❰;❱ ⟵ limit name expected
+alter database test unset limit write, send;
+select show('database', 'test', null, "verbose").limits;
 
 limits
 ──────
 {}
-drop user test;
-# test: create agent
-create agent test description 'agent test';
-select show('user', 'amelie').name;
-
-name
-────
-"amelie"
-select show('user', 'test').name;
-
-name
-────
-"test"
-select show('user', 'test').description;
-
-description
-───────────
-"agent test"
-drop agent test;
-# test: drop user (with child)
-create user parent;
-grant create_user to parent;
-connect E0 S1 parent@127.0.0.1:3485;
-switch S1;
-create user child;
-switch S0;
-show all users;
-
-users
-─────
-{
-  "name": "amelie",
-  "parent": "amelie",
-  "description": ""
-}
-{
-  "name": "parent",
-  "parent": "amelie",
-  "description": ""
-}
-{
-  "name": "child",
-  "parent": "parent",
-  "description": ""
-}
-drop user parent;
-error: user 'parent' depends on user 'parent'
-show all users;
-
-users
-─────
-{
-  "name": "amelie",
-  "parent": "amelie",
-  "description": ""
-}
-{
-  "name": "parent",
-  "parent": "amelie",
-  "description": ""
-}
-{
-  "name": "child",
-  "parent": "parent",
-  "description": ""
-}
-drop user parent cascade;
-show all users;
-
-users
-─────
-{
-  "name": "amelie",
-  "parent": "amelie",
-  "description": ""
-}
-disconnect S1;
+drop database test;
 disconnect S0;
 close E0;

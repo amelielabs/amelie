@@ -6,7 +6,7 @@ error: drop❰;❱ ⟵ relation type expected
 drop 1;
 error: drop ❰1❱ ⟵ relation type expected
 drop table "name";
-error: drop table ❰"name"❱ ⟵ target name expected
+error: drop table ❰"name"❱ ⟵ name expected
 drop table name junk;
 error: drop table name ❰junk❱ ⟵ ; expected
 # test: drop non-existing table
@@ -63,17 +63,15 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "dep",
   "description": "",
   "text": "begin insert into test values (123); end",
   "type": 0,
   "args": [],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 drop table test;
-error: table 'test': depends on function 'amelie.dep'
+error: table 'test': depends on function 'dep'
 # test: drop table after udf drop
 drop function dep;
 drop table test;
@@ -85,17 +83,15 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "dep",
   "description": "",
   "text": "begin insert into test values (123); end",
   "type": 0,
   "args": [],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 drop table test;
-error: table 'test': depends on function 'amelie.dep'
+error: table 'test': depends on function 'dep'
 drop table test cascade;
 show tables;
 
@@ -120,7 +116,6 @@ show tables;
 tables
 ──────
 {
-  "user": "amelie",
   "name": "j",
   "description": ""
 }
@@ -136,7 +131,6 @@ show tables;
 tables
 ──────
 {
-  "user": "amelie",
   "name": "j",
   "description": ""
 }

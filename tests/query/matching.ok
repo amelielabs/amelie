@@ -102,8 +102,8 @@ select id from products matching v to vector [1.1, 0.05] top 2;
 
 id
 ──
-3
 4
+3
 drop table products;
 # test: matching (where)
 create table inventory (id int primary key, category_id int, v vector(2));

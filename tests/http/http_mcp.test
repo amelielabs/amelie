@@ -55,14 +55,13 @@ end;
 post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
 
 post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://" } };
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie" } };
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/" } };
 post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/zyx" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://zyx" } };
 
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/some_resource" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://some_resource" } };
 
 # test: POST /mcp (resources/read, table)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/xyz" } };
+post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://xyz" } };
 
 drop table xyz;
 

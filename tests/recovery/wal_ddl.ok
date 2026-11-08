@@ -456,9 +456,9 @@ show tables;
 
 tables
 ──────
-# test: create user
-create user test;
-select show('user', 'test').name;
+# test: create database
+create database test;
+select show('database', 'test').name;
 
 name
 ────
@@ -479,19 +479,19 @@ select show('state').lsn;
 lsn
 ───
 15
-select show('user', 'test').name;
+select show('database', 'test').name;
 
 name
 ────
 "test"
-# test: alter user rename
-alter user test rename to test2;
-select show('user', 'test').name;
+# test: alter database rename
+alter database test rename to test2;
+select show('database', 'test').name;
 
 name
 ────
 null
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
@@ -512,13 +512,13 @@ select show('state').lsn;
 lsn
 ───
 16
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
 "test2"
-# test: alter user set limit
-alter user test2 set limit write = 10000;
+# test: alter database set limit
+alter database test2 set limit write = 10000;
 select show('state').lsn;
 
 lsn
@@ -535,7 +535,7 @@ select show('state').lsn;
 lsn
 ───
 17
-select show('user', 'test2', null, "verbose").limits;
+select show('database', 'test2', null, "verbose").limits;
 
 limits
 ──────
@@ -543,8 +543,8 @@ limits
   "send": 3145728,
   "write": 10000
 }
-# test: alter user unset limit
-alter user test2 unset limit write;
+# test: alter database unset limit
+alter database test2 unset limit write;
 select show('state').lsn;
 
 lsn
@@ -561,21 +561,21 @@ select show('state').lsn;
 lsn
 ───
 18
-select show('user', 'test2', null, "verbose").limits;
+select show('database', 'test2', null, "verbose").limits;
 
 limits
 ──────
 {
   "send": 3145728
 }
-# test: drop user
-drop user test2;
+# test: drop database
+drop database test2;
 select show('state').lsn;
 
 lsn
 ───
 19
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
@@ -591,12 +591,12 @@ select show('state').lsn;
 lsn
 ───
 19
-select show('user', 'test').name;
+select show('database', 'test').name;
 
 name
 ────
 null
-select show('user', 'test2').name;
+select show('database', 'test2').name;
 
 name
 ────
@@ -620,7 +620,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
@@ -633,8 +632,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select [1,2,3]::reverse;
 
@@ -657,7 +655,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
@@ -670,8 +667,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select [1,2,3]::reverse;
 
@@ -714,7 +710,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
@@ -727,8 +722,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select [1,2,3]::reverse;
 
@@ -751,7 +745,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "reverse",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
@@ -764,8 +757,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select [1,2,3]::reverse;
 
@@ -779,7 +771,6 @@ show functions;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "reverse2",
   "description": ""
 }
@@ -809,7 +800,6 @@ show functions verbose;
 functions
 ─────────
 {
-  "user": "amelie",
   "name": "reverse2",
   "description": "",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
@@ -822,8 +812,7 @@ functions
     "dropped": false,
     "constraints": []
   }],
-  "returning": [],
-  "grants": []
+  "returning": []
 }
 select [1,2,3]::reverse2;
 
@@ -857,11 +846,11 @@ lsn
 ───
 23
 # test: limit
-alter user amelie set limit tables = 1;
+alter database amelie set limit tables = 1;
 create table test (id int primary key);
-alter user amelie set limit tables = 0;
+alter database amelie set limit tables = 0;
 create table test2 (id int primary key);
-error: user 'amelie': tables limit reached
+error: tables: limit reached
 # test: restart
 disconnect S0;
 close E0;
@@ -873,7 +862,6 @@ show rels;
 rels
 ────
 {
-  "user": "amelie",
   "name": "test",
   "type": "table",
   "description": ""
@@ -887,6 +875,6 @@ limits
   "tables": 0
 }
 drop table test;
-alter user amelie unset limit tables;
+alter database amelie unset limit tables;
 disconnect S0;
 close E0;

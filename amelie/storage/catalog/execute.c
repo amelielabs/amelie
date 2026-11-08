@@ -51,16 +51,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = db_rename(self, tr, &name, &name_new, if_exists);
 		break;
 	}
-	case DDL_DB_REVOKE_TOKEN:
-	{
-		Str name;
-		Str revoked_at;
-		db_op_revoke_token_read(op, &name, &revoked_at);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = db_revoke_token(self, tr, &name, &revoked_at, if_exists);
-		break;
-	}
 	case DDL_DB_DESCRIBE:
 	{
 		Str name;
@@ -69,6 +59,16 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_exists = ddl_if_exists(flags);
 		write = db_describe(self, tr, &name, &description, if_exists);
+		break;
+	}
+	case DDL_DB_REVOKE_TOKEN:
+	{
+		Str name;
+		Str revoked_at;
+		db_op_revoke_token_read(op, &name, &revoked_at);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = db_revoke_token(self, tr, &name, &revoked_at, if_exists);
 		break;
 	}
 	case DDL_DB_LIMIT_SET:
@@ -237,8 +237,8 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = index_config_read(table_columns(table), &pos);
 		errdefer(index_config_free, config);
 
-		auto if_exists = ddl_if_exists(flags);
-		write = table_index_create(self, tr, table, config, if_exists);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = table_index_create(self, tr, table, config, if_not_exists);
 		break;
 	}
 	case DDL_INDEX_DROP:

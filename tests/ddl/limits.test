@@ -8,18 +8,18 @@ show limits;
 
 # test: write
 create table test (id int primary key);
-alter user amelie set limit write = 1;
+alter database amelie set limit write = 1;
 insert into test values (123);
 # error
 insert into test values (124), (125);
 drop table test;
-alter user amelie unset limit write;
+alter database amelie unset limit write;
 
 # test: send
-alter user amelie set limit send = 0;
+alter database amelie set limit send = 0;
 # error
 show limits;
-alter user amelie unset limit send;
+alter database amelie unset limit send;
 show limits;
 
 # test: recv
@@ -35,76 +35,67 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 
-# test: users
-alter user amelie set limit users = 0;
-create user test;
-# amelie is owner to self
-alter user amelie set limit users = 2;
-show limits;
-create user test;
-drop user test;
-
 # test: tables
-alter user amelie set limit tables = 0;
+alter database amelie set limit tables = 0;
 create table test (id int primary key);
-alter user amelie set limit tables = 1;
+alter database amelie set limit tables = 1;
 create table test (id int primary key);
 drop table test;
 
 # test: indexes
 create table test (id int primary key);
-alter user amelie set limit indexes = 1;
+alter database amelie set limit indexes = 1;
 create index i on test (id);
-alter user amelie set limit indexes = 2;
+alter database amelie set limit indexes = 2;
 create index i on test (id);
 drop table test;
 
 # test: functions
-alter user amelie set limit functions = 0;
+alter database amelie set limit functions = 0;
 create function test () begin end;
-alter user amelie set limit functions = 1;
+alter database amelie set limit functions = 1;
 create function test () begin end;
 select test();
 drop function test;
 
 # test: columns
-alter user amelie set limit columns = 1;
+alter database amelie set limit columns = 1;
 create table test (id int primary key);
 create table test2 (id int primary key, data int);
 drop table test;
-alter user amelie unset limit columns;
+alter database amelie unset limit columns;
 
 # test: keys
-alter user amelie set limit keys = 1;
+alter database amelie set limit keys = 1;
 create table test (id int primary key);
 drop table test;
 create table test (id int, data int, primary key (id, data));
-alter user amelie unset limit keys;
+alter database amelie unset limit keys;
 
 # test: args
-alter user amelie set limit args = 0;
+alter database amelie set limit args = 0;
 create function test() begin end;
 create function test2(id int) begin end;
 drop function test;
-alter user amelie unset limit args;
+alter database amelie unset limit args;
 
 # test: values
-alter user amelie set limit values = 1;
+alter database amelie set limit values = 1;
 create table test (id int primary key);
 insert into test values (1);
 insert into test values (2), (3);
 drop table test;
 
 # test: vector
-alter user amelie set limit vector = 1;
+alter database amelie set limit vector = 1;
 create table test (id int primary key, v vector(1));
 create table test2 (id int primary key, v vector(3));
 drop table test;
-alter user amelie unset limit vector;
+alter database amelie unset limit vector;
 show limits;
 
 # test: compute
-alter user amelie set limit compute = 100;
+alter database amelie set limit compute = 100;
 explain while 1 do end;
 while 1 do end;
 
@@ -121,7 +112,7 @@ show memory;
 drop table test;
 show memory;
 
-alter user amelie set limit memory = 128;
+alter database amelie set limit memory = 128;
 show memory;
 show limits;
 
@@ -130,7 +121,7 @@ create table test (id int primary key, data int);
 insert into test values (1, 0);
 select * from test;
 
-alter user amelie unset limit memory;
+alter database amelie unset limit memory;
 show memory;
 show limits;
 

@@ -28,7 +28,7 @@ explain
 main
   0   set                 0      1      0
   1   int                 1      -      0     # 1
-  2   table_open          2      0      7     # amelie.test (heap) 
+  2   table_open          2      0      7     # test (heap) 
   3   cjltd               7      1      0
   4   push_bool           1      0      0
   5   set_add             0      0      0
@@ -38,7 +38,7 @@ main
   9   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 select exists (select true from test limit 1);
 
 col1
@@ -68,7 +68,7 @@ explain
 
 main
   0   set                 0      1      0
-  1   table_open          1      0      7     # amelie.test (heap) 
+  1   table_open          1      0      7     # test (heap) 
   2   bool                2      0      0
   3   jntr                6      2      0
   4   push_bool           1      0      0
@@ -79,7 +79,7 @@ main
   9   ret                 1      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 # test: exists (select) (more then one column)
 select exists (select * from test);
 

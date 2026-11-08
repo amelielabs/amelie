@@ -121,15 +121,9 @@ mcp_parse_uri(Mcp* self, Str* uri)
 
 	// rel
 	auto start = uri->pos + 6;
-	auto pos   = start;
 	auto end   = uri->end;
-	while (pos < end && *pos != '/')
-		pos++;
-	str_set(&self->rel, start, pos - start);
-	if (str_empty(&self->rel))
-		return false;
-	pos++;
-	return pos == end;
+	str_set(&self->rel, start, end - start);
+	return !str_empty(&self->rel);
 }
 
 static void

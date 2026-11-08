@@ -168,7 +168,7 @@ main
   5   int                 0      -      0     # 0
   6   var_set             2      0      0
   7   set                 0      1      0
-  8   table_open          1      0      13    # amelie.test (heap) 
+  8   table_open          1      0      13    # test (heap) 
   9   table_readi32       2      1      -     # id
  10   push                2      0      0
  11   set_add             0      0      0
@@ -203,7 +203,7 @@ main
  40   ret                 0      0      -
 
 access
-  •   amelie.test [select]
+  •   test [select]
 begin
 	declare i int := 0;
 	declare x int := 0;
@@ -270,7 +270,7 @@ main
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   set                 0      1      1
-  4   table_open          1      0      11    # amelie.test (heap) 
+  4   table_open          1      0      11    # test (heap) 
   5   push_bool           1      0      0
   6   set_get             2      0      0
   7   table_readi32       3      1      -     # id
@@ -308,7 +308,7 @@ main
  39   set_ptr             0      -      0
  40   push_var            0      0      1
  41   set                 1      1      0
- 42   upsert_open         2      -      -     # amelie.test
+ 42   upsert_open         2      -      -     # test
  43   jmp                 50     0      0
  44   string              3      32     0     # unique key constraint violation
  45   push                3      0      0
@@ -328,7 +328,7 @@ main
  59   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	declare i int := 0;
 	select max(id) into i from test;
@@ -388,7 +388,7 @@ main
   1   int                 0      -      0     # 0
   2   var_set             0      0      0
   3   set                 0      1      1
-  4   table_open          1      0      11    # amelie.test (heap) 
+  4   table_open          1      0      11    # test (heap) 
   5   push_bool           1      0      0
   6   set_get             2      0      0
   7   table_readi32       3      1      -     # id
@@ -428,7 +428,7 @@ main
  41   set_ptr             0      -      0
  42   push_var            0      0      1
  43   set                 1      1      0
- 44   upsert_open         2      -      -     # amelie.test
+ 44   upsert_open         2      -      -     # test
  45   jmp                 52     0      0
  46   string              3      32     0     # unique key constraint violation
  47   push                3      0      0
@@ -452,7 +452,7 @@ main
  65   ret                 0      0      -
 
 access
-  •   amelie.test [insert, select]
+  •   test [insert, select]
 begin
 	declare i int := 0;
 	select max(id) into i from test;
