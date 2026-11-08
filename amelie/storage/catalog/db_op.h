@@ -36,27 +36,25 @@ db_op_create_read(uint8_t* op)
 }
 
 static inline int
-db_op_drop(Buf* self, Str* name, bool cascade)
+db_op_drop(Buf* self, Str* name)
 {
-	// [op, name, cascade]
+	// [op, name]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_int(self, DDL_DB_DROP);
 	encode_str(self, name);
-	encode_bool(self, cascade);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-db_op_drop_read(uint8_t* op, Str* name, bool* cascade)
+db_op_drop_read(uint8_t* op, Str* name)
 {
 	int64_t cmd;
 	unpack_array(&op);
 	unpack_int(&op, &cmd);
 	assert(cmd == DDL_DB_DROP);
 	unpack_str(&op, name);
-	unpack_bool(&op, cascade);
 	unpack_array_end(&op);
 }
 

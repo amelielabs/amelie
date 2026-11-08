@@ -56,7 +56,6 @@ storage_bootstrap(Storage* self)
 		str_init(&name);
 		str_set_cstr(&name, "amelie");
 		db_config_set_name(config, &name);
-		db_config_set_parent(config, &name);
 		db_config_set_system(config, true);
 		db_create(&self->databases, &tr, config, false);
 

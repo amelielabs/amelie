@@ -169,7 +169,7 @@ parse_database_create(Stmt* self)
 void
 parse_database_drop(Stmt* self)
 {
-	// DROP DATABASE [IF EXISTS] name [CASCADE]
+	// DROP DATABASE [IF EXISTS] name
 	auto stmt = ast_database_drop_allocate();
 	self->ast = &stmt->ast;
 
@@ -179,10 +179,6 @@ parse_database_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
-
-	// [CASCADE]
-	if (stmt_if(self, KCASCADE))
-		stmt->cascade = true;
 }
 
 void

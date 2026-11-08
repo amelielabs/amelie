@@ -26,7 +26,6 @@ struct AstDatabaseDrop
 {
 	Ast  ast;
 	bool if_exists;
-	bool cascade;
 	Str  name;
 };
 

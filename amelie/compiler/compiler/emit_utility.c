@@ -113,7 +113,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_DATABASE:
 	{
 		auto arg = ast_database_drop_of(stmt->ast);
-		offset = db_op_drop(data, &arg->name, arg->cascade);
+		offset = db_op_drop(data, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		db = true;
 		break;

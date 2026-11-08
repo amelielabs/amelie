@@ -128,37 +128,11 @@ db_create(Catalog*  self,
 	return true;
 }
 
-static void
-db_drop_of(Catalog* self,
-           Tr*      tr,
-           Rel*     db,
-           bool     cascade)
-{
-	// check dependencies
-	list_foreach_safe(&self->rels.list)
-	{
-		auto ref = db_of(list_at(Rel, link));
-		if (&ref->rel == db || !str_compare(&ref->config->parent, db->name))
-			continue;
-		if (cascade)
-			db_drop_of(self, tr, &ref->rel, true);
-		else
-			error("db '{str}': has children", db->name);
-	}
-
-	// invalidate tokens
-	db_invalidate(db_of(db));
-
-	// drop db by object
-	rels_drop(&self->rels, tr, db);
-}
-
 bool
 db_drop(Catalog* self,
         Tr*      tr,
         Str*     name,
-        bool     if_exists,
-        bool     cascade)
+        bool     if_exists)
 {
 	auto db = catalog_find_db(self, name, false);
 	if (! db)
@@ -175,8 +149,11 @@ db_drop(Catalog* self,
 	if (db->config->system)
 		error("db '{str}': system db cannot be dropped", name);
 
-	// drop db relations, db and child databases
-	db_drop_of(self, tr, &db->rel, cascade);
+	// invalidate tokens
+	db_invalidate(db);
+
+	// drop db by object
+	rels_drop(&self->rels, tr, &db->rel);
 	return true;
 }
 

@@ -27,7 +27,7 @@ struct Db
 };
 
 bool db_create(Catalog*, Tr*, DbConfig*, bool);
-bool db_drop(Catalog*, Tr*, Str*, bool, bool);
+bool db_drop(Catalog*, Tr*, Str*, bool);
 bool db_rename(Catalog*, Tr*, Str*, Str*, bool);
 bool db_revoke_token(Catalog*, Tr*, Str*, Str*, bool);
 bool db_describe(Catalog*, Tr*, Str*, Str*, bool);
@@ -49,10 +49,9 @@ db_invalidate(Db* self)
 }
 
 static inline void
-db_check_ownership(Tr* self, Db* of)
+db_check_ownership(Tr* self, Db* on)
 {
-	// system or parent
-	auto db = db_of(self->db);
-	if (! (db->config->system || str_compare(&db->config->name, &of->config->parent)))
-		error("db '{str}': permission denied", &of->config->name);
+	// todo: use tr->grants to check if the ddl access
+	unused(self);
+	unused(on);
 }

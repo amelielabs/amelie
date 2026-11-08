@@ -34,12 +34,11 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	}
 	case DDL_DB_DROP:
 	{
-		Str  name;
-		bool cascade;
-		db_op_drop_read(op, &name, &cascade);
+		Str name;
+		db_op_drop_read(op, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = db_drop(self, tr, &name, if_exists, cascade);
+		write = db_drop(self, tr, &name, if_exists);
 		break;
 	}
 	case DDL_DB_RENAME:

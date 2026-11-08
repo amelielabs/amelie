@@ -16,7 +16,6 @@ typedef struct DbConfig DbConfig;
 struct DbConfig
 {
 	Str    name;
-	Str    parent;
 	Str    description;
 	Str    created_at;
 	Str    revoked_at;
@@ -32,7 +31,6 @@ db_config_allocate()
 	self = am_malloc(sizeof(DbConfig));
 	self->system = false;
 	str_init(&self->name);
-	str_init(&self->parent);
 	str_init(&self->description);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
@@ -45,7 +43,6 @@ static inline void
 db_config_free(DbConfig* self)
 {
 	str_free(&self->name);
-	str_free(&self->parent);
 	str_free(&self->description);
 	str_free(&self->created_at);
 	str_free(&self->revoked_at);
@@ -58,13 +55,6 @@ db_config_set_name(DbConfig* self, Str* value)
 {
 	str_free(&self->name);
 	str_copy(&self->name, value);
-}
-
-static inline void
-db_config_set_parent(DbConfig* self, Str* value)
-{
-	str_free(&self->parent);
-	str_copy(&self->parent, value);
 }
 
 static inline void
@@ -99,7 +89,6 @@ db_config_copy(DbConfig* self)
 {
 	auto copy = db_config_allocate();
 	db_config_set_name(copy, &self->name);
-	db_config_set_parent(copy, &self->parent);
 	db_config_set_description(copy, &self->description);
 	db_config_set_created_at(copy, &self->created_at);
 	db_config_set_revoked_at(copy, &self->revoked_at);
@@ -119,7 +108,6 @@ db_config_read(uint8_t** pos)
 	Decode obj[] =
 	{
 		{ DECODE_STR,   "name",        &self->name        },
-		{ DECODE_STR,   "parent",      &self->parent      },
 		{ DECODE_STR,   "description", &self->description },
 		{ DECODE_STR,   "created_at",  &self->created_at  },
 		{ DECODE_STR,   "revoked_at",  &self->revoked_at  },
@@ -149,10 +137,6 @@ db_config_write(DbConfig* self, Buf* buf, int flags)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_str(buf, &self->name);
-
-	// parent
-	encode_raw(buf, "parent", 6);
-	encode_str(buf, &self->parent);
 
 	// description
 	encode_raw(buf, "description", 11);
