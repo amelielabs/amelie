@@ -17,7 +17,7 @@ struct AstTokenCreate
 {
 	Ast       ast;
 	Returning ret;
-	Ast*      user;
+	Ast*      db;
 	Ast*      expire;
 };
 
@@ -32,7 +32,7 @@ ast_token_create_allocate(void)
 {
 	AstTokenCreate* self;
 	self = ast_allocate(0, sizeof(AstTokenCreate));
-	self->user   = NULL;
+	self->db     = NULL;
 	self->expire = NULL;
 	returning_init(&self->ret);
 	return self;

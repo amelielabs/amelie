@@ -30,9 +30,9 @@ void
 dst_init(Dst* self)
 {
 	self->step        = 0;
-	self->users_seq   = 0;
-	self->users_count = 0;
-	list_init(&self->users);
+	self->dbs_seq   = 0;
+	self->dbs_count = 0;
+	list_init(&self->dbs);
 	runtime_init(&self->runtime);
 	opts_init(&self->opts);
 	dst_stat_init(&self->stats);
@@ -42,7 +42,7 @@ dst_init(Dst* self)
 	{
 		{ "dir",        OPT_STRING, OPT_C,       &self->opt_dir,        "_output", 0     },
 		{ "seed",       OPT_INT,    OPT_C,       &self->opt_seed,       NULL,      0     },
-		{ "users",      OPT_INT,    OPT_C|OPT_Z, &self->opt_users,      NULL,      3     },
+		{ "databases",  OPT_INT,    OPT_C|OPT_Z, &self->opt_dbs,        NULL,      3     },
 		{ "steps",      OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000 },
 		{ "keys",       OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000  },
 		{ "payload",    OPT_INT,    OPT_C|OPT_Z, &self->opt_payload,    NULL,      512   },
@@ -52,7 +52,7 @@ dst_init(Dst* self)
 		{ "checkpoint", OPT_INT,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000  },
 		{ "backup",     OPT_INT,    OPT_C|OPT_Z, &self->opt_backup,     NULL,      30000 },
 		{ "ddl",        OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000  },
-		{ "ddl_user",   OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_user,   NULL,      25000 },
+		{ "ddl_db",     OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_db,     NULL,      25000 },
 		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
 		{ "track_key",  OPT_INT,    OPT_C,       &self->opt_track_key,  NULL,      -1    },
 		{  NULL,        0,          0,            NULL,                 NULL,      0     }
@@ -63,10 +63,10 @@ dst_init(Dst* self)
 void
 dst_free(Dst* self)
 {
-	list_foreach_safe(&self->users)
+	list_foreach_safe(&self->dbs)
 	{
-		auto user = list_at(DstUser, link);
-		dst_user_free(user);
+		auto db = list_at(DstDb, link);
+		dst_db_free(db);
 	}
 	opts_free(&self->opts);
 	runtime_free(&self->runtime);
@@ -103,12 +103,12 @@ dst_configure(Dst* self)
 	buf_reserve(payload, payload_size);
 	memset(payload->start, 'x', payload_size);
 
-	// create users
+	// create databases
 	for (auto i = 0; i < 10; i++)
 	{
-		auto user = dst_user_allocate(self, self->users_seq++);
-		list_append(&self->users, &user->link);
-		self->users_count++;
+		auto db = dst_db_allocate(self, self->dbs_seq++);
+		list_append(&self->dbs, &db->link);
+		self->dbs_count++;
 	}
 }
 
@@ -143,10 +143,10 @@ dst_open(Dst* self)
 static void
 dst_close(Dst* self)
 {
-	list_foreach(&self->users)
+	list_foreach(&self->dbs)
 	{
-		auto user = list_at(DstUser, link);
-		dst_user_close(user);
+		auto db = list_at(DstDb, link);
+		dst_db_close(db);
 	}
 	runtime_stop(&self->runtime);
 	runtime_free(&self->runtime);
@@ -163,10 +163,10 @@ dst_restart(Dst* self)
 	dst_open(self);
 
 	// reconnect
-	list_foreach(&self->users)
+	list_foreach(&self->dbs)
 	{
-		auto user = list_at(DstUser, link);
-		dst_user_connect(user);
+		auto db = list_at(DstDb, link);
+		dst_db_connect(db);
 	}
 }
 
@@ -174,7 +174,7 @@ static bool
 dst_execute_cmd(Dst* self, Client* client, bool print, bool can_fail, Str* cmd)
 {
 	if (print)
-		info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+		info("[{u64}] ({str}) {str}", self->step, &client->endpoint->db.string, cmd);
 
 	dst_stat(&self->stats, DST_STAT_SQL);
 
@@ -190,15 +190,15 @@ dst_execute_cmd(Dst* self, Client* client, bool print, bool can_fail, Str* cmd)
 	if (can_fail)
 		return false;
 
-	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->user.string, cmd);
+	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->db.string, cmd);
 
 	auto reply = &client->reply;
 	if (buf_empty(&reply->content))
 		error("[{u64}] ({str}) {str}", self->step,
-		      &client->endpoint->user.string, &reply->options[HTTP_MSG]);
+		      &client->endpoint->db.string, &reply->options[HTTP_MSG]);
 
 	error("[{u64}] ({str}) {buf}", self->step,
-	      &client->endpoint->user.string, &reply->content);
+	      &client->endpoint->db.string, &reply->content);
 
 	return false;
 }
@@ -218,7 +218,7 @@ dst_execute(Dst* self, Client* client, char* fmt, ...)
 }
 
 bool
-dst_execute_log(DstUser* self)
+dst_execute_log(DstDb* self)
 {
 	auto print = false;
 	auto dst = self->dst;
@@ -237,7 +237,7 @@ dst_bootstrap(Dst* self)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
 
-	// connect (superuser)
+	// connect (system)
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
@@ -248,19 +248,19 @@ dst_bootstrap(Dst* self)
 	client_set_endpoint(client, &endpoint);
 	client_connect(client);
 
-	// create users and relations
-	list_foreach(&self->users)
+	// create dbs and relations
+	list_foreach(&self->dbs)
 	{
-		auto user = list_at(DstUser, link);
-		dst_execute(self, client, "CREATE USER user_{u64}", user->id);
-		dst_stat(&self->stats, DST_STAT_CREATE_USER);
-		dst_user_connect(user);
+		auto db = list_at(DstDb, link);
+		dst_execute(self, client, "CREATE DATABASE db_{u64}", db->id);
+		dst_stat(&self->stats, DST_STAT_CREATE_DATABASE);
+		dst_db_connect(db);
 
 		// table
-		dst_user_create(user, DST_REL_TABLE);
+		dst_db_create(db, DST_REL_TABLE);
 
 		// table vector
-		dst_user_create(user, DST_REL_TABLE_VECTOR);
+		dst_db_create(db, DST_REL_TABLE_VECTOR);
 	}
 }
 
@@ -273,7 +273,7 @@ dst_checkpoint(Dst* self)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
 
-	// connect (superuser)
+	// connect (system)
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
@@ -297,7 +297,7 @@ dst_backup(Dst* self)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "./{str}/env", dir);
 
-	// connect (superuser)
+	// connect (system)
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
@@ -324,10 +324,10 @@ dst_backup(Dst* self)
 	dst_open(self);
 
 	// reconnect
-	list_foreach(&self->users)
+	list_foreach(&self->dbs)
 	{
-		auto user = list_at(DstUser, link);
-		dst_user_connect(user);
+		auto db = list_at(DstDb, link);
+		dst_db_connect(db);
 	}
 
 	// validate after restart
@@ -361,7 +361,7 @@ dst_run(Dst* self)
 	info("seed: {u64}", seed);
 	info("");
 
-	// create users and relations
+	// create dbs and relations
 	dst_bootstrap(self);
 
 	// main loop
@@ -370,25 +370,25 @@ dst_run(Dst* self)
 	auto checkpoint = (int)opt_int_of(&self->opt_checkpoint);
 	auto backup     = (int)opt_int_of(&self->opt_backup);
 	auto ddl        = (int)opt_int_of(&self->opt_ddl);
-	auto ddl_user   = (int)opt_int_of(&self->opt_ddl_user);
+	auto ddl_db     = (int)opt_int_of(&self->opt_ddl_db);
 	auto steps      = (int)opt_int_of(&self->opt_steps);
 	while (self->step < steps)
 	{
-		auto user_order = random_generate(&am_task->random) % self->users_count;
-		auto user = dst_user(self, user_order);
-		if (! user->rels_count)
-			dst_step_ddl(user);
+		auto db_order = random_generate(&am_task->random) % self->dbs_count;
+		auto db = dst_db(self, db_order);
+		if (! db->rels_count)
+			dst_step_ddl(db);
 
-		dst_step(user);
+		dst_step(db);
 
 		if (self->step > 0)
 		{
 			// ddl
-			if (self->step % ddl_user == 0)
-				dst_step_ddl_user(user);
+			if (self->step % ddl_db == 0)
+				dst_step_ddl_db(db);
 			else
 			if (self->step % ddl == 0)
-				dst_step_ddl(user);
+				dst_step_ddl(db);
 
 			// backup
 			if (self->step % backup == 0)

@@ -11,6 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void dst_step(DstUser*);
-void dst_step_ddl(DstUser*);
-void dst_step_ddl_user(DstUser*);
+void dst_step(DstDb*);
+void dst_step_ddl(DstDb*);
+void dst_step_ddl_db(DstDb*);

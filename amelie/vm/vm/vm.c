@@ -144,7 +144,7 @@ vm_run(Vm*      self,
 		&&cvector,
 		&&cuuid,
 		&&cvalue,
-		&&cuser_current,
+		&&cdb_current,
 
 		// upsert
 		&&cexcluded,
@@ -727,8 +727,8 @@ cvalue:
 	value_copy(&r[op->a], b);
 	op_next;
 
-cuser_current:
-	value_set_string(&r[op->a], &local->user, NULL);
+cdb_current:
+	value_set_string(&r[op->a], &local->db, NULL);
 	op_next;
 
 cexcluded:

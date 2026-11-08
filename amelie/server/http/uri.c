@@ -75,7 +75,7 @@ uri_parse_user(Uri* self)
 
 	// user
 	auto endpoint = self->endpoint;
-	opt_string_set_raw(&endpoint->user, self->pos, at - self->pos);
+	opt_string_set_raw(&endpoint->db, self->pos, at - self->pos);
 	self->pos = at + 1;
 }
 

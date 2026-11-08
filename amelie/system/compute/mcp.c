@@ -25,7 +25,6 @@ mcp_init(Mcp* self, Portal* portal)
 	self->args      = NULL;
 	self->args_size = 0;
 	self->portal    = portal;
-	str_init(&self->rel_user);
 	str_init(&self->rel);
 	jsonrpc_init(&self->jsonrpc);
 }
@@ -42,7 +41,6 @@ mcp_reset(Mcp* self)
 	self->type      = MCP_UNDEF;
 	self->args      = NULL;
 	self->args_size = 0;
-	str_init(&self->rel_user);
 	str_init(&self->rel);
 	jsonrpc_reset(&self->jsonrpc);
 }
@@ -117,34 +115,19 @@ mcp_parse_resources_list(Mcp* self)
 static bool
 mcp_parse_uri(Mcp* self, Str* uri)
 {
-	// mcp://user/rel
+	// mcp://rel
 	if (! str_is_prefix(uri, "mcp://", 6))
 		return false;
 
-	// user
+	// rel
 	auto start = uri->pos + 6;
 	auto pos   = start;
 	auto end   = uri->end;
 	while (pos < end && *pos != '/')
 		pos++;
-	str_set(&self->rel_user, start, pos - start);
-	if (str_empty(&self->rel_user))
-		return false;
-	if (pos == uri->end)
-		return false;
-	pos++;
-
-	// rel
-	start = pos;
-	while (pos < end && *pos != '/')
-		pos++;
 	str_set(&self->rel, start, pos - start);
 	if (str_empty(&self->rel))
 		return false;
-
-	// [/]
-	if (pos == end)
-		return true;
 	pos++;
 	return pos == end;
 }

@@ -33,7 +33,7 @@ struct Endpoint
 	// protocol
 	Opt  proto;
 	// auth
-	Opt  user;
+	Opt  db;
 	Opt  token;
 	Opt  token_type;
 	// host

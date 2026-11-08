@@ -69,10 +69,10 @@ session_free(Session *self)
 }
 
 hot static inline void
-session_retention(Access* access, User* user)
+session_retention(Access* access, Db* db)
 {
-	// execute only if no commit pending wal writes for the user
-	if (access->ro || user->commit > 0)
+	// execute only if no commit pending wal writes
+	if (access->ro || db->commit > 0)
 		return;
 
 	for (auto i = 0; i < access->count; i++)
@@ -136,10 +136,10 @@ session_run(Session* self)
 	}
 
 	// begin transaction
-	gtr_begin(gtr, &portal->local, portal->user, access);
+	gtr_begin(gtr, &portal->local, portal->db, access);
 
 	// do retention
-	session_retention(access, portal->user);
+	session_retention(access, portal->db);
 
 	// execute
 	Return ret;
@@ -210,7 +210,7 @@ session_run_utility(Session* self)
 	// todo: take system lock
 
 	// begin transaction
-	gtr_begin(gtr, &portal->local, portal->user, &program->access);
+	gtr_begin(gtr, &portal->local, portal->db, &program->access);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -306,13 +306,13 @@ session_main(Session* self, Portal* portal, Request* req)
 
 	// parse request
 	auto compiler = &self->compiler;
-	compiler_set(compiler, portal->user, &portal->local, self->program);
+	compiler_set(compiler, portal->db, &portal->local, self->program);
 
 	if (str_empty(&req->rel))
 	{
 		// check permission
-		if (! portal->user->config->superuser)
-			check_permission_on(&portal->user->config->grants, PERM_SQL);
+		if (! portal->db->config->system)
+			check_permission_on(&portal->db->config->grants, PERM_SQL);
 
 		compiler_parse(compiler, &req->content);
 	} else
@@ -349,11 +349,11 @@ session_main(Session* self, Portal* portal, Request* req)
 #if 0
 	// permission to EXECUTE
 	if (stmt->id == STMT_EXECUTE)
-		user_check_permission(portal->user, &compiler->program_udf->rel,
-		                      PERM_EXECUTE);
+		db_check_permission(portal->db, &compiler->program_udf->rel,
+		                    PERM_EXECUTE);
 
-	// validate user permissions
-	user_check_access(portal->user, &program->access);
+	// validate db permissions
+	db_check_access(portal->db, &program->access);
 #endif
 
 	// execute utility, DDL, DML or Query

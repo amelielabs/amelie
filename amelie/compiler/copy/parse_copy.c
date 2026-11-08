@@ -194,7 +194,7 @@ parse_copy(Parser* self, Program* program,
 	self->program = program;
 
 	// find relation
-	auto ref = catalog_find(&self->user->catalog, REL_UNDEF, rel, true);
+	auto ref = catalog_find(&self->db->catalog, REL_UNDEF, rel, true);
 
 	// only function call have empty content
 	if (str_empty(content) && ref->type != REL_UDF)

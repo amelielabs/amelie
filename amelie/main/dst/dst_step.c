@@ -15,7 +15,7 @@
 #include <amelie_main_dst.h>
 
 static void
-dst_stmt(DstUser* self)
+dst_stmt(DstDb* self)
 {
 	auto op = dst_log_add(&self->log);
 
@@ -24,7 +24,7 @@ dst_stmt(DstUser* self)
 	for (;;)
 	{
 		auto rel_order = random_generate(&am_task->random) % self->rels_count;
-		rel = dst_user_rel(self, rel_order);
+		rel = dst_db_rel(self, rel_order);
 		assert(rel);
 		if (rel->type != DST_REL_INDEX)
 			break;
@@ -174,14 +174,14 @@ dst_stmt(DstUser* self)
 }
 
 static void
-dst_begin(DstUser* self)
+dst_begin(DstDb* self)
 {
 	auto log = &self->log;
 	dst_log_reset(log);
 }
 
 static void
-dst_rollback(DstUser* self)
+dst_rollback(DstDb* self)
 {
 	auto log = &self->log;
 	for (auto i = log->ops_count - 1; i >= 0; i--)
@@ -235,7 +235,7 @@ dst_rollback(DstUser* self)
 }
 
 void
-dst_step_ddl(DstUser* self)
+dst_step_ddl(DstDb* self)
 {
 	info("[{u64}] DDL", self->dst->step);
 
@@ -255,39 +255,39 @@ dst_step_ddl(DstUser* self)
 		if (type == DST_REL_INDEX)
 		{
 			// create index for table
-			auto count = dst_user_count(self, true, false);
+			auto count = dst_db_count(self, true, false);
 			if (! count)
 			{
-				dst_user_create(self, DST_REL_TABLE);
+				dst_db_create(self, DST_REL_TABLE);
 				return;
 			}
 
 			// randomly choose table (caped by the count)
 			auto pos = random_generate(&am_task->random) % count;
-			auto parent = dst_user_rel_filter(self, pos, true, false);
+			auto parent = dst_db_rel_filter(self, pos, true, false);
 			assert(parent);
-			dst_user_create_for(self, parent, type);
+			dst_db_create_for(self, parent, type);
 
 		} else
 		{
-			dst_user_create(self, type);
+			dst_db_create(self, type);
 		}
 	} else
 	{
 		// drop any relation
 		auto rel_order = random_generate(&am_task->random) % self->rels_count;
-		auto rel = dst_user_rel(self, rel_order);
-		dst_user_drop(self, rel);
+		auto rel = dst_db_rel(self, rel_order);
+		dst_db_drop(self, rel);
 	}
 }
 
 void
-dst_step_ddl_user(DstUser* self)
+dst_step_ddl_db(DstDb* self)
 {
 	auto dst = self->dst;
-	info("[{u64}] DDL USER", dst->step);
+	info("[{u64}] DDL DB", dst->step);
 
-	// connect (superuser)
+	// connect (system)
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{str}/env", opt_string_of(&dst->opt_dir));
 
@@ -303,43 +303,43 @@ dst_step_ddl_user(DstUser* self)
 
 	// create or drop
 	auto create = 0;
-	if (dst->users_count == 1)
+	if (dst->dbs_count == 1)
 		create = 1;
 	else
-	if (dst->users_count == (int)dst->opt_users.integer)
+	if (dst->dbs_count == (int)dst->opt_dbs.integer)
 		create = 0;
 	else
 		create = random_generate(&am_task->random) % 2;
 
 	if (create)
 	{
-		// create new user
-		auto user = dst_user_allocate(dst, dst->users_seq++);
-		list_append(&dst->users, &user->link);
-		dst->users_count++;
+		// create new db
+		auto db = dst_db_allocate(dst, dst->dbs_seq++);
+		list_append(&dst->dbs, &db->link);
+		dst->dbs_count++;
 
-		dst_execute(dst, client, "CREATE USER user_{u64}", user->id);
-		dst_user_connect(user);
-		dst_stat(&dst->stats, DST_STAT_CREATE_USER);
+		dst_execute(dst, client, "CREATE DATABASE db_{u64}", db->id);
+		dst_db_connect(db);
+		dst_stat(&dst->stats, DST_STAT_CREATE_DATABASE);
 
 		// (created empty)
 	} else
 	{
-		// drop any user
-		auto user_order = random_generate(&am_task->random) % dst->users_count;
-		auto user = dst_user(dst, user_order);
-		dst_execute(dst, client, "DROP USER user_{u64} CASCADE",
-		            user->id);
+		// drop any db
+		auto db_order = random_generate(&am_task->random) % dst->dbs_count;
+		auto db = dst_db(dst, db_order);
+		dst_execute(dst, client, "DROP DATABASE db_{u64} CASCADE",
+		            db->id);
 		dst_stat(&dst->stats, DST_STAT_DROP);
 
-		list_unlink(&user->link);
-		dst->users_count--;
-		dst_user_free(user);
+		list_unlink(&db->link);
+		dst->dbs_count--;
+		dst_db_free(db);
 	}
 }
 
 void
-dst_step(DstUser* self)
+dst_step(DstDb* self)
 {
 	dst_begin(self);
 

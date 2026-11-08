@@ -88,20 +88,6 @@ compute_main(void* arg)
 			replay_run(&self->replay, record);
 			break;
 		}
-#if 0
-		case MSG_STREAM:
-		{
-			auto stream = (Stream*)msg;
-			track_write(&stream->user->track, msg);
-			break;
-		}
-		case MSG_STREAM_CANCEL:
-		{
-			auto stream = container_of(msg, Stream, msg_cancel);
-			track_write(&stream->part->track, msg);
-			break;
-		}
-#endif
 		default:
 		{
 			// command

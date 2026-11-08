@@ -52,21 +52,21 @@ main_console(Main* self, Client* client)
 	separator_init(&sep);
 	defer(separator_free, &sep);
 
-	auto user = opt_string_of(&self->endpoint.user);
-	Str prompt_user = *user;
-	if (str_empty(&prompt_user))
-		str_set(&prompt_user, "amelie", 6);
+	auto db = opt_string_of(&self->endpoint.db);
+	Str prompt_db = *db;
+	if (str_empty(&prompt_db))
+		str_set(&prompt_db, "amelie", 6);
 
 	// ›
 	// ❯
-	auto prompt_len = utf8_strlen(&prompt_user) + 2;
+	auto prompt_len = utf8_strlen(&prompt_db) + 2;
 	char prompt_str[128];
 	format(prompt_str, sizeof(prompt_str), "{str}\033[38;5;147m❯\033[0m ",
-	       &prompt_user);
+	       &prompt_db);
 
 	char prompt_str_pending[128];
 	format(prompt_str_pending, sizeof(prompt_str_pending), "{str}  ",
-	       &prompt_user);
+	       &prompt_db);
 
 	Str prompt;
 	str_set_cstr(&prompt, prompt_str);

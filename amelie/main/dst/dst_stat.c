@@ -28,7 +28,7 @@ static const char* dst_ops[DST_STAT_MAX] =
 	"delete",
 	"delete_vector",
 
-	"create user",
+	"create database",
 	"create table",
 	"create table (vector)",
 	"create index",

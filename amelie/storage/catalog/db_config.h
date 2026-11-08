@@ -11,29 +11,27 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct UserConfig UserConfig;
+typedef struct DbConfig DbConfig;
 
-struct UserConfig
+struct DbConfig
 {
 	Str    name;
 	Str    parent;
 	Str    description;
 	Str    created_at;
 	Str    revoked_at;
-	bool   agent;
-	bool   superuser;
+	bool   system;
 	Grants grants;
 	Limits limits;
 	Apis   apis;
 };
 
-static inline UserConfig*
-user_config_allocate()
+static inline DbConfig*
+db_config_allocate()
 {
-	UserConfig* self;
-	self = am_malloc(sizeof(UserConfig));
-	self->agent     = false;
-	self->superuser = false;
+	DbConfig* self;
+	self = am_malloc(sizeof(DbConfig));
+	self->system = false;
 	str_init(&self->name);
 	str_init(&self->parent);
 	str_init(&self->description);
@@ -46,7 +44,7 @@ user_config_allocate()
 }
 
 static inline void
-user_config_free(UserConfig* self)
+db_config_free(DbConfig* self)
 {
 	str_free(&self->name);
 	str_free(&self->parent);
@@ -59,74 +57,67 @@ user_config_free(UserConfig* self)
 }
 
 static inline void
-user_config_set_name(UserConfig* self, Str* value)
+db_config_set_name(DbConfig* self, Str* value)
 {
 	str_free(&self->name);
 	str_copy(&self->name, value);
 }
 
 static inline void
-user_config_set_parent(UserConfig* self, Str* value)
+db_config_set_parent(DbConfig* self, Str* value)
 {
 	str_free(&self->parent);
 	str_copy(&self->parent, value);
 }
 
 static inline void
-user_config_set_description(UserConfig* self, Str* value)
+db_config_set_description(DbConfig* self, Str* value)
 {
 	str_free(&self->description);
 	str_copy(&self->description, value);
 }
 
 static inline void
-user_config_set_created_at(UserConfig* self, Str* value)
+db_config_set_created_at(DbConfig* self, Str* value)
 {
 	str_free(&self->created_at);
 	str_copy(&self->created_at, value);
 }
 
 static inline void
-user_config_set_revoked_at(UserConfig* self, Str* value)
+db_config_set_revoked_at(DbConfig* self, Str* value)
 {
 	str_free(&self->revoked_at);
 	str_copy(&self->revoked_at, value);
 }
 
 static inline void
-user_config_set_agent(UserConfig* self, bool value)
+db_config_set_system(DbConfig* self, bool value)
 {
-	self->agent = value;
+	self->system = value;
 }
 
-static inline void
-user_config_set_superuser(UserConfig* self, bool value)
+static inline DbConfig*
+db_config_copy(DbConfig* self)
 {
-	self->superuser = value;
-}
-
-static inline UserConfig*
-user_config_copy(UserConfig* self)
-{
-	auto copy = user_config_allocate();
-	user_config_set_name(copy, &self->name);
-	user_config_set_parent(copy, &self->parent);
-	user_config_set_description(copy, &self->description);
-	user_config_set_created_at(copy, &self->created_at);
-	user_config_set_revoked_at(copy, &self->revoked_at);
-	user_config_set_agent(copy, self->agent);
-	user_config_set_superuser(copy, self->superuser);
+	auto copy = db_config_allocate();
+	db_config_set_name(copy, &self->name);
+	db_config_set_parent(copy, &self->parent);
+	db_config_set_description(copy, &self->description);
+	db_config_set_created_at(copy, &self->created_at);
+	db_config_set_revoked_at(copy, &self->revoked_at);
+	db_config_set_system(copy, self->system);
 	grants_copy(&copy->grants, &self->grants);
 	limits_copy(&copy->limits, &self->limits);
 	apis_copy(&copy->apis, &self->apis);
 	return copy;
 }
 
-static inline UserConfig*
-user_config_read(uint8_t** pos)
+static inline DbConfig*
+db_config_read(uint8_t** pos)
 {
-	auto self = user_config_allocate();
-	errdefer(user_config_free, self);
+	auto self = db_config_allocate();
+	errdefer(db_config_free, self);
 	uint8_t* pos_grants = NULL;
 	uint8_t* pos_limits = NULL;
 	uint8_t* pos_apis   = NULL;
@@ -137,14 +128,13 @@ user_config_read(uint8_t** pos)
 		{ DECODE_STR,   "description", &self->description },
 		{ DECODE_STR,   "created_at",  &self->created_at  },
 		{ DECODE_STR,   "revoked_at",  &self->revoked_at  },
-		{ DECODE_BOOL,  "agent",       &self->agent       },
-		{ DECODE_BOOL,  "superuser",   &self->superuser   },
+		{ DECODE_BOOL,  "system",      &self->system      },
 		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ DECODE_OBJ,   "limits",      &pos_limits        },
 		{ DECODE_ARRAY, "apis",        &pos_apis          },
 		{ 0,             NULL,          NULL              },
 	};
-	decode_obj(obj, "user", pos);
+	decode_obj(obj, "db", pos);
 
 	// grants
 	grants_read(&self->grants, &pos_grants);
@@ -158,7 +148,7 @@ user_config_read(uint8_t** pos)
 }
 
 static inline void
-user_config_write(UserConfig* self, Buf* buf, int flags)
+db_config_write(DbConfig* self, Buf* buf, int flags)
 {
 	unused(flags);
 
@@ -191,13 +181,9 @@ user_config_write(UserConfig* self, Buf* buf, int flags)
 	encode_raw(buf, "revoked_at", 10);
 	encode_str(buf, &self->revoked_at);
 
-	// agent
-	encode_raw(buf, "agent", 5);
-	encode_bool(buf, self->agent);
-
-	// superuser
-	encode_raw(buf, "superuser", 9);
-	encode_bool(buf, self->superuser);
+	// system
+	encode_raw(buf, "system", 6);
+	encode_bool(buf, self->system);
 
 	// grants
 	encode_raw(buf, "grants", 6);

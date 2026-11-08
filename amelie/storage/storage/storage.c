@@ -25,7 +25,7 @@ storage_init(Storage*   self,
              void*      iface_arg)
 {
 	unused(iface_eval);
-	catalog_init(&self->users, iface, iface_arg, NULL, NULL);
+	catalog_init(&self->databases, iface, iface_arg, NULL, NULL);
 	wal_init(&self->wal);
 	syncer_init(&self->syncer, self);
 }
@@ -33,7 +33,7 @@ storage_init(Storage*   self,
 void
 storage_free(Storage* self)
 {
-	catalog_free(&self->users);
+	catalog_free(&self->databases);
 	wal_free(&self->wal);
 }
 
@@ -49,16 +49,16 @@ storage_bootstrap(Storage* self)
 	defer(tr_free, &tr);
 	auto on_error = error_catch
 	(
-		// create amelie user
-		auto user_config = user_config_allocate();
-		defer(user_config_free, user_config);
+		// create amelie db
+		auto config = db_config_allocate();
+		defer(db_config_free, config);
 		Str name;
 		str_init(&name);
 		str_set_cstr(&name, "amelie");
-		user_config_set_name(user_config, &name);
-		user_config_set_parent(user_config, &name);
-		user_config_set_superuser(user_config, true);
-		user_create(&self->users, &tr, user_config, false);
+		db_config_set_name(config, &name);
+		db_config_set_parent(config, &name);
+		db_config_set_system(config, true);
+		db_create(&self->databases, &tr, config, false);
 
 		// commit
 		tr_commit(&tr);
@@ -80,7 +80,7 @@ storage_open(Storage* self, bool bootstrap)
 	// to the wal_truncate option
 	wal_open(&self->wal);
 
-	// create superuser
+	// create system db
 	storage_bootstrap(self);
 
 	// create initial checkpoint

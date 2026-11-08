@@ -31,7 +31,6 @@ Keyword keywords[] =
 	{ KAS,                    "as",                    2  },
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
-	{ KAGENT,                 "agent",                 5  },
 	{ KAPI,                   "api",                   3  },
 
 	// b
@@ -44,8 +43,7 @@ Keyword keywords[] =
 	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
 	{ KCURRENT_DATE,          "current_date",          12 },
-	{ KCURRENT_USER,          "current_user",          12 },
-	{ KCURRENT_AGENT,         "current_agent",         13 },
+	{ KCURRENT_DATABASE,      "current_database",      16 },
 	{ KCAST,                  "cast",                  4  },
 	{ KCASE,                  "case",                  4  },
 	{ KCALL,                  "call",                  4  },
@@ -70,6 +68,7 @@ Keyword keywords[] =
 	{ KDEBUG,                 "debug",                 5  },
 	{ KDEFAULT,               "default",               7  },
 	{ KDATE,                  "date",                  4  },
+	{ KDATABASE,              "database",              8  },
 
 	// e
 	{ KEXTRACT,               "extract",               7  },
@@ -185,7 +184,6 @@ Keyword keywords[] =
 	{ KUPDATE,                "update",                6  },
 	{ KUUID,                  "uuid",                  4  },
 	{ KUNSET,                 "unset",                 5  },
-	{ KUSER,                  "user",                  4  },
 	{ KUNIQUE,                "unique",                6  },
 	{ KUSING,                 "using",                 5  },
 	{ KURI,                   "uri",                   3  },

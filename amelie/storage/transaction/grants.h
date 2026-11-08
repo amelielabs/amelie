@@ -68,12 +68,12 @@ grants_next(Grants* self, Grant* grant)
 }
 
 hot static inline Grant*
-grants_find(Grants* self, Str* user)
+grants_find(Grants* self, Str* name)
 {
 	auto grant = grants_first(self);
 	while (grant)
 	{
-		if (grant->name_size == str_size(user) && str_is(user, grant->name, grant->name_size))
+		if (grant->name_size == str_size(name) && str_is(name, grant->name, grant->name_size))
 			return grant;
 		grant = grants_next(self, grant);
 	}
@@ -81,21 +81,21 @@ grants_find(Grants* self, Str* user)
 }
 
 hot static inline Grant*
-grants_add(Grants* self, Str* user, uint32_t permissions)
+grants_add(Grants* self, Str* name, uint32_t permissions)
 {
-	// update existing user grants
-	auto grant = grants_find(self, user);
+	// update existing name grants
+	auto grant = grants_find(self, name);
 	if (grant)
 	{
 		grant->permissions |= permissions;
 		return grant;
 	}
 
-	// add new user
-	grant = (Grant*)buf_emplace(&self->list, sizeof(Grant) + str_size(user));
+	// add new name
+	grant = (Grant*)buf_emplace(&self->list, sizeof(Grant) + str_size(name));
 	grant->permissions = permissions;
-	grant->name_size = str_size(user);
-	memcpy(grant->name, str_u8(user), grant->name_size);
+	grant->name_size = str_size(name);
+	memcpy(grant->name, str_u8(name), grant->name_size);
 	return grant;
 }
 
@@ -113,31 +113,31 @@ grants_copy(Grants* self, Grants* from)
 }
 
 hot static inline void
-grants_copy_rename(Grants* self, Grants* from, Str* user, Str* user_new)
+grants_copy_rename(Grants* self, Grants* from, Str* name, Str* name_new)
 {
 	auto grant = grants_first(from);
 	while (grant)
 	{
-		Str name;
-		str_set(&name, (char*)grant->name, grant->name_size);
-		if (str_compare(&name, user))
-			name = *user_new;
-		grants_add(self, &name, grant->permissions);
+		Str str;
+		str_set(&str, (char*)grant->name, grant->name_size);
+		if (str_compare(&str, name))
+			str = *name_new;
+		grants_add(self, &str, grant->permissions);
 		grant = grants_next(from, grant);
 	}
 }
 
 hot static inline void
-grants_remove(Grants* self, Str* user, uint32_t permissions)
+grants_remove(Grants* self, Str* name, uint32_t permissions)
 {
-	// update existing user grants
-	auto grant = grants_find(self, user);
+	// update existing name grants
+	auto grant = grants_find(self, name);
 	if (! grant)
 		return;
 	grant->permissions &= ~permissions;
 	if (grant->permissions)
 		return;
-	// remove user from the list
+	// remove name from the list
 	auto size = sizeof(Grant) + grant->name_size;
 	auto next = grants_next(self, grant);
 	if (next)
@@ -149,9 +149,9 @@ grants_remove(Grants* self, Str* user, uint32_t permissions)
 }
 
 hot static inline bool
-grants_check(Grants* self, Str* user, uint32_t permissions)
+grants_check(Grants* self, Str* name, uint32_t permissions)
 {
-	auto grant = grants_find(self, user);
+	auto grant = grants_find(self, name);
 	if (! grant)
 		return false;
 	return (grant->permissions & permissions) == permissions;
@@ -174,8 +174,8 @@ grants_read(Grants* self, uint8_t** pos)
 	while (! unpack_array_end(pos))
 	{
 		unpack_array(pos);
-		Str user;
-		unpack_str(pos, &user);
+		Str name;
+		unpack_str(pos, &name);
 		uint32_t permissions = PERM_NONE;
 		while (! unpack_array_end(pos))
 		{
@@ -186,7 +186,7 @@ grants_read(Grants* self, uint8_t** pos)
 				error("grants: unrecognized permission '{str}'", &name);
 			permissions |= permission;
 		}
-		grants_add(self, &user, permissions);
+		grants_add(self, &name, permissions);
 	}
 }
 

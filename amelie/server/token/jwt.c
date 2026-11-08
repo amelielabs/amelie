@@ -17,7 +17,7 @@ Buf*
 jwt_create(Str* user, Str* secret, Timestamp* expire)
 {
 	if (str_empty(secret))
-		error("jwt: user secret is not set");
+		error("jwt: secret is not set");
 
 	JwtEncode jwt;
 	jwt_encode_init(&jwt);

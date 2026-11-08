@@ -39,7 +39,6 @@ limits_names[LIMIT_MAX] =
 	{ "memory",         6  },
 
 	// relations
-	{ "users",          5  },
 	{ "tables",         6  },
 	{ "indexes",        7  },
 	{ "functions",      9  },

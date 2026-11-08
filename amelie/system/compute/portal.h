@@ -15,7 +15,7 @@ typedef struct Portal Portal;
 
 struct Portal
 {
-	User*    user;
+	Db*      db;
 	Lock*    lock;
 	Endpoint endpoint;
 	Local    local;
@@ -25,7 +25,7 @@ struct Portal
 static inline void
 portal_lock(Portal* self, LockId id)
 {
-	// take users lock
+	// take storage lock
 	if (self->lock)
 	{
 		if (self->lock->lock == id)
@@ -33,7 +33,7 @@ portal_lock(Portal* self, LockId id)
 		unlock(self->lock);
 		self->lock = NULL;
 	}
-	self->lock = lock_users(id);
+	self->lock = lock_storage(id);
 	if (self->lock)
 		lock_detach(self->lock);
 }
@@ -52,7 +52,7 @@ static inline void
 portal_reset(Portal* self, bool with_endpoint)
 {
 	portal_unlock(self);
-	self->user = NULL;
+	self->db = NULL;
 	if (with_endpoint)
 		endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
@@ -70,7 +70,7 @@ portal_free(Portal* self)
 static inline void
 portal_init(Portal* self)
 {
-	self->user = NULL;
+	self->db   = NULL;
 	self->lock = NULL;
 	endpoint_init(&self->endpoint);
 	local_init(&self->local);
@@ -96,15 +96,15 @@ portal_prepare(Portal* self)
 hot static inline void
 portal_auth(Portal* self, Auth* auth, Token* token)
 {
-	// take users lock
+	// take storage lock
 	portal_lock(self, LOCK_SHARED);
 
-	// authenticate user/token
+	// authenticate token
 	auto endpoint = &self->endpoint;
-	self->user = auth_run(auth, endpoint, token);
+	self->db = auth_run(auth, endpoint, token);
 
-	// set user name
-	opt_string_set(&endpoint->user, &self->user->config->name);
+	// set db
+	opt_string_set(&endpoint->db, &self->db->config->name);
 }
 
 hot static inline void
@@ -113,11 +113,11 @@ portal_set_local(Portal* self, bool with_limits)
 	// set limits
 	auto local = &self->local;
 	if (with_limits)
-		local->limits = &self->user->config->limits;
+		local->limits = &self->db->config->limits;
 
 	// set timezone
 	local->timezone = self->output.timezone;
-	str_set_str(&local->user, &self->user->config->name);
+	str_set_str(&local->db, &self->db->config->name);
 
 	// set time
 	local->time_us = opt_int_of(&self->endpoint.time);
@@ -130,44 +130,17 @@ portal_set_local(Portal* self, bool with_limits)
 }
 
 hot static inline void
-portal_set(Portal* self, Str* user, bool with_limits)
+portal_set(Portal* self, Str* db, bool with_limits)
 {
-	// take users lock
+	// take storage lock
 	portal_lock(self, LOCK_SHARED);
 
-	// find user
-	self->user = catalog_find_user(&share()->storage->users, user, true);
+	// find db
+	self->db = catalog_find_db(&share()->storage->databases, db, true);
 
 	// configure local
 	portal_set_local(self, with_limits);
 
 	// set output local (enforce send limit)
 	output_set_local(&self->output, &self->local);
-}
-
-hot static inline bool
-portal_target(char** pos, char* end, Str* user, Str* name)
-{
-	str_init(user);
-	str_init(name);
-
-	// path
-	// path [,]
-	auto start = *pos;
-	while (*pos < end && **pos != ',')
-		(*pos)++;
-	Str path;
-	str_set(&path, start, *pos - start);
-	if (*pos != end)
-		(*pos)++;
-	if (str_empty(&path))
-		return false;
-
-	// user[.name]
-	if (str_split(&path, user, '.'))
-	{
-		*name = path;
-		str_advance(name, str_size(user) + 1);
-	}
-	return true;
 }

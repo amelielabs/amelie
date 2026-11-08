@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void dst_validate_user(DstUser*);
+void dst_validate_db(DstDb*);
 void dst_validate(Dst*);

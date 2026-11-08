@@ -26,8 +26,8 @@ link_sql(Link* self)
 	auto http     = &self->client->request;
 
 	// check permission
-	if (! portal->user->config->superuser)
-		check_permission_on(&portal->user->config->grants, PERM_SQL);
+	if (! portal->db->config->system)
+		check_permission_on(&portal->db->config->grants, PERM_SQL);
 
 	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];
@@ -138,21 +138,21 @@ link_api(Link* self)
 
 	// find api
 	auto uri = opt_string_of(&endpoint->endpoint);
-	self->api = apis_find(&portal->user->config->apis, uri);
+	self->api = apis_find(&portal->db->config->apis, uri);
 	if (! self->api)
-		error("user {str}: api '{str}' not found",
-		      &portal->user->config->name, uri);
+		error("db {str}: api '{str}' not found",
+		      &portal->db->config->name, uri);
 
 	// mcp request
 	if (self->api->mcp)
 		return link_api_mcp(self);
 
-	// GET /<user_api> (feed)
+	// GET /<db_api> (feed)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(str_is_case(method, "GET", 3)))
 		return link_api_get(self);
 
-	// POST /<user_api> (application/json)
+	// POST /<db_api> (application/json)
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method: {str}", method);
 
@@ -235,7 +235,7 @@ link_request(Link* self)
 		uri_parse_request(endpoint, &http->options[HTTP_URL]);
 		request_init(&self->req);
 
-		// / or /<user_api>
+		// / or /<db_api>
 		if (str_is(opt_string_of(&endpoint->endpoint), "/", 1))
 			rc = link_root(self);
 		else

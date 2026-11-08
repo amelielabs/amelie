@@ -23,7 +23,7 @@ endpoint_init(Endpoint* self)
 		// protocol
 		{ "proto",        OPT_INT,     OPT_C,              &self->proto,        NULL, PROTO_HTTP },
 		// auth
-		{ "user",         OPT_STRING,  OPT_C,              &self->user,         NULL, 0          },
+		{ "db",           OPT_STRING,  OPT_C,              &self->db,           NULL, 0          },
 		{ "token",        OPT_STRING,  OPT_C|OPT_A,        &self->token,        NULL, 0          },
 		{ "token_type",   OPT_INT,     OPT_C,              &self->token_type,   NULL, TOKEN_NONE },
 		// host
@@ -80,13 +80,13 @@ void
 endpoint_auth(Endpoint* self)
 {
 	auto token = opt_string_of(&self->token);
-	auto user  = opt_string_of(&self->user);
+	auto db    = opt_string_of(&self->db);
 
 	// no token
 	if (str_empty(token))
 	{
-		// no user
-		if (str_empty(user))
+		// no db
+		if (str_empty(db))
 		{
 			opt_int_set(&self->token_type, TOKEN_NONE);
 			return;
@@ -95,7 +95,7 @@ endpoint_auth(Endpoint* self)
 		// create basic token (password is empty)
 		Str password;
 		str_init(&password);
-		auto buf = basic_encode(user, &password);
+		auto buf = basic_encode(db, &password);
 		defer_buf(buf);
 
 		opt_string_set_buf(&self->token, buf);
@@ -103,7 +103,7 @@ endpoint_auth(Endpoint* self)
 		return;
 	}
 
-	// set token type and update user name
+	// set token type and update db name
 	if (str_chr(token, '.'))
 	{
 		// read jwt token
@@ -118,17 +118,17 @@ endpoint_auth(Endpoint* self)
 		str_init(&sub);
 		jwt_decode_data(&jwt, &sub, &iat, &exp);
 
-		opt_string_set(&self->user, &sub);
+		opt_string_set(&self->db, &sub);
 		opt_int_set(&self->token_type, TOKEN_JWT);
 		return;
 	}
 
 	// read basic token
-	Str basic_user;
+	Str basic_db;
 	Str basic_password;
-	auto buf = basic_decode(token, &basic_user, &basic_password);
+	auto buf = basic_decode(token, &basic_db, &basic_password);
 	defer_buf(buf);
 
-	opt_string_set(&self->user, &basic_user);
+	opt_string_set(&self->db, &basic_db);
 	opt_int_set(&self->token_type, TOKEN_BASIC);
 }

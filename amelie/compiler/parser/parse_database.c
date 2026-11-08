@@ -19,7 +19,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_user_limits(Stmt* self, Limits* limits)
+parse_database_limits(Stmt* self, Limits* limits)
 {
 	for (;;)
 	{
@@ -47,7 +47,7 @@ parse_user_limits(Stmt* self, Limits* limits)
 }
 
 static uint64_t
-parse_user_limits_mask(Stmt* self)
+parse_database_limits_mask(Stmt* self)
 {
 	uint64_t mask = 0;
 	for (;;)
@@ -71,36 +71,27 @@ parse_user_limits_mask(Stmt* self)
 }
 
 void
-parse_user_create(Stmt* self, bool agent)
+parse_database_create(Stmt* self)
 {
-	// CREATE USER|AGENT [IF NOT EXISTS] name
+	// CREATE DATABASE [IF NOT EXISTS] name
 	// [DESCRIPTION]
 	// [LIMIT]
 	// [API]
-	auto stmt = ast_user_create_allocate();
+	auto stmt = ast_database_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
-	// create user config
-	auto config = user_config_allocate();
+	// create database config
+	auto config = db_config_allocate();
 	stmt->config = config;
 
 	// name
 	auto name = stmt_expect(self, KNAME);
 
-	/*user_config_set_parent(config, &user);*/
-	user_config_set_name(config, &name->string);
-	user_config_set_agent(config, agent);
-
-	// [DESCRIPTION]
-	auto description = stmt_if(self, KDESCRIPTION);
-	if (description)
-	{
-		auto text = stmt_expect(self, KSTRING);
-		user_config_set_description(config, &text->string);
-	}
+	/*db_config_set_parent(config, &database);*/
+	db_config_set_name(config, &name->string);
 
 	// set timestamp
 	char ts[64];
@@ -108,7 +99,7 @@ parse_user_create(Stmt* self, bool agent)
 	auto size = timestamp_get(time, runtime()->timezone, ts, sizeof(ts));
 	Str created_at;
 	str_set(&created_at, ts, size);
-	user_config_set_created_at(config, &created_at);
+	db_config_set_created_at(config, &created_at);
 
 	// set options
 	for (;;)
@@ -125,14 +116,14 @@ parse_user_create(Stmt* self, bool agent)
 		if (str_is_case(&name->string, "description", 11))
 		{
 			auto text = stmt_expect(self, KSTRING);
-			user_config_set_description(config, &text->string);
+			db_config_set_description(config, &text->string);
 			continue;
 		}
 
 		// LIMIT name = value, ...
 		if (str_is_case(&name->string, "limit", 5))
 		{
-			parse_user_limits(self, &config->limits);
+			parse_database_limits(self, &config->limits);
 			continue;
 		}
 
@@ -153,7 +144,7 @@ parse_user_create(Stmt* self, bool agent)
 			timestamp_init(&ts);
 			if (unlikely(error_catch( timestamp_set(&ts, &value->string) )))
 				stmt_error(self, value, "invalid timestamp value");
-			user_config_set_created_at(config, &value->string);
+			db_config_set_created_at(config, &value->string);
 			continue;
 		}
 
@@ -167,7 +158,7 @@ parse_user_create(Stmt* self, bool agent)
 			timestamp_init(&ts);
 			if (unlikely(error_catch( timestamp_set(&ts, &value->string) )))
 				stmt_error(self, value, "invalid timestamp value");
-			user_config_set_revoked_at(config, &value->string);
+			db_config_set_revoked_at(config, &value->string);
 			continue;
 		}
 
@@ -190,17 +181,17 @@ parse_user_create(Stmt* self, bool agent)
 			PERM_CREATE_FUNCTION |
 			PERM_CREATE_API      |
 			PERM_SQL;
-		Str user_self;
-		str_set_cstr(&user_self, "self");
-		grants_add(&config->grants, &user_self, perms_all);
+		Str database_self;
+		str_set_cstr(&database_self, "self");
+		grants_add(&config->grants, &database_self, perms_all);
 	}
 }
 
 void
-parse_user_drop(Stmt* self)
+parse_database_drop(Stmt* self)
 {
-	// DROP USER|AGENT [IF EXISTS] name [CASCADE]
-	auto stmt = ast_user_drop_allocate();
+	// DROP DATABASE [IF EXISTS] name [CASCADE]
+	auto stmt = ast_database_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -216,16 +207,16 @@ parse_user_drop(Stmt* self)
 }
 
 void
-parse_user_alter(Stmt* self)
+parse_database_alter(Stmt* self)
 {
-	// ALTER USER|AGENT [IF EXISTS] name RENAME name
-	// ALTER USER|AGENT [IF EXISTS] name REVOKE TOKEN
-	// ALTER USER|AGENT [IF EXISTS] name DESCRIPTION value
-	// ALTER USER|AGENT [IF EXISTS] name SET LIMIT name = value, ...
-	// ALTER USER|AGENT [IF EXISTS] name UNSET LIMIT name, ...
-	// ALTER USER|AGENT [IF EXISTS] name ADD API uri ON target
-	// ALTER USER|AGENT [IF EXISTS] name DROP API uri
-	auto stmt = ast_user_alter_allocate();
+	// ALTER DATABASE [IF EXISTS] name RENAME name
+	// ALTER DATABASE [IF EXISTS] name REVOKE TOKEN
+	// ALTER DATABASE [IF EXISTS] name DESCRIPTION value
+	// ALTER DATABASE [IF EXISTS] name SET LIMIT name = value, ...
+	// ALTER DATABASE [IF EXISTS] name UNSET LIMIT name, ...
+	// ALTER DATABASE [IF EXISTS] name ADD API uri ON target
+	// ALTER DATABASE [IF EXISTS] name DROP API uri
+	auto stmt = ast_database_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -239,7 +230,7 @@ parse_user_alter(Stmt* self)
 	if (stmt_if(self, KRENAME))
 	{
 		// RENAME
-		stmt->type = USER_ALTER_RENAME;
+		stmt->type = DATABASE_ALTER_RENAME;
 
 		// TO
 		stmt_expect(self, KTO);
@@ -254,7 +245,7 @@ parse_user_alter(Stmt* self)
 		stmt_expect(self, KTOKEN);
 
 		// REVOKE
-		stmt->type = USER_ALTER_REVOKE_TOKEN;
+		stmt->type = DATABASE_ALTER_REVOKE_TOKEN;
 
 		// set timestamp
 		auto ts = palloc(64);
@@ -265,28 +256,28 @@ parse_user_alter(Stmt* self)
 	if (stmt_if(self, KDESCRIPTION))
 	{
 		auto text = stmt_expect(self, KSTRING);
-		stmt->type = USER_ALTER_DESCRIPTION;
+		stmt->type = DATABASE_ALTER_DESCRIPTION;
 		stmt->description = text->string;
 	} else
 	if (stmt_if(self, KSET))
 	{
 		// SET LIMIT name = value, ...
 		stmt_expect(self, KLIMIT);
-		stmt->type = USER_ALTER_LIMIT_SET;
-		parse_user_limits(self, &stmt->limits);
+		stmt->type = DATABASE_ALTER_LIMIT_SET;
+		parse_database_limits(self, &stmt->limits);
 
 	} else
 	if (stmt_if(self, KUNSET))
 	{
 		// UNSET LIMIT name, ...
 		stmt_expect(self, KLIMIT);
-		stmt->type = USER_ALTER_LIMIT_UNSET;
-		stmt->limits_mask = parse_user_limits_mask(self);
+		stmt->type = DATABASE_ALTER_LIMIT_UNSET;
+		stmt->limits_mask = parse_database_limits_mask(self);
 	} else
 	if (stmt_if(self, KADD))
 	{
 		stmt_expect(self, KAPI);
-		stmt->type = USER_ALTER_API_ADD;
+		stmt->type = DATABASE_ALTER_API_ADD;
 
 		Apis apis;
 		apis_init(&apis);
@@ -297,7 +288,7 @@ parse_user_alter(Stmt* self)
 	if (stmt_if(self, KDROP))
 	{
 		stmt_expect(self, KAPI);
-		stmt->type = USER_ALTER_API_DROP;
+		stmt->type = DATABASE_ALTER_API_DROP;
 		auto uri = stmt_expect(self, KSTRING);
 		stmt->api_uri = uri->string;
 	} else

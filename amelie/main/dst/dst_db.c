@@ -14,10 +14,10 @@
 #include <amelie_main.h>
 #include <amelie_main_dst.h>
 
-DstUser*
-dst_user_allocate(Dst* dst, uint64_t id)
+DstDb*
+dst_db_allocate(Dst* dst, uint64_t id)
 {
-	auto self = (DstUser*)am_malloc(sizeof(DstUser));
+	auto self = (DstDb*)am_malloc(sizeof(DstDb));
 	self->id         = id;
 	self->client     = NULL;
 	self->dst        = dst;
@@ -31,7 +31,7 @@ dst_user_allocate(Dst* dst, uint64_t id)
 }
 
 void
-dst_user_free(DstUser* self)
+dst_db_free(DstDb* self)
 {
 	if (self->client)
 		client_free(self->client);
@@ -46,18 +46,18 @@ dst_user_free(DstUser* self)
 }
 
 void
-dst_user_connect(DstUser* self)
+dst_db_connect(DstDb* self)
 {
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{str}/env", opt_string_of(&self->dst->opt_dir));
 
 	char name[32];
-	format(name, sizeof(name), "user_{d}", self->id);
+	format(name, sizeof(name), "db_{d}", self->id);
 
 	// connect 
 	auto endpoint = &self->endpoint;
 	opt_string_set_cstr(&endpoint->path, path);
-	opt_string_set_cstr(&endpoint->user, name);
+	opt_string_set_cstr(&endpoint->db, name);
 	opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
 	opt_string_set_raw(&endpoint->accept, "application/json", 16);
 	endpoint_auth(endpoint);
@@ -68,7 +68,7 @@ dst_user_connect(DstUser* self)
 }
 
 void
-dst_user_close(DstUser* self)
+dst_db_close(DstDb* self)
 {
 	if (! self->client)
 		return;
@@ -77,7 +77,7 @@ dst_user_close(DstUser* self)
 }
 
 DstRel*
-dst_user_create(DstUser* self, int type)
+dst_db_create(DstDb* self, int type)
 {
 	// set next id
 	auto id = self->rels_seq++;
@@ -125,7 +125,7 @@ dst_user_create(DstUser* self, int type)
 }
 
 DstRel*
-dst_user_create_for(DstUser* self, DstRel* parent, int type)
+dst_db_create_for(DstDb* self, DstRel* parent, int type)
 {
 	// set next id
 	auto id = self->rels_seq++;
@@ -160,7 +160,7 @@ dst_user_create_for(DstUser* self, DstRel* parent, int type)
 }
 
 void
-dst_user_drop(DstUser* self, DstRel* rel)
+dst_db_drop(DstDb* self, DstRel* rel)
 {
 	dst_stat(&self->dst->stats, DST_STAT_DROP);
 

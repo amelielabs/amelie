@@ -23,7 +23,7 @@ bench_init(Bench* self, Main* main)
 	OptsDef defs[] =
 	{
 		{ "type",      OPT_STRING, OPT_C,       &self->opt_type,     "tpcb", 0     },
-		{ "users",     OPT_INT,    OPT_C|OPT_Z, &self->opt_users,     NULL,  1     },
+		{ "databases", OPT_INT,    OPT_C|OPT_Z, &self->opt_databases, NULL,  1     },
 		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->opt_clients,   NULL,  32    },
 		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->opt_duration,  NULL,  10    },
 		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->opt_batch,     NULL,  64    },
@@ -51,7 +51,7 @@ bench_free(Bench* self)
 }
 
 static void
-bench_deploy_client(BenchClient* self, int user_id, bool deploy)
+bench_deploy_client(BenchClient* self, int db_id, bool deploy)
 {
 	auto endpoint_main = &self->bench->main->endpoint;
 	auto endpoint = &self->endpoint;
@@ -66,12 +66,12 @@ bench_deploy_client(BenchClient* self, int user_id, bool deploy)
 		opt_string_set(&endpoint->host, &host->string);
 	opt_int_set(&endpoint->port, port->integer);
 
-	// set user
+	// set db
 	char name[16];
-	format(name, sizeof(name), "bench_{d}", user_id);
+	format(name, sizeof(name), "db_{d}", db_id);
 	Str str;
 	str_set_cstr(&str, name);
-	opt_string_set(&endpoint->user, &str);
+	opt_string_set(&endpoint->db, &str);
 	endpoint_auth(endpoint);
 
 	// connnect
@@ -81,7 +81,7 @@ bench_deploy_client(BenchClient* self, int user_id, bool deploy)
 		client_set_histogram(self->client, &self->bench->histogram);
 	client_connect(self->client);
 
-	// create user relations
+	// create relations
 	if (deploy)
 		self->bench->iface->deploy(self);
 }
@@ -89,24 +89,24 @@ bench_deploy_client(BenchClient* self, int user_id, bool deploy)
 static void
 bench_create(Bench* self)
 {
-	// create users (under superuser)
-	auto users  = (int)self->opt_users.integer;
+	// create databases
+	auto databases = (int)self->opt_databases.integer;
 	auto client = client_allocate();
 	defer(client_free, client);
 	client_set_endpoint(client, &self->main->endpoint);
 	client_connect(client);
-	for (auto i = 0; i < users; i++)
+	for (auto i = 0; i < databases; i++)
 	{
 		char name[16];
-		format(name, sizeof(name), "bench_{d}", i);
+		format(name, sizeof(name), "db_{d}", i);
 		Str str;
 		str_set_cstr(&str, name);
 
 		char cmd[256];
-		format(cmd, sizeof(cmd), "drop user if exists {str} cascade", &str);
+		format(cmd, sizeof(cmd), "drop database if exists {str} cascade", &str);
 		client_run(client, cmd);
 
-		format(cmd, sizeof(cmd), "create user {str}", &str);
+		format(cmd, sizeof(cmd), "create database {str}", &str);
 		client_run(client, cmd);
 	}
 }
@@ -115,14 +115,14 @@ static void
 bench_deploy(Bench* self)
 {
 	// prepare clients
-	auto users   = (int)self->opt_users.integer;
-	auto clients = (int)self->opt_clients.integer;
-	auto size    = sizeof(BenchClient) * users * clients;
+	auto databases = (int)self->opt_databases.integer;
+	auto clients   = (int)self->opt_clients.integer;
+	auto size      = sizeof(BenchClient) * databases * clients;
 
-	// create users
+	// create databases
 	bench_create(self);
 
-	self->clients_count = users * clients;
+	self->clients_count = databases * clients;
 	self->clients = am_malloc(size);
 	for (auto i = 0; i < self->clients_count; i++)
 	{
@@ -134,7 +134,7 @@ bench_deploy(Bench* self)
 
 	// connect clients
 	auto seq = 0;
-	for (auto i = 0; i < users; i++)
+	for (auto i = 0; i < databases; i++)
 	{
 		auto at = &self->clients[seq];
 		bench_deploy_client(at, i, true);
@@ -210,11 +210,11 @@ bench_run(Bench* self)
 	info("");
 	info("amelie benchmark.");
 	info("");
-	info("type:     {str}",     opt_string_of(&self->opt_type));
-	info("duration: {u64} sec", opt_int_of(&self->opt_duration));
-	info("users:    {u64} ",    opt_int_of(&self->opt_users));
-	info("clients:  {u64} ",    opt_int_of(&self->opt_clients));
-	info("batch:    {u64}",     opt_int_of(&self->opt_batch));
+	info("type:      {str}",     opt_string_of(&self->opt_type));
+	info("duration:  {u64} sec", opt_int_of(&self->opt_duration));
+	info("databases: {u64} ",    opt_int_of(&self->opt_databases));
+	info("clients:   {u64} ",    opt_int_of(&self->opt_clients));
+	info("batch:     {u64}",     opt_int_of(&self->opt_batch));
 	info("");
 
 	// set benchmark

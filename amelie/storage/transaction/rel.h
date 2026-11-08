@@ -19,7 +19,7 @@ typedef void (*RelShow)(Rel*, Buf*, int);
 typedef enum
 {
 	REL_UNDEF,
-	REL_USER,
+	REL_DB,
 	REL_TABLE,
 	REL_UDF
 } RelType;
@@ -40,7 +40,7 @@ rel_type_of(RelType type)
 {
 	switch (type) {
 	case REL_UNDEF: return "relation";
-	case REL_USER:  return "user";
+	case REL_DB:    return "database";
 	case REL_TABLE: return "table";
 	case REL_UDF:   return "function";
 	default:

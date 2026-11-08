@@ -108,7 +108,7 @@ parse_index_create(Stmt* self, bool unique)
 	stmt->table_name = table_name->string;
 
 	// find table
-	auto table = catalog_find_table(&self->parser->user->catalog, &stmt->table_name, false);
+	auto table = catalog_find_table(&self->parser->db->catalog, &stmt->table_name, false);
 	if (! table)
 		stmt_error(self, table_name, "table not found");
 

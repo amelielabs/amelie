@@ -199,7 +199,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/transaction/rels.c
     ${AMELIE_ROOT}/storage/part/part.c
     ${AMELIE_ROOT}/storage/part/part_op.c
-    ${AMELIE_ROOT}/storage/catalog/user.c
+    ${AMELIE_ROOT}/storage/catalog/db.c
     ${AMELIE_ROOT}/storage/catalog/table.c
     ${AMELIE_ROOT}/storage/catalog/table_alter.c
     ${AMELIE_ROOT}/storage/catalog/table_index_create.c
@@ -210,14 +210,12 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/catalog/describe.c
     ${AMELIE_ROOT}/storage/catalog/mcp.c
     ${AMELIE_ROOT}/storage/catalog/execute.c
-
     ${AMELIE_ROOT}/storage/wal/wal.c
     ${AMELIE_ROOT}/storage/wal/wal_recovery.c
     ${AMELIE_ROOT}/storage/wal/wal_write.c
     ${AMELIE_ROOT}/storage/wal/wal_cursor.c
     ${AMELIE_ROOT}/storage/wal/wal_slot.c
     ${AMELIE_ROOT}/storage/wal/wal_subscribe.c
-
     #${AMELIE_ROOT}/storage/storage/checkpoints.c
     #${AMELIE_ROOT}/storage/storage/checkpoint.c
     ${AMELIE_ROOT}/storage/storage/syncer.c
@@ -287,7 +285,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_grant.c
-    ${AMELIE_ROOT}/compiler/parser/parse_user.c
+    ${AMELIE_ROOT}/compiler/parser/parse_database.c
     ${AMELIE_ROOT}/compiler/parser/parse_api.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
@@ -371,7 +369,7 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/test/test_suite.c
     ${AMELIE_ROOT}/main/test/test_command.c
     ${AMELIE_ROOT}/main/test/test_main.c
-    ${AMELIE_ROOT}/main/dst/dst_user.c
+    ${AMELIE_ROOT}/main/dst/dst_db.c
     ${AMELIE_ROOT}/main/dst/dst_stat.c
     ${AMELIE_ROOT}/main/dst/dst.c
     ${AMELIE_ROOT}/main/dst/dst_step.c

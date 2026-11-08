@@ -38,7 +38,7 @@ auth_reset(Auth* self)
 	self->amelie = NULL;
 }
 
-hot static inline User*
+hot static inline Db*
 auth_jwt(Auth* self, Str* token, uint64_t* expire)
 {
 	auto jwt = &self->jwt;
@@ -58,32 +58,32 @@ auth_jwt(Auth* self, Str* token, uint64_t* expire)
 
 	// validate issue/expire fields
 	if (!iat || !exp || iat > exp)
-		error("auth: user '{str}' has invalid iat/exp fields", &sub);
+		error("auth: db '{str}' token has invalid iat/exp fields", &sub);
 
 	// ensure token has not expired
 	int64_t now = time_us();
 	if (now >= exp)
-		error("auth: user '{str}' token has expired", &sub);
+		error("auth: db '{str}' token has expired", &sub);
 
-	// find user
-	auto user = catalog_find_user(&share()->storage->users, &sub, false);
-	if (! user)
-		error("auth: user '{str}' not found", &sub);
+	// find db
+	auto db = catalog_find_db(&share()->storage->databases, &sub, false);
+	if (! db)
+		error("auth: db '{str}' not found", &sub);
 
-	// check issued time against user revoked_at
-	if (iat <= (int64_t)user->inv_revoked)
-		error("auth: user '{str}' token has been revoked", &sub);
+	// check issued time against db revoked_at
+	if (iat <= (int64_t)db->inv_revoked)
+		error("auth: db '{str}' token has been revoked", &sub);
 
 	// validate token using secret
 	auto secret = opt_string_of(&state()->secret);
 	if (! jwt_decode_validate(jwt, secret))
-		error("auth: user '{str}' token is invalid", &sub);
+		error("auth: db '{str}' token is invalid", &sub);
 
 	*expire = exp;
-	return user;
+	return db;
 }
 
-hot static inline User*
+hot static inline Db*
 auth_basic(Auth* self, Str* token)
 {
 	unused(self);
@@ -97,15 +97,15 @@ auth_basic(Auth* self, Str* token)
 	auto buf = basic_decode(&basic, &name, &password);
 	defer_buf(buf);
 
-	// find user
-	auto user = catalog_find_user(&share()->storage->users, &name, false);
-	if (! user)
-		error("auth: user '{str}' not found", &name);
+	// find db
+	auto db = catalog_find_db(&share()->storage->databases, &name, false);
+	if (! db)
+		error("auth: db '{str}' not found", &name);
 
-	return user;
+	return db;
 }
 
-hot static inline User*
+hot static inline Db*
 auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 {
 	*expire = UINT64_MAX;
@@ -120,10 +120,10 @@ auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 		if (self->amelie)
 			return self->amelie;
 
-		// set superuser
+		// set system
 		Str name;
 		str_set(&name, "amelie", 6);
-		self->amelie = catalog_find_user(&share()->storage->users, &name, true);
+		self->amelie = catalog_find_db(&share()->storage->databases, &name, true);
 		return self->amelie;
 	}
 
@@ -145,7 +145,7 @@ auth_token(Auth* self, Str* token, bool trusted, uint64_t* expire)
 	return NULL;
 }
 
-User*
+Db*
 auth_run(Auth* self, Endpoint* endpoint, Token* token)
 {
 	uint64_t seq_secret = opt_int_of(&state()->secret_seq);
@@ -159,9 +159,9 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 		           token->expire > now &&
 		           str_compare(ref, &token->token)))
 		{
-			auto user = catalog_find_user(&share()->storage->users, &token->user, true);
-			if (user->inv_seq == token->seq_user)
-				return user;
+			auto db = catalog_find_db(&share()->storage->databases, &token->db, true);
+			if (db->inv_seq == token->seq_db)
+				return db;
 		}
 
 		// invalidate token
@@ -170,15 +170,15 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 
 	auto trusted = opt_int_of(&endpoint->trusted);
 
-	// authenticate user
+	// authenticate token
 	uint64_t expire;
-	auto user = auth_token(self, ref, trusted, &expire);
+	auto db = auth_token(self, ref, trusted, &expire);
 
-	// superuser can connect only from localhost/unixsocket (trusted source)
-	if (user->config->superuser && !trusted)
-		error("auth: superuser can connect only from localhost");
+	// system can connect only from localhost/unixsocket (trusted source)
+	if (db->config->system && !trusted)
+		error("auth: system can connect only from localhost");
 
 	// set token
-	token_set(token, ref, &user->config->name, user->inv_seq, seq_secret, expire);
-	return user;
+	token_set(token, ref, &db->config->name, db->inv_seq, seq_secret, expire);
+	return db;
 }

@@ -127,7 +127,7 @@ parse_copy_csv(Parser* self, Program* program,
 {
 	self->program = program;
 
-	auto ref = catalog_find(&self->user->catalog, REL_UNDEF, rel, true);
+	auto ref = catalog_find(&self->db->catalog, REL_UNDEF, rel, true);
 	switch (ref->type) {
 	case REL_TABLE:
 	{

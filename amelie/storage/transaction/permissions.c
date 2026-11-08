@@ -34,7 +34,7 @@ static Permission perms[] =
 	{ PERM_GRANT,               "grant",               5  },
 
 	// DDL
-	{ PERM_CREATE_USER,         "create_user",         11 },
+	{ PERM_CREATE_DATABASE,     "create_database",     15 },
 	{ PERM_CREATE_TOKEN,        "create_token",        12 },
 	{ PERM_CREATE_TABLE,        "create_table",        12 },
 	{ PERM_CREATE_FUNCTION,     "create_function",     15 },

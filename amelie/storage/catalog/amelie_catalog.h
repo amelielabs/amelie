@@ -15,12 +15,12 @@
 #include "catalog/ddl.h"
 #include "catalog/catalog.h"
 
-// user
+// database
 #include "catalog/api.h"
 #include "catalog/apis.h"
-#include "catalog/user_config.h"
-#include "catalog/user_op.h"
-#include "catalog/user.h"
+#include "catalog/db_config.h"
+#include "catalog/db_op.h"
+#include "catalog/db.h"
 
 // table
 #include "catalog/table_config.h"

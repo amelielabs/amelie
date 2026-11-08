@@ -26,12 +26,12 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 {
 	System* system = catalog->iface_arg;
 
-	auto user = catalog_find_user(&system->storage.users, catalog->user, true);
+	auto db = catalog_find_db(&system->storage.databases, catalog->db, true);
 	Local local;
 	local_init(&local);
-	local.user    = user->config->name;
+	local.db      = db->config->name;
 	local.time_us = time_us();
-	local.limits  = &user->config->limits;
+	local.limits  = &db->config->limits;
 
 	auto program = program_allocate();
 	errdefer(program_free, program);
@@ -43,7 +43,7 @@ catalog_if_udf_compile(Catalog* catalog, Udf* udf)
 	Compiler compiler;
 	compiler_init(&compiler, &set_cache);
 	defer(compiler_free, &compiler);
-	compiler_set(&compiler, user, &local, program);
+	compiler_set(&compiler, db, &local, program);
 
 	// parse SQL statements
 	compiler_parse_udf(&compiler, udf);
@@ -80,17 +80,17 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 }
 
 static void
-catalog_if_attach(Catalog* users, User* user)
+catalog_if_attach(Catalog* databases, Db* db)
 {
-	System* system = users->iface_arg;
-	computes_deploy(&system->computes, user);
+	System* system = databases->iface_arg;
+	computes_deploy(&system->computes, db);
 }
 
 static void
-catalog_if_detach(Catalog* users, User* user)
+catalog_if_detach(Catalog* databases, Db* db)
 {
-	System* system = users->iface_arg;
-	computes_undeploy(&system->computes, user);
+	System* system = databases->iface_arg;
+	computes_undeploy(&system->computes, db);
 }
 
 static CatalogIf catalog_if =
@@ -140,7 +140,7 @@ system_on_server_connect(Server* server, Client* client)
 	}
 
 	// forward to next compute, client will be migrated if the
-	// user does not match
+	// db does not match
 	computes_connect(&self->computes, client);
 }
 

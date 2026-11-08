@@ -53,14 +53,11 @@ ccreate_token(Vm* self, Op* op)
 	unpack_str(&pos, &name);
 	unpack_str(&pos, &interval);
 
-	// find user
-	auto user = catalog_find_user(&share()->storage->users, &name, true);
+	// find db
+	auto db = catalog_find_db(&share()->storage->databases, &name, true);
 
-	// allow to create tokens only for child users (or anyone if superuser)
-	user_check_ownership(&self->gtr->tr, user);
-
-	// ensure user has a secret
-	auto secret = opt_string_of(&state()->secret);
+	// allow to create tokens only for child dbs (or anyone if system)
+	db_check_ownership(&self->gtr->tr, db);
 
 	// set expire interval
 	Interval iv;
@@ -73,7 +70,8 @@ ccreate_token(Vm* self, Op* op)
 	timestamp_add(&expire, &iv);
 
 	// generate token
-	auto jwt = jwt_create(&user->config->name, secret, &expire);
+	auto secret = opt_string_of(&state()->secret);
+	auto jwt = jwt_create(&db->config->name, secret, &expire);
 	defer_buf(jwt);
 	auto buf = buf_create();
 	encode_buf(buf, jwt);
@@ -167,16 +165,16 @@ crepl_unfollow(Vm* self, Op* op)
 void
 cddl(Vm* self, Op* op)
 {
-	// [op, flags, users]
+	// [op, flags, dbs]
 	unused(self);
 	auto pos = code_data_at(&self->program->code_data, op->a);
 
-	auto user = user_of(self->gtr->tr.user_);
+	auto db = db_of(self->gtr->tr.db);
 	auto flags = op->b;
 
-	// use user catalog or global users
-	Catalog* catalog = &user->catalog;
+	// use db catalog or storage catalog
+	Catalog* catalog = &db->catalog;
 	if  (op->c)
-		catalog = &share()->storage->users;
+		catalog = &share()->storage->databases;
 	catalog_execute(catalog, &self->gtr->tr, pos, flags);
 }

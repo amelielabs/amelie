@@ -12,13 +12,13 @@
 //
 
 typedef struct RecordMsg RecordMsg;
-typedef struct User      User;
+typedef struct Db        Db;
 
 struct RecordMsg
 {
 	Msg    msg;
 	Buf*   msg_buf;
-	User*  user;
+	Db*    db;
 	void*  arg;
 	Record record[];
 };

@@ -71,7 +71,7 @@ enum
 	CVECTOR,
 	CUUID,
 	CVALUE,
-	CUSER_CURRENT,
+	CDB_CURRENT,
 
 	// argument
 	CEXCLUDED,

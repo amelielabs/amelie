@@ -264,9 +264,9 @@ describe_udf(Udf* self, Buf* buf, int flags)
 static void
 describe_amelie(Catalog* self, Buf* buf)
 {
-	Str user;
-	str_set(&user, "amelie", 6);
-	auto amelie = catalog_find_user(self, &user, true);
+	Str db;
+	str_set(&db, "amelie", 6);
+	auto amelie = catalog_find_db(self, &db, true);
 
 	// apis
 	list_foreach(&amelie->config->apis.list)
@@ -276,8 +276,7 @@ describe_amelie(Catalog* self, Buf* buf)
 		if (api->mcp)
 			buf_format(buf, "as mcp\n");
 		else
-			buf_format(buf, "on {str}.{str}\n",
-			           &api->rel_user, &api->rel);
+			buf_format(buf, "on {str}\n", &api->rel);
 		buf_write(buf, ";", 1);
 	}
 }
@@ -305,19 +304,13 @@ describe_grants(Grants* self, Buf* buf)
 }
 
 static void
-describe_user(User* self, Buf* buf, int flags)
+describe_db(Db* self, Buf* buf, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
 	auto config = self->config;
 
-	// create user
-	if (config->agent)
-		buf_format(buf, "create agent ");
-	else
-		buf_format(buf, "create user ");
-
-	// name
-	buf_format(buf, "{str}\n", &config->name);
+	// create database
+	buf_format(buf, "create database {str}\n", &config->name);
 
 	// description
 	if (! str_empty(&config->description))
@@ -377,8 +370,8 @@ void
 describe_text(Rel* self, Buf* buf, int flags)
 {
 	switch (self->type) {
-	case REL_USER:
-		describe_user(user_of(self), buf, flags);
+	case REL_DB:
+		describe_db(db_of(self), buf, flags);
 		break;
 	case REL_TABLE:
 		describe_table(table_of(self), buf, flags);

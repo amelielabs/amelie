@@ -111,7 +111,7 @@ mcp_tools_list(Mcp* self)
 
 	// tools []
 	encode_raw(buf, "tools", 5);
-	catalog_mcp_tools(&portal->user->catalog, buf);
+	catalog_mcp_tools(&portal->db->catalog, buf);
 
 	encode_obj_end(buf);
 	encode_obj_end(buf);
@@ -148,7 +148,7 @@ mcp_resources_list(Mcp* self)
 
 	// resources []
 	encode_raw(buf, "resources", 9);
-	catalog_mcp_resources(&portal->user->catalog, buf);
+	catalog_mcp_resources(&portal->db->catalog, buf);
 
 	encode_obj_end(buf);
 	encode_obj_end(buf);

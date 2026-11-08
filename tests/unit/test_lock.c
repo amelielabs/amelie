@@ -20,7 +20,7 @@ static void
 test_lock_main0(void* arg)
 {
 	unused(arg);
-	auto l = lock_users(LOCK_EXCLUSIVE);
+	auto l = lock_storage(LOCK_EXCLUSIVE);
 	defer(unlock, l);
 
 	active++;
@@ -65,7 +65,7 @@ test_lock1(void* arg)
 	total  = 0;
 	active = 0;
 
-	auto l = lock_users(LOCK_SHARED);
+	auto l = lock_storage(LOCK_SHARED);
 
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
@@ -95,7 +95,7 @@ test_lock2(void* arg)
 	total  = 0;
 	active = 0;
 
-	auto l = lock_users(LOCK_EXCLUSIVE);
+	auto l = lock_storage(LOCK_EXCLUSIVE);
 
 	Task task[10];
 	for (auto i = 0; i < 10; i++)
@@ -126,15 +126,15 @@ test_lock3(void* arg)
 	active = 0;
 
 	// reentrant
-	auto l0 = lock_users(LOCK_SHARED);
-	auto l1 = lock_users(LOCK_SHARED);
+	auto l0 = lock_storage(LOCK_SHARED);
+	auto l1 = lock_storage(LOCK_SHARED);
 	test(l0 == l1);
 
 	unlock(l1);
 	unlock(l0);
 
-	l0 = lock_users(LOCK_EXCLUSIVE);
-	l1 = lock_users(LOCK_EXCLUSIVE);
+	l0 = lock_storage(LOCK_EXCLUSIVE);
+	l1 = lock_storage(LOCK_EXCLUSIVE);
 	test(l0 == l1);
 
 	unlock(l1);

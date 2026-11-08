@@ -15,7 +15,7 @@ typedef struct Storage Storage;
 
 struct Storage
 {
-	Catalog users;
+	Catalog databases;
 	Wal     wal;
 	Syncer  syncer;
 	// checkpoints

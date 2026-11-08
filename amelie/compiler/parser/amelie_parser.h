@@ -61,8 +61,6 @@
 #include "parser/parse_checkpoint.h"
 #include "parser/parse_backup.h"
 #include "parser/parse_show.h"
-#include "parser/parse_user.h"
-#include "parser/parse_api.h"
 #include "parser/parse_token.h"
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"
@@ -72,7 +70,8 @@
 #include "parser/parse_grant.h"
 
 // ddl
-#include "parser/parse_user.h"
+#include "parser/parse_api.h"
+#include "parser/parse_database.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
 #include "parser/parse_function.h"

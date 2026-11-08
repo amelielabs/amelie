@@ -15,7 +15,7 @@
 #include "dst/dst_key.h"
 #include "dst/dst_rel.h"
 #include "dst/dst_log.h"
-#include "dst/dst_user.h"
+#include "dst/dst_db.h"
 #include "dst/dst_step.h"
 #include "dst/dst_validate.h"
 #include "dst/dst_stat.h"

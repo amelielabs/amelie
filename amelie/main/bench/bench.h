@@ -38,7 +38,7 @@ struct Bench
 	Histogram    histogram;
 	BenchIf*     iface;
 	Opt          opt_type;
-	Opt          opt_users;
+	Opt          opt_databases;
 	Opt          opt_clients;
 	Opt          opt_duration;
 	Opt          opt_batch;

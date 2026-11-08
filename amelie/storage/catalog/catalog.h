@@ -15,22 +15,22 @@ typedef struct CatalogIf CatalogIf;
 typedef struct Catalog   Catalog;
 typedef struct Table     Table;
 typedef struct Udf       Udf;
-typedef struct User      User;
+typedef struct Db        Db;
 
 struct CatalogIf
 {
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
 	bool (*udf_depends)(Udf*, Str*);
-	void (*attach)(Catalog*, User*);
-	void (*detach)(Catalog*, User*);
+	void (*attach)(Catalog*, Db*);
+	void (*detach)(Catalog*, Db*);
 };
 
 struct Catalog
 {
 	Rels       rels;
 	Usage*     memory;
-	Str*       user;
+	Str*       db;
 	CatalogIf* iface;
 	void*      iface_arg;
 };
@@ -40,12 +40,12 @@ catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
              Usage*     memory,
-             Str*       user)
+             Str*       db)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	self->memory    = memory;
-	self->user      = user;
+	self->db        = db;
 	rels_init(&self->rels);
 }
 
@@ -88,8 +88,8 @@ catalog_find_udf(Catalog* self, Str* name, bool error_if_not_exists)
 	return (Udf*)rels_find(&self->rels, REL_UDF, name, error_if_not_exists);
 }
 
-static inline User*
-catalog_find_user(Catalog* self, Str* name, bool error_if_not_exists)
+static inline Db*
+catalog_find_db(Catalog* self, Str* name, bool error_if_not_exists)
 {
-	return (User*)rels_find(&self->rels, REL_USER, name, error_if_not_exists);
+	return (Db*)rels_find(&self->rels, REL_DB, name, error_if_not_exists);
 }

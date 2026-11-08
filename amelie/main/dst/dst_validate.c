@@ -16,7 +16,7 @@
 #include "overflow_fp.h"
 
 static void
-dst_validate_table(DstUser* self, DstRel* rel)
+dst_validate_table(DstDb* self, DstRel* rel)
 {
 	auto client = self->client;
 
@@ -77,7 +77,7 @@ dst_validate_table(DstUser* self, DstRel* rel)
 }
 
 static void
-dst_validate_table_vector(DstUser* self, DstRel* rel)
+dst_validate_table_vector(DstDb* self, DstRel* rel)
 {
 	auto client = self->client;
 
@@ -147,7 +147,7 @@ dst_validate_table_vector(DstUser* self, DstRel* rel)
 }
 
 static void
-dst_validate_index(DstUser* self, DstRel* rel)
+dst_validate_index(DstDb* self, DstRel* rel)
 {
 	auto client = self->client;
 
@@ -210,7 +210,7 @@ dst_validate_index(DstUser* self, DstRel* rel)
 }
 
 void
-dst_validate_user(DstUser* self)
+dst_validate_db(DstDb* self)
 {
 	list_foreach(&self->rels)
 	{
@@ -243,10 +243,10 @@ dst_validate(Dst* self)
 {
 	dst_stat(&self->stats, DST_STAT_VALIDATION);
 
-	list_foreach(&self->users)
+	list_foreach(&self->dbs)
 	{
-		auto user = list_at(DstUser, link);
-		dst_validate_user(user);
+		auto db = list_at(DstDb, link);
+		dst_validate_db(db);
 	}
 
 	info("[{u64}] OK", self->step);

@@ -37,7 +37,7 @@ streaming_prepare(Link* self, StreamPos* pos)
 
 	// find relation
 	auto api = self->api;
-	auto rel = catalog_find(&portal->user->catalog, REL_UNDEF, &api->rel, false);
+	auto rel = catalog_find(&portal->db->catalog, REL_UNDEF, &api->rel, false);
 	if (! rel)
 		error("stream: relation {str} not found", &api->rel);
 	if (rel->type != REL_TABLE)

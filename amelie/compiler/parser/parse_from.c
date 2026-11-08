@@ -161,7 +161,7 @@ parse_from_target(Stmt* self, From* from, int perms, bool subquery)
 	}
 
 	// find relation
-	auto rel = catalog_find(&self->parser->user->catalog, REL_UNDEF, &name->string, false);
+	auto rel = catalog_find(&self->parser->db->catalog, REL_UNDEF, &name->string, false);
 	if (! rel)
 		stmt_error(self, name, "relation not found");
 

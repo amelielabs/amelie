@@ -103,18 +103,18 @@ computes_next_connect(Computes* self)
 }
 
 static inline void
-computes_deploy(Computes* self, User* user)
+computes_deploy(Computes* self, Db* db)
 {
 	auto id = computes_next(self);
 	auto compute = &self->workers[id];
-	user->compute = &compute->task;
+	db->compute = &compute->task;
 }
 
 static inline void
-computes_undeploy(Computes* self, User* user)
+computes_undeploy(Computes* self, Db* db)
 {
 	unused(self);
-	user->compute = NULL;
+	db->compute = NULL;
 }
 
 static inline void

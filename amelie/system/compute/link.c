@@ -76,7 +76,7 @@ link_auth(Link* self)
 	// update time and random seed
 	portal_prepare(portal);
 
-	// authenticate user (and take catalog lock)
+	// authenticate token (and take catalog lock)
 	return !error_catch
 	(
 		portal_auth(portal, &self->compute->auth, &self->client->token)
@@ -127,7 +127,7 @@ link_main(Link* self)
 		}
 
 		// migrate client to other compute
-		auto task = portal->user->compute;
+		auto task = portal->db->compute;
 		if (unlikely(task != am_task))
 		{
 			token_reset(&client->token);
