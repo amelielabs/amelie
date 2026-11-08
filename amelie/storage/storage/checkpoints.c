@@ -16,7 +16,7 @@
 #include <amelie_part.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_storage.h>
 
 static inline CheckpointRef*
 checkpoint_ref_allocate(uint64_t id)

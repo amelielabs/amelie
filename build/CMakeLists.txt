@@ -83,13 +83,13 @@ include_directories("${AMELIE_ROOT}/heap/flat")
 include_directories("${AMELIE_ROOT}/heap/heap")
 include_directories("${AMELIE_ROOT}/heap/index")
 
-# db
-include_directories("${AMELIE_ROOT}/db")
-include_directories("${AMELIE_ROOT}/db/transaction")
-include_directories("${AMELIE_ROOT}/db/part")
-include_directories("${AMELIE_ROOT}/db/catalog")
-include_directories("${AMELIE_ROOT}/db/wal")
-include_directories("${AMELIE_ROOT}/db/db")
+# storage
+include_directories("${AMELIE_ROOT}/storage")
+include_directories("${AMELIE_ROOT}/storage/transaction")
+include_directories("${AMELIE_ROOT}/storage/part")
+include_directories("${AMELIE_ROOT}/storage/catalog")
+include_directories("${AMELIE_ROOT}/storage/wal")
+include_directories("${AMELIE_ROOT}/storage/storage")
 
 # repl
 include_directories("${AMELIE_ROOT}/repl")
@@ -194,37 +194,37 @@ set(AMELIE_SOURCES_HEAP
     ${AMELIE_ROOT}/heap/index/index_tree.c
     ${AMELIE_ROOT}/heap/index/index_hash.c)
 
-set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/transaction/permissions.c
-    ${AMELIE_ROOT}/db/transaction/rels.c
-    ${AMELIE_ROOT}/db/part/part.c
-    ${AMELIE_ROOT}/db/part/part_op.c
-    ${AMELIE_ROOT}/db/catalog/user.c
-    ${AMELIE_ROOT}/db/catalog/table.c
-    ${AMELIE_ROOT}/db/catalog/table_alter.c
-    ${AMELIE_ROOT}/db/catalog/table_index_create.c
-    ${AMELIE_ROOT}/db/catalog/table_index.c
-    ${AMELIE_ROOT}/db/catalog/udf.c
-    ${AMELIE_ROOT}/db/catalog/rel.c
-    ${AMELIE_ROOT}/db/catalog/cascade.c
-    ${AMELIE_ROOT}/db/catalog/describe.c
-    ${AMELIE_ROOT}/db/catalog/mcp.c
-    ${AMELIE_ROOT}/db/catalog/execute.c
+set(AMELIE_SOURCES_STORAGE
+    ${AMELIE_ROOT}/storage/transaction/permissions.c
+    ${AMELIE_ROOT}/storage/transaction/rels.c
+    ${AMELIE_ROOT}/storage/part/part.c
+    ${AMELIE_ROOT}/storage/part/part_op.c
+    ${AMELIE_ROOT}/storage/catalog/user.c
+    ${AMELIE_ROOT}/storage/catalog/table.c
+    ${AMELIE_ROOT}/storage/catalog/table_alter.c
+    ${AMELIE_ROOT}/storage/catalog/table_index_create.c
+    ${AMELIE_ROOT}/storage/catalog/table_index.c
+    ${AMELIE_ROOT}/storage/catalog/udf.c
+    ${AMELIE_ROOT}/storage/catalog/rel.c
+    ${AMELIE_ROOT}/storage/catalog/cascade.c
+    ${AMELIE_ROOT}/storage/catalog/describe.c
+    ${AMELIE_ROOT}/storage/catalog/mcp.c
+    ${AMELIE_ROOT}/storage/catalog/execute.c
 
-    ${AMELIE_ROOT}/db/wal/wal.c
-    ${AMELIE_ROOT}/db/wal/wal_recovery.c
-    ${AMELIE_ROOT}/db/wal/wal_write.c
-    ${AMELIE_ROOT}/db/wal/wal_cursor.c
-    ${AMELIE_ROOT}/db/wal/wal_slot.c
-    ${AMELIE_ROOT}/db/wal/wal_subscribe.c
+    ${AMELIE_ROOT}/storage/wal/wal.c
+    ${AMELIE_ROOT}/storage/wal/wal_recovery.c
+    ${AMELIE_ROOT}/storage/wal/wal_write.c
+    ${AMELIE_ROOT}/storage/wal/wal_cursor.c
+    ${AMELIE_ROOT}/storage/wal/wal_slot.c
+    ${AMELIE_ROOT}/storage/wal/wal_subscribe.c
 
-    #${AMELIE_ROOT}/db/db/checkpoints.c
-    #${AMELIE_ROOT}/db/db/checkpoint.c
-    ${AMELIE_ROOT}/db/db/syncer.c
-    ${AMELIE_ROOT}/db/db/db.c
-    ${AMELIE_ROOT}/db/db/db_op.c
-    ${AMELIE_ROOT}/db/db/recover.c
-    ${AMELIE_ROOT}/db/db/backup.c)
+    #${AMELIE_ROOT}/storage/storage/checkpoints.c
+    #${AMELIE_ROOT}/storage/storage/checkpoint.c
+    ${AMELIE_ROOT}/storage/storage/syncer.c
+    ${AMELIE_ROOT}/storage/storage/storage.c
+    ${AMELIE_ROOT}/storage/storage/storage_op.c
+    ${AMELIE_ROOT}/storage/storage/recover.c
+    ${AMELIE_ROOT}/storage/storage/backup.c)
 
 set(AMELIE_SOURCES_REPL
     ${AMELIE_ROOT}/repl/sync/streamer.c
@@ -348,7 +348,7 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
     ${AMELIE_SOURCES_HEAP}
-    ${AMELIE_SOURCES_DB}
+    ${AMELIE_SOURCES_STORAGE}
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
