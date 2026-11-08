@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>

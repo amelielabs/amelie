@@ -45,7 +45,7 @@ flats_size(Flats* self)
 	auto pos = (Flat**)self->list.start;
 	auto end = (Flat**)self->list.position;
 	for (; pos < end; pos++)
-		size += storage_size(&(*pos)->storage);
+		size += pages_size(&(*pos)->pages);
 	return size;
 }
 

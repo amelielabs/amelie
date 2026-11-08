@@ -22,10 +22,10 @@ row_allocate(Heap*    heap,
 	if (unlikely(size > 64 * 1024))
 		error("row limit reached");
 
-	auto current = heap->storage.current;
+	auto current = heap->pages.current;
 	auto self    = heap_add(heap, size);
 	row_prepare(self, columns, byte, size);
-	*delta += storage_delta(&heap->storage, current);
+	*delta += pages_delta(&heap->pages, current);
 	return self;
 }
 

@@ -37,13 +37,13 @@ struct Heap
 {
 	HeapBucket* buckets;
 	HeapHeader* header;
-	Storage     storage;
+	Pages       pages;
 };
 
 always_inline static inline Row*
 heap_at(Heap* self, int page, int offset)
 {
-	return (Row*)storage_pointer_of(&self->storage, page, offset);
+	return (Row*)pages_pointer_of(&self->pages, page, offset);
 }
 
 always_inline static inline Page*

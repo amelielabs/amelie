@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 
 Page*
 page_allocate(uint32_t size)

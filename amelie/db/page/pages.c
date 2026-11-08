@@ -12,10 +12,10 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 
 void
-storage_init(Storage* self, Retention* retention, int type_meta, int type)
+pages_init(Pages* self, Retention* retention, int type_meta, int type)
 {
 	self->current    = NULL;
 	self->meta       = NULL;
@@ -30,11 +30,11 @@ storage_init(Storage* self, Retention* retention, int type_meta, int type)
 }
 
 void
-storage_free(Storage* self)
+pages_free(Pages* self)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		auto page = storage_at(self, i);
+		auto page = pages_at(self, i);
 		page_free(page);
 	}
 	if (self->meta)
@@ -43,7 +43,7 @@ storage_free(Storage* self)
 }
 
 Page*
-storage_add_meta(Storage* self, int size)
+pages_add_meta(Pages* self, int size)
 {
 	assert(! self->meta);
 	// create and set meta page
@@ -58,7 +58,7 @@ storage_add_meta(Storage* self, int size)
 }
 
 Page*
-storage_add(Storage* self)
+pages_add(Pages* self)
 {
 	// create new page
 	auto page = page_allocate(self->size);
@@ -76,13 +76,13 @@ storage_add(Storage* self)
 }
 
 void
-storage_open(Storage* self, uint64_t checkpoint,
+pages_open(Pages* self, uint64_t checkpoint,
              int      pages_count,
              int64_t* pages)
 {
 	auto retention = self->retention;
-	storage_free(self);
-	storage_init(self, retention, self->type_meta, self->type);
+	pages_free(self);
+	pages_init(self, retention, self->type_meta, self->type);
 
 	// load meta page
 	self->meta = page_load(checkpoint, pages[0]);
@@ -116,9 +116,9 @@ storage_open(Storage* self, uint64_t checkpoint,
 }
 
 static inline Page*
-storage_pop(Storage* self)
+pages_pop(Pages* self)
 {
-	auto page = storage_at(self, 0);
+	auto page = pages_at(self, 0);
 	self->list_count--;
 
 	auto to_move = self->list_count * sizeof(Page*);
@@ -137,7 +137,7 @@ storage_pop(Storage* self)
 }
 
 bool
-storage_retention(Storage* self, uint32_t* id)
+pages_retention(Pages* self, uint32_t* id)
 {
 	if (! self->retention)
 		return false;
@@ -150,10 +150,10 @@ storage_retention(Storage* self, uint32_t* id)
 	auto changed = false;
 	while (self->list_count > 1)
 	{
-		auto first = storage_at(self, 0);
+		auto first = pages_at(self, 0);
 		if (first->id_seq >= *id)
 			break;
-		auto page = storage_pop(self);
+		auto page = pages_pop(self);
 		assert(page);
 		page_free(page);
 		changed = true;

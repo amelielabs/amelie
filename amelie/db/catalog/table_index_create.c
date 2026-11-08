@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -97,7 +97,7 @@ db_indexate(Part* part, IndexConfig* config)
 		usage_add(memory, io.delta);
 	}
 
-	auto total = (double)storage_size(&heap->storage) / 1024 / 1024;
+	auto total = (double)pages_size(&heap->pages) / 1024 / 1024;
 	info("create index: ({.2f} MiB)", total);
 }
 

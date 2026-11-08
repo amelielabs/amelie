@@ -78,7 +78,7 @@ include_directories("${AMELIE_ROOT}/server/server")
 # db
 include_directories("${AMELIE_ROOT}/db")
 include_directories("${AMELIE_ROOT}/db/type")
-include_directories("${AMELIE_ROOT}/db/storage")
+include_directories("${AMELIE_ROOT}/db/page")
 include_directories("${AMELIE_ROOT}/db/flat")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/index")
@@ -182,8 +182,8 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/servers.c)
 
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/storage/page.c
-    ${AMELIE_ROOT}/db/storage/storage.c
+    ${AMELIE_ROOT}/db/page/page.c
+    ${AMELIE_ROOT}/db/page/pages.c
     ${AMELIE_ROOT}/db/flat/flat.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/row_encode.c

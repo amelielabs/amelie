@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -246,9 +246,8 @@ rels_find(Rels* self, RelType type, Str* name, bool error_if_not_exists)
 	if (node)
 	{
 		auto rel = container_of(node, Rel, link_ht);
-		if (type != REL_UNDEF && rel->type != type)
-			return NULL;
-		return rel;
+		if (type == REL_UNDEF || type == rel->type)
+			return rel;
 	}
 
 	if (error_if_not_exists)

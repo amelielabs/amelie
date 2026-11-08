@@ -11,11 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-// storage
-#include "storage/page.h"
-#include "storage/retention.h"
-#include "storage/storage.h"
+// page
+#include "page/retention.h"
+#include "page/page.h"
+#include "page/pages.h"
 
 // compression
-#include "storage/encoder.h"
-#include "storage/basefile.h"
+#include "page/encoder.h"
+#include "page/basefile.h"

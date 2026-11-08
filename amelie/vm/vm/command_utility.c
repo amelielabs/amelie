@@ -166,7 +166,7 @@ crepl_unfollow(Vm* self, Op* op)
 void
 cddl(Vm* self, Op* op)
 {
-	// [op, flags, user_catalog]
+	// [op, flags, users]
 	unused(self);
 	auto pos = code_data_at(&self->program->code_data, op->a);
 
@@ -175,7 +175,7 @@ cddl(Vm* self, Op* op)
 
 	// use user catalog or global users
 	Catalog* catalog = &user->catalog;
-	if  (! op->c)
+	if  (op->c)
 		catalog = &share()->db->users;
 	catalog_execute(catalog, &self->gtr->tr, pos, flags);
 }

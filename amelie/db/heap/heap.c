@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 
@@ -41,9 +41,9 @@ heap_prepare(Heap* self)
 
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
-	storage_add_meta(&self->storage, size);
+	pages_add_meta(&self->pages, size);
 
-	auto header = (HeapHeader*)self->storage.meta->data;
+	auto header = (HeapHeader*)self->pages.meta->data;
 	memset(header->free, 0, sizeof(header->free));
 	header->used_count = 0;
 	header->used       = 0;
@@ -81,7 +81,7 @@ heap_allocate(Retention* retention)
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	storage_init(&self->storage, retention, PAGE_HEAP_META, PAGE_HEAP);
+	pages_init(&self->pages, retention, PAGE_HEAP_META, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }
@@ -89,7 +89,7 @@ heap_allocate(Retention* retention)
 void
 heap_free(Heap* self)
 {
-	storage_free(&self->storage);
+	pages_free(&self->pages);
 	am_free(self);
 }
 
@@ -97,11 +97,11 @@ void
 heap_open(Heap* self)
 {
 	// set header
-	auto storage = &self->storage;
+	auto pages = &self->pages;
 	auto size = sizeof(Page) + sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
 	unused(size);
-	assert(storage->meta && storage->meta->size == size);
-	self->header  = (HeapHeader*)storage->meta->data;
+	assert(pages->meta && pages->meta->size == size);
+	self->header  = (HeapHeader*)pages->meta->data;
 	self->buckets = self->header->buckets;
 }
 
@@ -238,9 +238,9 @@ heap_add(Heap* self, int size)
 	} else
 	{
 		// ensure current page fits the bucket
-		storage_ensure(&self->storage, bucket->size);
+		pages_ensure(&self->pages, bucket->size);
 
-		auto page = self->storage.current;
+		auto page = self->pages.current;
 		row = (Row*)page_at(page, page->position);
 		row_init(row);
 		row->bucket = bucket->id;
@@ -254,7 +254,7 @@ heap_add(Heap* self, int size)
 	// update total used metrics
 	self->header->used_count++;
 	self->header->used += bucket->size;
-	self->storage.meta->changed = true;
+	self->pages.meta->changed = true;
 
 	assert(misalign_of(row->data) == 0);
 	return row;
@@ -283,5 +283,5 @@ heap_remove(Heap* self, Row* row)
 	// update total used metrics
 	self->header->used_count--;
 	self->header->used -= bucket->size;
-	self->storage.meta->changed = true;
+	self->pages.meta->changed = true;
 }

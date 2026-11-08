@@ -15,13 +15,13 @@ typedef struct HeapIterator HeapIterator;
 
 struct HeapIterator
 {
-	Row*     current;
-	Page*    page;
-	int      page_order;
-	bool     eof;
-	Row*     stop;
-	Storage* storage;
-	Heap*    heap;
+	Row*   current;
+	Page*  page;
+	int    page_order;
+	Pages* pages;
+	bool   eof;
+	Row*   stop;
+	Heap*  heap;
 };
 
 hot static inline void
@@ -31,12 +31,12 @@ heap_iterator_next_row(HeapIterator* self)
 	if (unlikely(! current))
 	{
 		// first iterator after empty heap open
-		auto storage = &self->heap->storage;
-		if (storage_empty(storage))
+		auto pages = &self->heap->pages;
+		if (pages_empty(pages))
 			return;
 
 		// first
-		self->page       = storage_at(storage, 0);
+		self->page       = pages_at(pages, 0);
 		self->page_order = 0;
 		self->eof        = false;
 		self->current    = heap_at(self->heap, 0, sizeof(Page));
@@ -61,7 +61,7 @@ heap_iterator_next_row(HeapIterator* self)
 	}
 
 	// next page
-	if (unlikely((self->page_order + 1) >= self->storage->list_count))
+	if (unlikely((self->page_order + 1) >= self->pages->list_count))
 	{
 		self->eof = true;
 		return;
@@ -69,7 +69,7 @@ heap_iterator_next_row(HeapIterator* self)
 
 	self->eof = false;
 	self->page_order++;
-	self->page = storage_at(self->storage, self->page_order);
+	self->page = pages_at(self->pages, self->page_order);
 	self->current = (Row*)page_at(self->page, sizeof(Page));
 }
 
@@ -87,10 +87,10 @@ heap_iterator_next_allocated(HeapIterator* self)
 static inline void
 heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 {
-	auto storage = &heap->storage;
-	self->storage = storage;
-	self->heap    = heap;
-	if (storage_empty(storage))
+	auto pages = &heap->pages;
+	self->pages = pages;
+	self->heap  = heap;
+	if (pages_empty(pages))
 	{
 		self->page       = NULL;
 		self->page_order = 0;
@@ -101,8 +101,8 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 
 	if (last)
 	{
-		auto order = storage->list_count - 1;
-		self->page       = storage_at(storage, order);
+		auto order = pages->list_count - 1;
+		self->page       = pages_at(pages, order);
 		self->page_order = order;
 		self->eof        = true;
 		self->current    = heap_at(heap, order, self->page->position_last);
@@ -110,7 +110,7 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 	}
 
 	// first
-	self->page       = storage_at(storage, 0);
+	self->page       = pages_at(pages, 0);
 	self->page_order = 0;
 	self->eof        = false;
 	self->current    = heap_at(heap, 0, sizeof(Page));
@@ -120,20 +120,20 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 static inline bool
 heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
 {
-	auto heap    = self->heap;
-	auto storage = &heap->storage;
-	if (storage_empty(storage))
+	auto heap  = self->heap;
+	auto pages = &heap->pages;
+	if (pages_empty(pages))
 		return false;
 
 	// validate position
-	if (page_id < storage->id_first)
+	if (page_id < pages->id_first)
 		return false;
 
-	auto last = storage_at(storage, storage->list_count - 1);
+	auto last = pages_at(pages, pages->list_count - 1);
 	if (page_id > last->id)
 		return false;
 
-	auto page = storage_get(storage, page_id);
+	auto page = pages_get(pages, page_id);
 	if (page_offset > page->position_last)
 		return false;
 	if (page_offset < sizeof(Page))
@@ -146,7 +146,7 @@ heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
 		return false;
 
 	self->page       = page;
-	self->page_order = page->id - storage->id_first;
+	self->page_order = page->id - pages->id_first;
 	self->eof        = false;
 	self->current    = row;
 	return true;
@@ -155,11 +155,11 @@ heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
 static inline void
 heap_iterator_set_stop(HeapIterator* self)
 {
-	auto storage = self->storage;
-	if (storage_empty(storage))
+	auto pages = self->pages;
+	if (pages_empty(pages))
 		return;
-	auto page_order = storage->list_count - 1;
-	auto page = storage_at(storage, page_order);
+	auto page_order = pages->list_count - 1;
+	auto page = pages_at(pages, page_order);
 	self->stop = heap_at(self->heap, page_order, page->position_last);
 }
 
@@ -200,7 +200,7 @@ heap_iterator_init(HeapIterator* self)
 	self->page_order = 0;
 	self->eof        = false;
 	self->stop       = NULL;
-	self->storage    = NULL;
+	self->pages      = NULL;
 	self->heap       = NULL;
 }
 
@@ -212,6 +212,6 @@ heap_iterator_reset(HeapIterator* self)
 	self->page_order = 0;
 	self->eof        = false;
 	self->stop       = NULL;
-	self->storage    = NULL;
+	self->pages      = NULL;
 	self->heap       = NULL;
 }

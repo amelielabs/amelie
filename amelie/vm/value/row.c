@@ -162,10 +162,10 @@ row_create_vector(Part*    part,
 {
 	auto flat = flats_at(&part->flats, column);
 
-	auto current = flat->storage.current;
+	auto current = flat->pages.current;
 	auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
 	*(uint32_t*)row_column(row, column) = id;
-	*delta += storage_delta(&flat->storage, current);
+	*delta += pages_delta(&flat->pages, current);
 
 	// copy raw vector (fp32)
 	memcpy(flat_vector_at(flat, id), value->vector, column->size_flat);
@@ -395,9 +395,9 @@ row_update(Part*     part,
 			// create a new vector copy
 			auto flat = flats_at(&part->flats, column);
 
-			auto current = flat->storage.current;
+			auto current = flat->pages.current;
 			auto id = flat_add(flat, heap_page_of(row)->id, row->offset);
-			delta += storage_delta(&flat->storage, current);
+			delta += pages_delta(&flat->pages, current);
 
 			*(uint32_t*)row_column(row, column) = id;
 			auto id_src = *(uint32_t*)pos_src;

@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 #include <amelie_flat.h>
 
 Flat*
@@ -45,11 +45,11 @@ flat_allocate(Column* column)
 	self->page_offset_rows    = self->page_offset_i8 + (self->page_rows * self->dim);
 	self->page_offset_vectors = self->page_offset_rows + (self->page_rows * sizeof(FlatRow));
 
-	auto storage = &self->storage;
-	storage_init(storage, NULL, PAGE_FLAT_META, PAGE_FLAT);
-	storage_add_meta(storage, sizeof(FlatHeader));
+	auto pages = &self->pages;
+	pages_init(pages, NULL, PAGE_FLAT_META, PAGE_FLAT);
+	pages_add_meta(pages, sizeof(FlatHeader));
 
-	self->header = (FlatHeader*)storage->meta->data;
+	self->header = (FlatHeader*)pages->meta->data;
 	self->header->list_free = UINT32_MAX;
 
 	self->column = column;
@@ -59,7 +59,7 @@ flat_allocate(Column* column)
 void
 flat_free(Flat* self)
 {
-	storage_free(&self->storage);
+	pages_free(&self->pages);
 	am_free(self);
 }
 
@@ -67,9 +67,9 @@ void
 flat_open(Flat* self)
 {
 	// set header
-	auto storage = &self->storage;
-	assert(storage->meta && storage->meta->size == sizeof(Page) + sizeof(FlatHeader));
-	self->header = (FlatHeader*)storage->meta->data;
+	auto pages = &self->pages;
+	assert(pages->meta && pages->meta->size == sizeof(Page) + sizeof(FlatHeader));
+	self->header = (FlatHeader*)pages->meta->data;
 }
 
 uint32_t
@@ -84,7 +84,7 @@ flat_add(Flat* self, int row_page, int row_offset)
 
 		// mark row as being used and update free list
 		self->header->list_free = row->row_next;
-		self->storage.meta->changed = true;
+		self->pages.meta->changed = true;
 
 		row->row_page   = row_page;
 		row->row_offset = row_offset;
@@ -94,17 +94,17 @@ flat_add(Flat* self, int row_page, int row_offset)
 	}
 
 	// maybe create a new page
-	auto storage = &self->storage;
-	if (unlikely(!storage->current || storage->current->position_last == self->page_rows))
+	auto pages = &self->pages;
+	if (unlikely(!pages->current || pages->current->position_last == self->page_rows))
 	{
-		storage_add(storage);
+		pages_add(pages);
 
 		// prepare the page bitmap
-		auto current = storage->current;
-		current->position = storage->size;
+		auto current = pages->current;
+		current->position = pages->size;
 		memset(current->data, 0, self->page_bitmap);
 	}
-	auto page     = storage->current;
+	auto page     = pages->current;
 	auto page_row = page->position_last;
 	auto page_id  = page->id;
 
@@ -136,20 +136,20 @@ flat_remove(Flat* self, uint32_t id)
 	// update free list
 	row->row_next = self->header->list_free;
 	self->header->list_free = id;
-	self->storage.meta->changed = true;
+	self->pages.meta->changed = true;
 }
 
 hot void
 flat_retention(Flat* self, uint32_t page_wm)
 {
 	// free all vectors/rows which has row page < page_wm as
-	auto storage = &self->storage;
+	auto pages = &self->pages;
 	auto header  = self->header;
 	auto changed = false;
 	const auto page_chunks = self->page_rows / 64;
-	for (auto i = 0; i < storage->list_count; i++)
+	for (auto i = 0; i < pages->list_count; i++)
 	{
-		auto page = storage_at(storage, i);
+		auto page = pages_at(pages, i);
 
 		uint32_t chunks = (page->position_last + 63) >> 6;
 		if (chunks > page_chunks)
@@ -187,5 +187,5 @@ flat_retention(Flat* self, uint32_t page_wm)
 			}
 		}
 	}
-	storage->meta->changed = changed;
+	pages->meta->changed = changed;
 }

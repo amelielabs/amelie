@@ -124,9 +124,9 @@ matching_execute(Matching* self, const float* __restrict query)
 	}
 
 	int32_t bottom = INT32_MIN;
-	for (auto i = 0; i < flat->storage.list_count; i++)
+	for (auto i = 0; i < flat->pages.list_count; i++)
 	{
-		auto page = storage_at(&flat->storage, i);
+		auto page = pages_at(&flat->pages, i);
 
 		// Direct pointer to contiguous SQ8 byte array
 		auto page_sq8 = (const int8_t*)(page->data + flat->page_offset_i8);

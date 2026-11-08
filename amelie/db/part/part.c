@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_type.h>
-#include <amelie_storage.h>
+#include <amelie_page.h>
 #include <amelie_flat.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
@@ -53,7 +53,7 @@ part_free(Part* self)
 	}
 
 	// free heap, flats and update memory usage
-	op.delta -= storage_size(&self->heap->storage);
+	op.delta -= pages_size(&self->heap->pages);
 	op.delta -= flats_size(&self->flats);
 
 	heap_free(self->heap);
@@ -68,10 +68,10 @@ static void
 part_open_heap(Part* self, ManifestRel* ref)
 {
 	auto heap    = self->heap;
-	auto storage = &heap->storage;
+	auto pages = &heap->pages;
 
 	// open partition page files
-	storage_open(storage, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
+	pages_open(pages, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
 	heap_open(heap);
 
 	// rebuild indexes
@@ -110,29 +110,29 @@ part_open_heap(Part* self, ManifestRel* ref)
 			usage_update(self->arg->memory, op.delta);
 		}
 	}
-	usage_update(self->arg->memory, storage_size(storage));
+	usage_update(self->arg->memory, pages_size(pages));
 
-	auto total = (double)storage_size(storage) / 1024 / 1024;
+	auto total = (double)pages_size(pages) / 1024 / 1024;
 	info("recover: {str} ({d} files, {.2f} MB)",
 	     self->arg->rel->name,
-	     storage->list_count,
+	     pages->list_count,
 	     total);
 }
 
 static void
 part_open_flat(Part* self, Flat* flat, ManifestRel* ref)
 {
-	// open partition column storage
-	auto storage = &flat->storage;
-	storage_open(storage, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
+	// open partition column pages
+	auto pages = &flat->pages;
+	pages_open(pages, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
 	flat_open(flat);
-	usage_update(self->arg->memory, storage_size(storage));
+	usage_update(self->arg->memory, pages_size(pages));
 
-	auto total = (double)storage_size(storage) / 1024 / 1024;
+	auto total = (double)pages_size(pages) / 1024 / 1024;
 	info("recover: {str} ({d} column, {d} files, {.2f} MB)",
 	     self->arg->rel->name,
 	     flat->column->order,
-	     storage->list_count,
+	     pages->list_count,
 	     total);
 }
 #endif
@@ -150,10 +150,10 @@ part_open(Part* self)
 		error("recover: manifest is missing {str}.{str}",
 		      rel->user, rel->name);
 
-	// open storage and rebuild indexes
+	// open pages and rebuild indexes
 	part_open_heap(self, ref);
 
-	// open storage per vector column
+	// open pages per vector column
 	auto columns = self->arg->columns;
 	list_foreach(&columns->list)
 	{
@@ -182,7 +182,7 @@ part_truncate(Part* self)
 
 	// create a new empty heap
 	auto new = heap_allocate(arg->retention);
-	int64_t delta = -storage_size(&self->heap->storage) + storage_size(&new->storage);
+	int64_t delta = -pages_size(&self->heap->pages) + pages_size(&new->pages);
 	heap_free(self->heap);
 	self->heap = new;
 
@@ -211,7 +211,7 @@ bool
 part_retention(Part* self)
 {
 	uint32_t id;
-	if (likely(! storage_retention(&self->heap->storage, &id)))
+	if (likely(! pages_retention(&self->heap->pages, &id)))
 		return false;
 	// cleanup vector stores
 	flats_retention(&self->flats, id);

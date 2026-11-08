@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Storage Storage;
+typedef struct Pages Pages;
 
-struct Storage
+struct Pages
 {
 	Page*      current;
 	Page*      meta;
@@ -27,45 +27,45 @@ struct Storage
 	int        size;
 };
 
-void  storage_init(Storage*, Retention*, int, int);
-void  storage_free(Storage*);
-Page* storage_add_meta(Storage*, int);
-Page* storage_add(Storage*);
-void  storage_open(Storage*, uint64_t, int, int64_t*);
-bool  storage_retention(Storage*, uint32_t*);
+void  pages_init(Pages*, Retention*, int, int);
+void  pages_free(Pages*);
+Page* pages_add_meta(Pages*, int);
+Page* pages_add(Pages*);
+void  pages_open(Pages*, uint64_t, int, int64_t*);
+bool  pages_retention(Pages*, uint32_t*);
 
 always_inline static inline Page*
-storage_at(Storage* self, int order)
+pages_at(Pages* self, int order)
 {
 	return ((Page**)self->list.start)[order];
 }
 
 always_inline static inline Page*
-storage_get(Storage* self, uint32_t id)
+pages_get(Pages* self, uint32_t id)
 {
-	return storage_at(self, id - self->id_first);
+	return pages_at(self, id - self->id_first);
 }
 
 always_inline static inline void*
-storage_pointer_of(Storage* self, uint32_t page, int offset)
+pages_pointer_of(Pages* self, uint32_t page, int offset)
 {
-	return page_at(storage_get(self, page), offset);
+	return page_at(pages_get(self, page), offset);
 }
 
 static inline bool
-storage_empty(Storage* self)
+pages_empty(Pages* self)
 {
 	return !self->list_count;
 }
 
 static inline size_t
-storage_size(Storage* self)
+pages_size(Pages* self)
 {
 	return self->list_count * self->size;
 }
 
 hot static inline bool
-storage_ensure(Storage* self, uint32_t size)
+pages_ensure(Pages* self, uint32_t size)
 {
 	// ensure size can fit the page
 	uint32_t max = self->size - sizeof(Page);
@@ -76,14 +76,14 @@ storage_ensure(Storage* self, uint32_t size)
 	auto page = self->current;
 	if (unlikely(!page || (page->size - page->position) < size))
 	{
-		storage_add(self);
+		pages_add(self);
 		return true;
 	}
 	return false;
 }
 
 always_inline static inline int64_t
-storage_delta(Storage* self, Page* page)
+pages_delta(Pages* self, Page* page)
 {
 	if (likely(self->current == page))
 		return 0;
