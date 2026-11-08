@@ -66,9 +66,6 @@
 #include "parser/parse_repl.h"
 #include "parser/parse_watch.h"
 
-// grants
-#include "parser/parse_grant.h"
-
 // ddl
 #include "parser/parse_api.h"
 #include "parser/parse_database.h"

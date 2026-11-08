@@ -42,3 +42,114 @@ parse_token_create(Stmt* self)
 	column_set_type(column, TYPE_JSON, -1);
 	columns_add(&stmt->ret.columns, column);
 }
+
+#if 0
+void
+parse_grant(Stmt* self, bool grant)
+{
+	// GRANT  perm, ... [ON name] TO db
+	// REVOKE perm, ... [ON name] FROM db
+	auto stmt = ast_grant_allocate();
+	self->ast = &stmt->ast;
+
+	// grant or revoke
+	stmt->grant = grant;
+
+	// permissions
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "name expected");
+
+		uint32_t id = 0;
+		if (permission_of(&name->string, &id) == -1)
+			stmt_error(self, name, "unknown permission name");
+		stmt->perms |= id;
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+
+	// [ON]
+	if (stmt_if(self, KON))
+	{
+		// relation
+		auto name = stmt_expect(self, KNAME);
+		stmt->rel = name->string;
+	}
+
+	// TO | FROM
+	if (grant)
+		stmt_expect(self, KTO);
+	else
+		stmt_expect(self, KFROM);
+
+	// db
+	auto db = stmt_expect(self, KNAME);
+	stmt->to = db->string;
+}
+
+void
+parse_grant_to_inline(Stmt* self, Grants* grants)
+{
+	// GRANT perm, ... TO db
+
+	// permissions
+	uint32_t perms = 0;
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "name expected");
+
+		uint32_t id = 0;
+		if (permission_of(&name->string, &id) == -1)
+			stmt_error(self, name, "unknown permission name");
+		perms |= id;
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+
+	// TO
+	stmt_expect(self, KTO);
+
+	// db
+	auto db = stmt_expect(self, KNAME);
+	grants_add(grants, &db->string, perms);
+}
+
+void
+parse_grant_self_inline(Stmt* self, Grants* grants)
+{
+	// GRANT perm, ...
+
+	// permissions
+	uint32_t perms = 0;
+	for (;;)
+	{
+		// name
+		auto name = stmt_next_shadow(self);
+		if (name->id != KNAME)
+			stmt_error(self, name, "name expected");
+
+		uint32_t id = 0;
+		if (permission_of(&name->string, &id) == -1)
+			stmt_error(self, name, "unknown permission name");
+		perms |= id;
+
+		// ,
+		if (! stmt_if(self, ','))
+			break;
+	}
+
+	Str to;
+	str_set(&to, "self", 4);
+	grants_add(grants, &to, perms);
+}
+#endif

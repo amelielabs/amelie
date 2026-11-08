@@ -310,9 +310,8 @@ session_main(Session* self, Portal* portal, Request* req)
 
 	if (str_empty(&req->rel))
 	{
-		// check permission
-		if (! portal->db->config->system)
-			check_permission_on(&portal->db->config->grants, PERM_SQL);
+		// todo: check permission
+		//	check_permission_on(&portal-grants, PERM_SQL);
 
 		compiler_parse(compiler, &req->content);
 	} else
@@ -352,8 +351,8 @@ session_main(Session* self, Portal* portal, Request* req)
 		db_check_permission(portal->db, &compiler->program_udf->rel,
 		                    PERM_EXECUTE);
 
-	// validate db permissions
-	db_check_access(portal->db, &program->access);
+	// validate permissions
+	db_check_access(portal->grants, &program->access);
 #endif
 
 	// execute utility, DDL, DML or Query

@@ -283,27 +283,6 @@ describe_amelie(Catalog* self, Buf* buf)
 #endif
 
 static void
-describe_grants(Grants* self, Buf* buf)
-{
-	if (grants_empty(self))
-		return;
-
-	auto grant = grants_first(self);
-	buf_write(buf, "  grant ", 8);
-
-	auto n = 0;
-	auto permissions = grant->permissions;
-	while (permissions > 0)
-	{
-		auto id = permission_next(&permissions);
-		if (n > 0)
-			buf_write(buf, ", ", 2);
-		buf_format(buf, "{s}", permission_name_of(id));
-		n++;
-	}
-}
-
-static void
 describe_db(Db* self, Buf* buf, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
@@ -347,9 +326,6 @@ describe_db(Db* self, Buf* buf, int flags)
 	}
 	if (limit_clause)
 		buf_write(buf, "\n", 1);
-
-	// grants
-	describe_grants(&self->config->grants, buf);
 
 	if (buf->position[-1] != '\n')
 		buf_write(buf, "\n", 1);

@@ -192,21 +192,6 @@ parse_stmt(Stmt* self)
 		parse_backup(self);
 		break;
 
-	case KGRANT:
-	{
-		// GRANT
-		self->id = STMT_GRANT;
-		parse_grant(self, true);
-		break;
-	}
-	case KREVOKE:
-	{
-		// REVOKE
-		self->id = STMT_REVOKE;
-		parse_grant(self, false);
-		break;
-	}
-
 	case KCREATE:
 	{
 		// [UNIQUE]

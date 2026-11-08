@@ -21,7 +21,6 @@ struct DbConfig
 	Str    created_at;
 	Str    revoked_at;
 	bool   system;
-	Grants grants;
 	Limits limits;
 	Apis   apis;
 };
@@ -37,7 +36,6 @@ db_config_allocate()
 	str_init(&self->description);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
-	grants_init(&self->grants);
 	limits_init(&self->limits);
 	apis_init(&self->apis);
 	return self;
@@ -51,7 +49,6 @@ db_config_free(DbConfig* self)
 	str_free(&self->description);
 	str_free(&self->created_at);
 	str_free(&self->revoked_at);
-	grants_free(&self->grants);
 	apis_free(&self->apis);
 	am_free(self);
 }
@@ -107,7 +104,6 @@ db_config_copy(DbConfig* self)
 	db_config_set_created_at(copy, &self->created_at);
 	db_config_set_revoked_at(copy, &self->revoked_at);
 	db_config_set_system(copy, self->system);
-	grants_copy(&copy->grants, &self->grants);
 	limits_copy(&copy->limits, &self->limits);
 	apis_copy(&copy->apis, &self->apis);
 	return copy;
@@ -118,7 +114,6 @@ db_config_read(uint8_t** pos)
 {
 	auto self = db_config_allocate();
 	errdefer(db_config_free, self);
-	uint8_t* pos_grants = NULL;
 	uint8_t* pos_limits = NULL;
 	uint8_t* pos_apis   = NULL;
 	Decode obj[] =
@@ -129,15 +124,11 @@ db_config_read(uint8_t** pos)
 		{ DECODE_STR,   "created_at",  &self->created_at  },
 		{ DECODE_STR,   "revoked_at",  &self->revoked_at  },
 		{ DECODE_BOOL,  "system",      &self->system      },
-		{ DECODE_ARRAY, "grants",      &pos_grants        },
 		{ DECODE_OBJ,   "limits",      &pos_limits        },
 		{ DECODE_ARRAY, "apis",        &pos_apis          },
 		{ 0,             NULL,          NULL              },
 	};
 	decode_obj(obj, "db", pos);
-
-	// grants
-	grants_read(&self->grants, &pos_grants);
 
 	// limits
 	limits_read(&self->limits, &pos_limits);
@@ -184,10 +175,6 @@ db_config_write(DbConfig* self, Buf* buf, int flags)
 	// system
 	encode_raw(buf, "system", 6);
 	encode_bool(buf, self->system);
-
-	// grants
-	encode_raw(buf, "grants", 6);
-	grants_write(&self->grants, buf, 0);
 
 	// limits
 	encode_raw(buf, "limits", 6);

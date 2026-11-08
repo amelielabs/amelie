@@ -284,7 +284,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
-    ${AMELIE_ROOT}/compiler/parser/parse_grant.c
     ${AMELIE_ROOT}/compiler/parser/parse_database.c
     ${AMELIE_ROOT}/compiler/parser/parse_api.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c

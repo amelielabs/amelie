@@ -330,7 +330,8 @@ fn_show(Call* self)
 	}
 	case SHOW_GRANTS:
 	{
-		grants_write(&db->config->grants, buf, 0);
+		// todo: show tr->grants
+		encode_null(buf);
 		break;
 	}
 	case SHOW_INDEXES:

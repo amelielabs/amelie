@@ -25,9 +25,8 @@ link_sql(Link* self)
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
-	// check permission
-	if (! portal->db->config->system)
-		check_permission_on(&portal->db->config->grants, PERM_SQL);
+	// todo: check permission
+	//	check_permission_on(&portal->grants, PERM_SQL);
 
 	// POST / (text/plain)
 	auto method = &http->options[HTTP_METHOD];

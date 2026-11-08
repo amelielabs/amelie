@@ -162,28 +162,7 @@ parse_database_create(Stmt* self)
 			continue;
 		}
 
-		// GRANT name, ...
-		if (str_is_case(&name->string, "grant", 5))
-		{
-			parse_grant_self_inline(self, &config->grants);
-			continue;
-		}
-
 		stmt_error(self, name, "unrecognized option");
-	}
-
-	// set default grants (unless defined)
-	if (grants_empty(&config->grants))
-	{
-		auto perms_all =
-			PERM_GRANT           |
-			PERM_CREATE_TABLE    |
-			PERM_CREATE_FUNCTION |
-			PERM_CREATE_API      |
-			PERM_SQL;
-		Str database_self;
-		str_set_cstr(&database_self, "self");
-		grants_add(&config->grants, &database_self, perms_all);
 	}
 }
 

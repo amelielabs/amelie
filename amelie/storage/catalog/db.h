@@ -30,7 +30,6 @@ bool db_create(Catalog*, Tr*, DbConfig*, bool);
 bool db_drop(Catalog*, Tr*, Str*, bool, bool);
 bool db_rename(Catalog*, Tr*, Str*, Str*, bool);
 bool db_revoke_token(Catalog*, Tr*, Str*, Str*, bool);
-bool db_grant(Catalog*, Tr*, Str*, bool, uint32_t, bool);
 bool db_describe(Catalog*, Tr*, Str*, Str*, bool);
 bool db_limit_set(Catalog*, Tr*, Str*, Limits*, bool);
 bool db_limit_unset(Catalog*, Tr*, Str*, uint64_t, bool);

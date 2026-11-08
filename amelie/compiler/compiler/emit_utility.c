@@ -160,17 +160,6 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-#if 0
-	// grant
-	case STMT_GRANT:
-	case STMT_REVOKE:
-	{
-		auto arg = ast_grant_of(stmt->ast);
-		offset = rel_op_grant(data, &arg->rel, &arg->to, arg->grant, arg->perms);
-		break;
-	}
-#endif
-
 	// table
 	case STMT_CREATE_TABLE:
 	{
