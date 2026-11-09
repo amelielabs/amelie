@@ -5,7 +5,7 @@ post / - - -;
 post / json - -;
 400 Bad Request
 post / application/json - -;
-400 Bad Request
+{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "unexpected end of line"}}
 # test: POST / (text/plain, no accept, no content)
 post / text/plain - -;
 # test: POST / (text/plain, no accept)

@@ -1,14 +1,8 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: POST /mcp
-create api '/mcp' as mcp;
-post /mcp - - -;
-{"jsonrpc": "2.0", "id": null, "error": {"code": -32000, "message": "unexpected end of line"}}
-# test: POST /mcp (invalid content type)
-post /mcp xyx - -;
-400 Bad Request
-# test: POST /mcp (initialize)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "initialize"};
+# test: POST /
+# test: POST / (initialize)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "initialize"};
 {
   "jsonrpc": "2.0",
   "id": 11,
@@ -24,8 +18,8 @@ post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "initialize"
     }
   }
 }
-# test: POST /mcp (tools/list, empty)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
+# test: POST / (tools/list, empty)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
 {
   "jsonrpc": "2.0",
   "id": 11,
@@ -37,8 +31,8 @@ create function plus (a int, b int) return int
 begin
   return a + b;
 end;
-# test: POST /mcp (tools/list)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
+# test: POST / (tools/list)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"};
 {
   "jsonrpc": "2.0",
   "id": 11,
@@ -61,25 +55,25 @@ post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/list"
     }]
   }
 }
-# test: POST /mcp (tools/call)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 2} } };
+# test: POST / (tools/call)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 2} } };
 {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "\nplus\n────\n3\n"}], "isError": false}}
-# test: POST /mcp (tools/call, error)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 'string'} } };
+# test: POST / (tools/call, error)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "plus", "arguments": {"a": 1, "b": 'string'} } };
 {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: 'int' expected for column 'b'"}], "isError": true}}
 create function error_as (msg string)
 begin
   select error(msg);
 end;
-# test: POST /mcp (tools/call, non udf)
+# test: POST / (tools/call, non udf)
 create table xyz (id int primary key);
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "xyz", "arguments": {} } };
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "xyz", "arguments": {} } };
 {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: column 'id' value cannot be NULL"}], "isError": true}}
-# test: POST /mcp (tools/call, error during execution)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "error_as", "arguments": {} } };
+# test: POST / (tools/call, error during execution)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": { "name": "error_as", "arguments": {} } };
 {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "error: error(❰null❱ ⟵ expected string"}], "isError": true}}
-# test: POST /mcp (resources/list)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
+# test: POST / (resources/list)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
 {
   "jsonrpc": "2.0",
   "id": 11,
@@ -91,8 +85,8 @@ create function some_resource () return string
 begin
   return 'hello world'::sha1;
 end;
-# test: POST /mcp (resources/read)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
+# test: POST / (resources/read)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/list"};
 {
   "jsonrpc": "2.0",
   "id": 11,
@@ -105,16 +99,16 @@ post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/l
     }]
   }
 }
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://" } };
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "'uri' is not valid"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/zyx" } };
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://amelie/zyx" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'amelie/zyx': not exists"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://zyx" } };
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://zyx" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation 'zyx': not exists"}}
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://some_resource" } };
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://some_resource" } };
 {"jsonrpc": "2.0", "id": 11, "result": {"contents": [{"uri": "mcp://some_resource", "text": "\nsome_resource\n─────────────\n2aae6c35c94fcfb415dbe95f408b9ce91ee846ed\n"}]}}
-# test: POST /mcp (resources/read, table)
-post /mcp application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://xyz" } };
+# test: POST / (resources/read, table)
+post / application/json - {"jsonrpc": "2.0", "id": 11, "method": "resources/read", "params": { "uri": "mcp://xyz" } };
 {"jsonrpc": "2.0", "id": 11, "error": {"code": -32000, "message": "relation xyz is not a function"}}
 drop table xyz;
 disconnect S0;

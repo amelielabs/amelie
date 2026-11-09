@@ -29,9 +29,6 @@ link_sql(Link* self)
 	//	check_permission_on(&portal->grants, PERM_SQL);
 
 	// POST / (text/plain)
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is_case(method, "POST", 4)))
-		error("unsupported operation method: {str}", method);
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
@@ -67,17 +64,14 @@ link_sql(Link* self)
 }
 
 hot static inline int
-link_api_mcp(Link* self)
+link_mcp(Link* self)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
-	// content type
+	// content type (application/json)
 	auto content_type = &endpoint->content_type.string;
-	if (!str_empty(content_type) &&
-	    !str_is(content_type, "application/json", 16))
-		error("unsupported operation content-type: {str}", content_type);
 
 	// set to default
 	str_init(content_type);
@@ -142,10 +136,6 @@ link_api(Link* self)
 		error("db {str}: api '{str}' not found",
 		      &portal->db->config->name, uri);
 
-	// mcp request
-	if (self->api->mcp)
-		return link_api_mcp(self);
-
 	// GET /<db_api> (feed)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(str_is_case(method, "GET", 3)))
@@ -208,12 +198,21 @@ link_api(Link* self)
 hot static inline int
 link_root(Link* self)
 {
+	auto portal   = &self->portal;
+	auto endpoint = &portal->endpoint;
+
 	// POST /
 	auto http   = &self->client->request;
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method: {str}", method);
 
+	// mcp (application/json)
+	auto content_type = &endpoint->content_type.string;
+	if (str_is(content_type, "application/json", 16))
+		return link_mcp(self);
+
+	// sql (plain/text)
 	return link_sql(self);
 }
 
