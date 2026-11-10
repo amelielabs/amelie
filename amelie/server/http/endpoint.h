@@ -33,7 +33,7 @@ struct Endpoint
 	// protocol
 	Opt  proto;
 	// auth
-	Opt  db;
+	Opt  user;
 	Opt  token;
 	Opt  token_type;
 	// host
@@ -51,7 +51,8 @@ struct Endpoint
 	Opt  uri;
 	Opt  content_type;
 	Opt  accept;
-	Opt  endpoint;
+	Opt  db;
+	Opt  rel;
 	// context
 	Opt  timezone;
 	Opt  time;
@@ -60,7 +61,6 @@ struct Endpoint
 	// misc
 	Opt  jsonrpc;
 	Opt  trusted;
-	Opt  name;
 	Opt  debug;
 	Opts opts;
 };

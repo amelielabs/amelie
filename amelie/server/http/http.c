@@ -263,11 +263,17 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 		break;
 	}
 
-	// /endpoint
-	if (! opt_string_empty(&endpoint->endpoint))
-		buf_write_str(buf, opt_string_of(&endpoint->endpoint));
-	else
-		buf_write(buf, "/", 1);
+	// /db/rel
+	buf_write(buf, "/", 1);
+	if (! opt_string_empty(&endpoint->db))
+	{
+		buf_write_str(buf, opt_string_of(&endpoint->db));
+		if (! opt_string_empty(&endpoint->rel))
+		{
+			buf_write(buf, "/", 1);
+			buf_write_str(buf, opt_string_of(&endpoint->rel));
+		}
+	}
 
 	// arguments
 	bool first = true;

@@ -243,7 +243,7 @@ checkpoint;
 disconnect S0;
 close E0;
 open E0;
-connect E0 S0 x@127.0.0.1:3485;
+connect E0 S0 127.0.0.1:3485/x;
 
 show limits;
 show rels;

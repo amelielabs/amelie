@@ -23,7 +23,7 @@ endpoint_init(Endpoint* self)
 		// protocol
 		{ "proto",        OPT_INT,     OPT_C,              &self->proto,        NULL, PROTO_HTTP },
 		// auth
-		{ "db",           OPT_STRING,  OPT_C,              &self->db,           NULL, 0          },
+		{ "user",         OPT_STRING,  OPT_C,              &self->user,         NULL, 0          },
 		{ "token",        OPT_STRING,  OPT_C|OPT_A,        &self->token,        NULL, 0          },
 		{ "token_type",   OPT_INT,     OPT_C,              &self->token_type,   NULL, TOKEN_NONE },
 		// host
@@ -41,7 +41,9 @@ endpoint_init(Endpoint* self)
 		{ "uri",          OPT_STRING,  OPT_E,              &self->uri,          NULL, 0          },
 		{ "content_type", OPT_STRING,  OPT_C|OPT_A,        &self->content_type, NULL, 0          },
 		{ "accept",       OPT_STRING,  OPT_C|OPT_A,        &self->accept,       NULL, 0          },
-		{ "endpoint",     OPT_STRING,  OPT_C,              &self->endpoint,     NULL, 0          },
+		// relation
+		{ "db",           OPT_STRING,  OPT_C,              &self->db,           NULL, 0          },
+		{ "rel",          OPT_STRING,  OPT_C,              &self->rel,          NULL, 0          },
 		// context
 		{ "timezone",     OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->timezone,     NULL, 0          },
 		{ "time",         OPT_INT,     OPT_E,              &self->time,         NULL, 0          },

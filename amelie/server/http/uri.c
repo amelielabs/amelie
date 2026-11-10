@@ -75,7 +75,7 @@ uri_parse_user(Uri* self)
 
 	// user
 	auto endpoint = self->endpoint;
-	opt_string_set_raw(&endpoint->db, self->pos, at - self->pos);
+	opt_string_set_raw(&endpoint->user, self->pos, at - self->pos);
 	self->pos = at + 1;
 }
 
@@ -270,12 +270,32 @@ uri_parse_args(Uri* self, int flags)
 static inline void
 uri_parse_endpoint(Uri* self)
 {
-	// /<endpoint> [?]
-	auto start = self->pos;
-	while (*self->pos && *self->pos != '?')
-		self->pos++;
+	// / [db/rel] [?]
+	if (*self->pos != '/')
+		uri_error();
+	self->pos++;
+	if (! *self->pos)
+		return;
 
-	opt_string_set_raw(&self->endpoint->endpoint, start, self->pos - start);
+	// db
+	auto start = self->pos;
+	while (*self->pos && *self->pos != '/' && *self->pos != '?')
+		self->pos++;
+	opt_string_set_raw(&self->endpoint->db, start, self->pos - start);
+	if (!*self->pos || *self->pos == '?')
+		return;
+
+	// /
+	self->pos++;
+	start = self->pos ;
+
+	// rel
+	while (*self->pos && *self->pos != '/' && *self->pos != '?')
+		self->pos++;
+	opt_string_set_raw(&self->endpoint->rel, start, self->pos - start);
+
+	if (*self->pos == '/')
+		self->pos++;
 }
 
 void
@@ -297,7 +317,7 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	// hostname[:port]
 	uri_parse_host(&self);
 
-	// [/endpoint]
+	// [/db/rel]
 	if (*self.pos == '/')
 		uri_parse_endpoint(&self);
 
@@ -318,7 +338,7 @@ uri_parse_request(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	// /<endpoint>
+	// /db/rel
 	uri_parse_endpoint(&self);
 
 	// ?name=value[& ...]

@@ -22,7 +22,6 @@ static void
 link_init(Link* self, Compute* compute, Client* client)
 {
 	self->client  = client;
-	self->api     = NULL;
 	self->compute = compute;
 
 	portal_init(&self->portal);
@@ -42,14 +41,12 @@ link_free(Link* self)
 static void
 link_reset(Link* self)
 {
-	self->api = NULL;
-
 	// release catalog lock
 	portal_reset(&self->portal, true);
 }
 
 hot static inline bool
-link_auth(Link* self)
+link_endpoint(Link* self)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
@@ -76,10 +73,24 @@ link_auth(Link* self)
 	// update time and random seed
 	portal_prepare(portal);
 
-	// authenticate token (and take catalog lock)
+	// parse path and arguments
 	return !error_catch
 	(
-		portal_auth(portal, &self->compute->auth, &self->client->token)
+		uri_parse_request(endpoint, &http->options[HTTP_URL]);
+
+		// set default db
+		if (opt_string_empty(&endpoint->db))
+			opt_string_set_raw(&endpoint->db, "amelie", 6);
+	);
+}
+
+hot static inline bool
+link_auth(Link* self)
+{
+	// authenticate token (and take users lock)
+	return !error_catch
+	(
+		portal_auth(&self->portal, &self->compute->auth, &self->client->token)
 	);
 }
 
@@ -116,6 +127,17 @@ link_main(Link* self)
 				client_413(client);
 				break;
 			}
+		}
+
+		// set endpoint
+		if (! link_endpoint(self))
+		{
+			// 400 Bad Request
+			client_400(client, portal->output.buf);
+
+			link_reset(self);
+			http_reset(http);
+			continue;
 		}
 
 		// authenticate

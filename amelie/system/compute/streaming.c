@@ -36,13 +36,13 @@ streaming_prepare(Link* self, StreamPos* pos)
 	auto portal = &self->portal;
 
 	// find relation
-	auto api = self->api;
-	auto rel = catalog_find(&portal->db->catalog, REL_UNDEF, &api->rel, false);
+	auto rel_name = opt_string_of(&portal->endpoint.rel);
+	auto rel = catalog_find(&portal->db->catalog, REL_UNDEF, rel_name, false);
 	if (! rel)
-		error("stream: relation {str} not found", &api->rel);
+		error("stream: relation {str} not found", rel_name);
 	if (rel->type != REL_TABLE)
 		error("stream: relation {str} cannot be used for streaming",
-		      rel->name);
+		      rel_name);
 
 	// prepare streams (one per partition)
 	auto id = &portal->endpoint.id.string;

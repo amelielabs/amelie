@@ -260,28 +260,6 @@ describe_udf(Udf* self, Buf* buf, int flags)
 		return;
 }
 
-#if 0
-static void
-describe_amelie(Catalog* self, Buf* buf)
-{
-	Str db;
-	str_set(&db, "amelie", 6);
-	auto amelie = catalog_find_db(self, &db, true);
-
-	// apis
-	list_foreach(&amelie->config->apis.list)
-	{
-		auto api = list_at(Api, link);
-		buf_format(buf, "create api {qstr} ", &api->uri);
-		if (api->mcp)
-			buf_format(buf, "as mcp\n");
-		else
-			buf_format(buf, "on {str}\n", &api->rel);
-		buf_write(buf, ";", 1);
-	}
-}
-#endif
-
 static void
 describe_db(Db* self, Buf* buf, int flags)
 {
@@ -329,17 +307,6 @@ describe_db(Db* self, Buf* buf, int flags)
 
 	if (buf->position[-1] != '\n')
 		buf_write(buf, "\n", 1);
-
-	// apis
-	list_foreach(&self->config->apis.list)
-	{
-		auto api = list_at(Api, link);
-		buf_format(buf, "  api {qstr} ", &api->uri);
-		if (api->mcp)
-			buf_format(buf, "as mcp\n");
-		else
-			buf_format(buf, "on {str}\n", &api->rel);
-	}
 }
 
 void

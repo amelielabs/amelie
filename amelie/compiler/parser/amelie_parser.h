@@ -67,7 +67,6 @@
 #include "parser/parse_watch.h"
 
 // ddl
-#include "parser/parse_api.h"
 #include "parser/parse_database.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"

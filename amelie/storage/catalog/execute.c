@@ -92,26 +92,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = db_limit_unset(self, tr, &name, mask, if_exists);
 		break;
 	}
-	case DDL_DB_API_CREATE:
-	{
-		Str  name;
-		auto api = db_op_api_create_read(op, &name);
-		defer(api_free, api);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = db_api_create(self, tr, &name, api, if_exists);
-		break;
-	}
-	case DDL_DB_API_DROP:
-	{
-		Str name;
-		Str uri;
-		db_op_api_drop_read(op, &name, &uri);
-
-		auto if_exists = ddl_if_exists(flags);
-		write = db_api_drop(self, tr, &name, &uri, if_exists);
-		break;
-	}
 	case DDL_DROP:
 	{
 		Str  name;

@@ -36,20 +36,6 @@ parse_stmt_free(Stmt* stmt)
 			db_config_free(ast->config);
 		break;
 	}
-	case STMT_ALTER_DATABASE:
-	{
-		auto ast = ast_database_alter_of(stmt->ast);
-		if (ast->api)
-			api_free(ast->api);
-		break;
-	}
-	case STMT_CREATE_API:
-	{
-		auto ast = ast_api_create_of(stmt->ast);
-		if (ast->config)
-			api_free(ast->config);
-		break;
-	}
 	case STMT_CREATE_TABLE:
 	{
 		auto ast = ast_table_create_of(stmt->ast);
@@ -243,11 +229,6 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_DATABASE;
 			parse_database_create(self);
 		} else
-		if (stmt_if(self, KAPI))
-		{
-			self->id = STMT_CREATE_API;
-			parse_api_create(self);
-		} else
 		if (stmt_if(self, KTABLE))
 		{
 			self->id = STMT_CREATE_TABLE;
@@ -281,11 +262,6 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_DROP_DATABASE;
 			parse_database_drop(self);
-		} else
-		if (stmt_if(self, KAPI))
-		{
-			self->id = STMT_DROP_API;
-			parse_api_drop(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{

@@ -35,9 +35,7 @@ enum
 	DATABASE_ALTER_DESCRIPTION,
 	DATABASE_ALTER_REVOKE_TOKEN,
 	DATABASE_ALTER_LIMIT_SET,
-	DATABASE_ALTER_LIMIT_UNSET,
-	DATABASE_ALTER_API_ADD,
-	DATABASE_ALTER_API_DROP
+	DATABASE_ALTER_LIMIT_UNSET
 };
 
 struct AstDatabaseAlter
@@ -51,8 +49,6 @@ struct AstDatabaseAlter
 	Str      description;
 	Limits   limits;
 	uint64_t limits_mask;
-	Api*     api;
-	Str      api_uri;
 };
 
 static inline AstDatabaseCreate*

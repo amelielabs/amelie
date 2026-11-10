@@ -33,8 +33,6 @@ bool db_revoke_token(Catalog*, Tr*, Str*, Str*, bool);
 bool db_describe(Catalog*, Tr*, Str*, Str*, bool);
 bool db_limit_set(Catalog*, Tr*, Str*, Limits*, bool);
 bool db_limit_unset(Catalog*, Tr*, Str*, uint64_t, bool);
-bool db_api_create(Catalog*, Tr*, Str*, Api*, bool);
-bool db_api_drop(Catalog*, Tr*, Str*, Str*, bool);
 
 always_inline static inline Db*
 db_of(Rel* self)

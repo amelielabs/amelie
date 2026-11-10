@@ -29,7 +29,6 @@ enum
 	SHOW_WAL,
 	SHOW_METRICS,
 	SHOW_LIMITS,
-	SHOW_API,
 	SHOW_MEMORY,
 	SHOW_DATABASES,
 	SHOW_DATABASE,
@@ -80,8 +79,6 @@ static ShowCmd show_cmds[] =
 
 	// database
 	{ SHOW_LIMITS,        "limits",        6,  SHOW_NO,    true  },
-	{ SHOW_API,           "apis",          4,  SHOW_NO,    true  },
-	{ SHOW_API,           "api",           3,  SHOW_NO,    true  },
 	{ SHOW_MEMORY,        "memory",        6,  SHOW_NO,    true  },
 
 	// relations
@@ -276,11 +273,6 @@ fn_show(Call* self)
 	case SHOW_LIMITS:
 	{
 		limits_write(&db->config->limits, buf);
-		break;
-	}
-	case SHOW_API:
-	{
-		apis_write(&db->config->apis, buf, flags);
 		break;
 	}
 	case SHOW_MEMORY:

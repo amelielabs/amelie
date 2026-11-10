@@ -25,10 +25,10 @@ link_sql(Link* self)
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
+	// POST /db (text/plain)
+
 	// todo: check permission
 	//	check_permission_on(&portal->grants, PERM_SQL);
-
-	// POST / (text/plain)
 
 	// content type
 	auto content_type = &endpoint->content_type.string;
@@ -37,7 +37,7 @@ link_sql(Link* self)
 	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
 		error("unsupported operation content-type: {str}", content_type);
 
-	// set to default
+	// reset to default
 	str_init(content_type);
 
 	// accept
@@ -70,10 +70,10 @@ link_mcp(Link* self)
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
-	// content type (application/json)
-	auto content_type = &endpoint->content_type.string;
+	// POST /db (application/json)
 
-	// set to default
+	// reset to default
+	auto content_type = &endpoint->content_type.string;
 	str_init(content_type);
 
 	// accept (jsonrpc)
@@ -100,7 +100,28 @@ link_mcp(Link* self)
 }
 
 hot static inline int
-link_api_get(Link* self)
+link_db(Link* self)
+{
+	auto portal   = &self->portal;
+	auto endpoint = &portal->endpoint;
+
+	// POST /db
+	auto http   = &self->client->request;
+	auto method = &http->options[HTTP_METHOD];
+	if (unlikely(! str_is_case(method, "POST", 4)))
+		error("unsupported operation method: {str}", method);
+
+	// mcp (application/json)
+	auto content_type = &endpoint->content_type.string;
+	if (str_is(content_type, "application/json", 16))
+		return link_mcp(self);
+
+	// sql (plain/text)
+	return link_sql(self);
+}
+
+hot static inline int
+link_rel_get(Link* self)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
@@ -123,25 +144,18 @@ link_api_get(Link* self)
 }
 
 hot static inline int
-link_api(Link* self)
+link_rel(Link* self)
 {
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
 	auto http     = &self->client->request;
 
-	// find api
-	auto uri = opt_string_of(&endpoint->endpoint);
-	self->api = apis_find(&portal->db->config->apis, uri);
-	if (! self->api)
-		error("db {str}: api '{str}' not found",
-		      &portal->db->config->name, uri);
-
-	// GET /<db_api> (feed)
+	// GET /db/rel (feed)
 	auto method = &http->options[HTTP_METHOD];
 	if (unlikely(str_is_case(method, "GET", 3)))
-		return link_api_get(self);
+		return link_rel_get(self);
 
-	// POST /<db_api> (application/json)
+	// POST /db/rel (application/json)
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method: {str}", method);
 
@@ -189,31 +203,10 @@ link_api(Link* self)
 
 	// set request
 	auto req = &self->req;
-	req->rel          = self->api->rel;
+	req->rel          = endpoint->rel.string;
 	req->content_type = *content_type;
 	req->content      =  content;
 	return LINK_EXECUTE;
-}
-
-hot static inline int
-link_root(Link* self)
-{
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
-
-	// POST /
-	auto http   = &self->client->request;
-	auto method = &http->options[HTTP_METHOD];
-	if (unlikely(! str_is_case(method, "POST", 4)))
-		error("unsupported operation method: {str}", method);
-
-	// mcp (application/json)
-	auto content_type = &endpoint->content_type.string;
-	if (str_is(content_type, "application/json", 16))
-		return link_mcp(self);
-
-	// sql (plain/text)
-	return link_sql(self);
 }
 
 hot int
@@ -222,7 +215,6 @@ link_request(Link* self)
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
 	auto output   = &portal->output;
-	auto http     = &self->client->request;
 	output_set_buf(output, &self->client->reply.content);
 
 	// read endpoint and prepare request
@@ -230,14 +222,14 @@ link_request(Link* self)
 	auto on_error = error_catch
 	(
 		// parse request path and arguments
-		uri_parse_request(endpoint, &http->options[HTTP_URL]);
 		request_init(&self->req);
 
-		// / or /<db_api>
-		if (str_is(opt_string_of(&endpoint->endpoint), "/", 1))
-			rc = link_root(self);
+		// /db
+		// /db/rel
+		if (opt_string_empty(&endpoint->rel))
+			rc = link_db(self);
 		else
-			rc = link_api(self);
+			rc = link_rel(self);
 	);
 	if (on_error)
 	{

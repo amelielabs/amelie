@@ -102,9 +102,6 @@ portal_auth(Portal* self, Auth* auth, Token* token)
 	// authenticate token
 	auto endpoint = &self->endpoint;
 	self->db = auth_run(auth, endpoint, token);
-
-	// set db
-	opt_string_set(&endpoint->db, &self->db->config->name);
 }
 
 hot static inline void

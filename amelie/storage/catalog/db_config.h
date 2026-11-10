@@ -21,7 +21,6 @@ struct DbConfig
 	Str    revoked_at;
 	bool   system;
 	Limits limits;
-	Apis   apis;
 };
 
 static inline DbConfig*
@@ -35,7 +34,6 @@ db_config_allocate()
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
 	limits_init(&self->limits);
-	apis_init(&self->apis);
 	return self;
 }
 
@@ -46,7 +44,6 @@ db_config_free(DbConfig* self)
 	str_free(&self->description);
 	str_free(&self->created_at);
 	str_free(&self->revoked_at);
-	apis_free(&self->apis);
 	am_free(self);
 }
 
@@ -94,7 +91,6 @@ db_config_copy(DbConfig* self)
 	db_config_set_revoked_at(copy, &self->revoked_at);
 	db_config_set_system(copy, self->system);
 	limits_copy(&copy->limits, &self->limits);
-	apis_copy(&copy->apis, &self->apis);
 	return copy;
 }
 
@@ -104,25 +100,20 @@ db_config_read(uint8_t** pos)
 	auto self = db_config_allocate();
 	errdefer(db_config_free, self);
 	uint8_t* pos_limits = NULL;
-	uint8_t* pos_apis   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STR,   "name",        &self->name        },
-		{ DECODE_STR,   "description", &self->description },
-		{ DECODE_STR,   "created_at",  &self->created_at  },
-		{ DECODE_STR,   "revoked_at",  &self->revoked_at  },
-		{ DECODE_BOOL,  "system",      &self->system      },
-		{ DECODE_OBJ,   "limits",      &pos_limits        },
-		{ DECODE_ARRAY, "apis",        &pos_apis          },
-		{ 0,             NULL,          NULL              },
+		{ DECODE_STR,  "name",        &self->name        },
+		{ DECODE_STR,  "description", &self->description },
+		{ DECODE_STR,  "created_at",  &self->created_at  },
+		{ DECODE_STR,  "revoked_at",  &self->revoked_at  },
+		{ DECODE_BOOL, "system",      &self->system      },
+		{ DECODE_OBJ,  "limits",      &pos_limits        },
+		{ 0,            NULL,          NULL              },
 	};
 	decode_obj(obj, "db", pos);
 
 	// limits
 	limits_read(&self->limits, &pos_limits);
-
-	// apis
-	apis_read(&self->apis, &pos_apis);
 	return self;
 }
 
@@ -163,10 +154,6 @@ db_config_write(DbConfig* self, Buf* buf, int flags)
 	// limits
 	encode_raw(buf, "limits", 6);
 	limits_write(&self->limits, buf);
-
-	// apis
-	encode_raw(buf, "apis", 4);
-	apis_write(&self->apis, buf, flags);
 
 	encode_obj_end(buf);
 }

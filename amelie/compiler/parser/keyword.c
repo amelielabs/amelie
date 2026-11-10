@@ -31,7 +31,6 @@ Keyword keywords[] =
 	{ KAS,                    "as",                    2  },
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
-	{ KAPI,                   "api",                   3  },
 
 	// b
 	{ KBEGIN,                 "begin",                 5  },

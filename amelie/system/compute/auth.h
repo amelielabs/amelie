@@ -16,7 +16,6 @@ typedef struct Auth Auth;
 struct Auth
 {
 	JwtDecode jwt;
-	Db*       amelie;
 };
 
 void auth_init(Auth*);

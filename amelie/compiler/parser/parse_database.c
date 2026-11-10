@@ -76,7 +76,6 @@ parse_database_create(Stmt* self)
 	// CREATE DATABASE [IF NOT EXISTS] name
 	// [DESCRIPTION]
 	// [LIMIT]
-	// [API]
 	auto stmt = ast_database_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -124,13 +123,6 @@ parse_database_create(Stmt* self)
 		if (str_is_case(&name->string, "limit", 5))
 		{
 			parse_database_limits(self, &config->limits);
-			continue;
-		}
-
-		// API uri ON target
-		if (str_is_case(&name->string, "api", 3))
-		{
-			parse_api_create_inline(self, &config->apis);
 			continue;
 		}
 
@@ -189,8 +181,6 @@ parse_database_alter(Stmt* self)
 	// ALTER DATABASE [IF EXISTS] name DESCRIPTION value
 	// ALTER DATABASE [IF EXISTS] name SET LIMIT name = value, ...
 	// ALTER DATABASE [IF EXISTS] name UNSET LIMIT name, ...
-	// ALTER DATABASE [IF EXISTS] name ADD API uri ON target
-	// ALTER DATABASE [IF EXISTS] name DROP API uri
 	auto stmt = ast_database_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -248,24 +238,6 @@ parse_database_alter(Stmt* self)
 		stmt_expect(self, KLIMIT);
 		stmt->type = DATABASE_ALTER_LIMIT_UNSET;
 		stmt->limits_mask = parse_database_limits_mask(self);
-	} else
-	if (stmt_if(self, KADD))
-	{
-		stmt_expect(self, KAPI);
-		stmt->type = DATABASE_ALTER_API_ADD;
-
-		Apis apis;
-		apis_init(&apis);
-		errdefer(apis_free, &apis);
-		parse_api_create_inline(self, &apis);
-		stmt->api = apis_first(&apis);
-	} else
-	if (stmt_if(self, KDROP))
-	{
-		stmt_expect(self, KAPI);
-		stmt->type = DATABASE_ALTER_API_DROP;
-		auto uri = stmt_expect(self, KSTRING);
-		stmt->api_uri = uri->string;
 	} else
 	{
 		stmt_error(self, NULL, "operation name expected");

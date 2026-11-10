@@ -66,7 +66,6 @@ enum
 	KAS,
 	KAT,
 	KALWAYS,
-	KAPI,
 
 	// b
 	KBEGIN,

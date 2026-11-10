@@ -134,7 +134,7 @@ select show('database', 'test').name;
 name
 ────
 "test"
-connect E0 S1 test@127.0.0.1:3485;
+connect E0 S1 127.0.0.1:3485/test;
 switch S1;
 select current_database;
 
@@ -207,7 +207,7 @@ name
 "amelie"
 # test: alter database rename cascade (udf dep)
 create database test;
-connect E0 S1 test@127.0.0.1:3485;
+connect E0 S1 127.0.0.1:3485/test;
 switch S1;
 create table a(id int primary key);
 insert into a values (1), (2), (3);
@@ -234,7 +234,7 @@ col1
 1
 switch S1;
 disconnect S1;
-connect E0 S1 test2@127.0.0.1:3485;
+connect E0 S1 127.0.0.1:3485/test2;
 switch S1;
 show tables;
 

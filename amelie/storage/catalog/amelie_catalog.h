@@ -16,8 +16,6 @@
 #include "catalog/catalog.h"
 
 // database
-#include "catalog/api.h"
-#include "catalog/apis.h"
 #include "catalog/db_config.h"
 #include "catalog/db_op.h"
 #include "catalog/db.h"
