@@ -17,6 +17,7 @@ struct DbConfig
 {
 	Str    name;
 	Str    description;
+	Uuid   id;
 	Str    created_at;
 	Str    revoked_at;
 	bool   system;
@@ -31,6 +32,7 @@ db_config_allocate()
 	self->system = false;
 	str_init(&self->name);
 	str_init(&self->description);
+	uuid_init(&self->id);
 	str_init(&self->created_at);
 	str_init(&self->revoked_at);
 	limits_init(&self->limits);

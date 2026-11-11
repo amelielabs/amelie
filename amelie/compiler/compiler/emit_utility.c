@@ -305,7 +305,7 @@ emit_utility(Compiler* self)
 	{
 		auto arg = ast_checkpoint_of(stmt->ast);
 		unused(arg);
-		op0(self, CCHECKPOINT);
+		op1(self, CCHECKPOINT, (intptr_t)self->parser.db);
 		break;
 	}
 

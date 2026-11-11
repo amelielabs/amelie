@@ -82,12 +82,13 @@ ccreate_token(Vm* self, Op* op)
 void
 ccheckpoint(Vm* self, Op* op)
 {
-	unused(op);
+	// [db*]
 
 	// PERM_SYSTEM
 	check_permission(&self->gtr->tr, PERM_SYSTEM);
 
-	storage_checkpoint(share()->storage);
+	auto db = (Db*)op->a;
+	storage_checkpoint(share()->storage, db);
 }
 
 void

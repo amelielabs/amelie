@@ -22,3 +22,6 @@
 // compression
 #include "page/encoder.h"
 #include "page/basefile.h"
+
+// checkpoint
+#include "page/checkpoint.h"

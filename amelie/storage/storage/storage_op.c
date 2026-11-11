@@ -19,24 +19,22 @@
 #include <amelie_storage.h>
 
 void
-storage_checkpoint(Storage* self)
+storage_checkpoint(Storage* self, Db* db)
 {
+	unused(self);
+
+	// prepare db schema
+	auto schema = buf_create();
+	defer_buf(schema);
+	describe_catalog(&db->catalog, schema);
+
 	// create new checkpoint
-	// checkpoint(&self->checkpoints, &self->catalog);
-
-	// run storage cleanup
-	storage_gc(self);
-}
-
-void
-storage_gc(Storage* self)
-{
-	// remove wal files < lsn
-	auto lsn = state_checkpoint();
-	wal_gc(&self->wal, lsn);
-
-	// checkpoint gc
-	// checkpoints_gc(&self->checkpoints);
+	Checkpoint cp;
+	checkpoint_init(&cp);
+	defer(checkpoint_free, &cp);
+	checkpoint_prepare(&cp, &db->page_mgr, &db->config->id, schema);
+	if (checkpoint(&cp))
+		; // add
 }
 
 static void
