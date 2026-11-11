@@ -20,7 +20,7 @@ struct Coroutine
 	Context      context;
 	ContextStack stack;
 	Exceptions   exceptions;
-	Arena        arena;
+	Palloc       palloc;
 	List         locks;
 	bool         cancel;
 	int          cancel_pause;
@@ -52,7 +52,7 @@ coroutine_init(Coroutine* self, Coroutines* coros, BufCache* buf_cache)
 	context_stack_init(&self->stack);
 	exceptions_init(&self->exceptions);
 	error_init(&self->error);
-	arena_init(&self->arena, buf_cache, 4096);
+	palloc_init(&self->palloc, buf_cache, 4096);
 	list_init(&self->locks);
 	list_init(&self->link);
 	list_init(&self->link_ready);
@@ -62,7 +62,7 @@ coroutine_init(Coroutine* self, Coroutines* coros, BufCache* buf_cache)
 static inline void
 coroutine_free(Coroutine* self)
 {
-	arena_free(&self->arena);
+	palloc_free(&self->palloc);
 	error_free(&self->error);
 	context_stack_free(&self->stack);
 	am_free(self);

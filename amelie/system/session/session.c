@@ -40,7 +40,7 @@ static inline void
 session_reset_compiler(Session* self)
 {
 	compiler_reset(&self->compiler);
-	palloc_reset();
+	palloc_reset(&am_self()->palloc);
 }
 
 static inline void

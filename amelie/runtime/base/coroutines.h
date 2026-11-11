@@ -136,7 +136,7 @@ coroutines_create(Coroutines*  self,
 		list_init(&coro->link_ready);
 		list_init(&coro->link);
 		event_init(&coro->on_exit);
-		arena_reset(&coro->arena);
+		palloc_reset(&coro->palloc);
 		error_reset(&coro->error);
 	} else
 	{

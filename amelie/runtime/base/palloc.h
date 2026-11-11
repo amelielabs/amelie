@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Arena Arena;
+typedef struct Palloc Palloc;
 
-struct Arena
+struct Palloc
 {
 	Buf*      list;
 	int       list_count;
@@ -22,19 +22,19 @@ struct Arena
 };
 
 always_inline static inline Buf*
-arena_at(Arena* self, int order)
+palloc_at(Palloc* self, int order)
 {
 	return ((Buf**)self->list->start)[order];
 }
 
 always_inline static inline Buf*
-arena_last(Arena* self)
+palloc_last(Palloc* self)
 {
-	return arena_at(self, self->list_count - 1);
+	return palloc_at(self, self->list_count - 1);
 }
 
 static inline void
-arena_init(Arena* self, BufCache* buf_cache, size_t size_page)
+palloc_init(Palloc* self, BufCache* buf_cache, size_t size_page)
 {
 	self->list       = NULL;
 	self->list_count = 0;
@@ -43,11 +43,11 @@ arena_init(Arena* self, BufCache* buf_cache, size_t size_page)
 }
 
 static inline void
-arena_reset(Arena* self)
+palloc_reset(Palloc* self)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		auto buf = arena_at(self, i);
+		auto buf = palloc_at(self, i);
 		buf_cache_push(self->buf_cache, buf);
 	}
 	self->list_count = 0;
@@ -59,16 +59,16 @@ arena_reset(Arena* self)
 }
 
 static inline void
-arena_free(Arena* self)
+palloc_free(Palloc* self)
 {
-	arena_reset(self);
+	palloc_reset(self);
 }
 
 hot static inline void*
-arena_allocate(Arena* self, size_t size)
+palloc_allocate(Palloc* self, size_t size)
 {
 	assert(size <= self->size_page);
-	if (!self->list || (self->size_page - buf_size(arena_last(self))) < size)
+	if (!self->list || (self->size_page - buf_size(palloc_last(self))) < size)
 	{
 		if (unlikely(! self->list))
 			self->list = buf_cache_pop(self->buf_cache);
@@ -80,7 +80,7 @@ arena_allocate(Arena* self, size_t size)
 		buf_reserve(buf, self->size_page);
 	}
 
-	auto current = arena_last(self);
+	auto current = palloc_last(self);
 	auto ptr = current->position;
 	buf_advance(current, size);
 	return ptr;

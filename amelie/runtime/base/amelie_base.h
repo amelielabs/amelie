@@ -41,7 +41,7 @@
 #include "base/buf.h"
 #include "base/bufs.h"
 #include "base/buf_cache.h"
-#include "base/arena.h"
+#include "base/palloc.h"
 
 // format
 #include "base/format.h"

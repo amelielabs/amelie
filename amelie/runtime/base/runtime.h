@@ -16,13 +16,7 @@
 static inline void*
 palloc(size_t size)
 {
-	return arena_allocate(&am_self()->arena, size);
-}
-
-static inline void
-palloc_reset(void)
-{
-	arena_reset(&am_self()->arena);
+	return palloc_allocate(&am_self()->palloc, size);
 }
 
 // buf

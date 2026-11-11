@@ -29,7 +29,7 @@ test_palloc(void* arg)
 	test(c != NULL);
 	memcpy(c, "hello", 5);
 
-	palloc_reset();
+	palloc_reset(&am_self()->palloc);
 
 	c = palloc(5);
 	test(c != NULL);
