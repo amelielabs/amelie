@@ -30,6 +30,7 @@ enum
 	SHOW_METRICS,
 	SHOW_LIMITS,
 	SHOW_MEMORY,
+	SHOW_PAGES,
 	SHOW_DATABASES,
 	SHOW_DATABASE,
 	SHOW_TABLES,
@@ -80,6 +81,7 @@ static ShowCmd show_cmds[] =
 	// database
 	{ SHOW_LIMITS,        "limits",        6,  SHOW_NO,    true  },
 	{ SHOW_MEMORY,        "memory",        6,  SHOW_NO,    true  },
+	{ SHOW_PAGES,         "pages",         5,  SHOW_NO,    true  },
 
 	// relations
 	{ SHOW_DATABASES,     "databases",     9,  SHOW_NO,    false },
@@ -278,6 +280,11 @@ fn_show(Call* self)
 	case SHOW_MEMORY:
 	{
 		usage_status(&db->memory, buf);
+		break;
+	}
+	case SHOW_PAGES:
+	{
+		page_mgr_status(&db->page_mgr, buf);
 		break;
 	}
 	case SHOW_DATABASES:

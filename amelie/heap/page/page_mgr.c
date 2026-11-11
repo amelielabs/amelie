@@ -100,3 +100,28 @@ page_mgr_push(PageMgr* self, Page* page)
 	buf_write(&self->list_free, &page, sizeof(Page**));
 	self->count_free++;
 }
+
+void
+page_mgr_status(PageMgr* self, Buf* buf)
+{
+	// {}
+	encode_obj(buf);
+
+	// usage
+	encode_raw(buf, "usage", 5);
+	encode_int(buf, (self->count_huge * self->size_huge) / 1024 / 1024);
+
+	// huge
+	encode_raw(buf, "huge", 4);
+	encode_int(buf, self->count_huge);
+
+	// pages
+	encode_raw(buf, "pages", 5);
+	encode_int(buf, self->count);
+
+	// pages_free
+	encode_raw(buf, "pages_free", 10);
+	encode_int(buf, self->count_free);
+
+	encode_obj_end(buf);
+}

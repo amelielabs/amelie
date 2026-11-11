@@ -29,6 +29,7 @@ void  page_mgr_init(PageMgr*);
 void  page_mgr_free(PageMgr*);
 Page* page_mgr_pop(PageMgr*);
 void  page_mgr_push(PageMgr*, Page*);
+void  page_mgr_status(PageMgr*, Buf*);
 
 static inline Page*
 page_mgr_at(PageMgr* self, int order)
