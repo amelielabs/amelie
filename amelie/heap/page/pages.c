@@ -15,44 +15,48 @@
 #include <amelie_page.h>
 
 void
-pages_init(Pages* self, Retention* retention, int type_meta, int type)
+pages_init(Pages* self, PageMgr* mgr, Retention* retention,
+           Uuid*  id_rel,
+           int    type_meta,
+           int    type)
 {
-	self->current    = NULL;
-	self->meta       = NULL;
-	self->list_count = 0;
-	self->retention  = retention;
-	self->type_meta  = type_meta;
-	self->type       = type;
-	self->id_first   = 0;
-	self->id_next    = 0;
-	self->size       = 2 * 1024 * 1024;
+	self->current   = NULL;
+	self->meta      = NULL;
+	self->count     = 0;
+	self->id        = 0;
+	self->id_first  = 0;
+	self->id_rel    = id_rel;
+	self->type_meta = type_meta;
+	self->type      = type;
+	self->retention = retention;
+	self->mgr       = mgr;
 	buf_init(&self->list);
 }
 
 void
 pages_free(Pages* self)
 {
-	for (auto i = 0; i < self->list_count; i++)
+	auto mgr = self->mgr;
+	for (auto i = 0; i < self->count; i++)
 	{
 		auto page = pages_at(self, i);
-		page_free(page);
+		page_mgr_push(mgr, page);
 	}
 	if (self->meta)
-		page_free(self->meta);
+		page_mgr_push(mgr, self->meta);
 	buf_free(&self->list);
 }
 
 Page*
-pages_add_meta(Pages* self, int size)
+pages_add_meta(Pages* self)
 {
-	assert(! self->meta);
 	// create and set meta page
-	auto page = page_allocate(sizeof(Page) + size);
+	assert(! self->meta);
+	auto page = page_mgr_pop(self->mgr);
 	page->type     = self->type_meta;
-	page->psn      = state_psn_next();
 	page->id       = UINT32_MAX;
-	page->id_seq   = UINT32_MAX;
-	page->position = sizeof(Page) + size;
+	page->id_rel   = *self->id_rel;
+	page->position = sizeof(Page);
 	self->meta     = page;
 	return page;
 }
@@ -61,24 +65,79 @@ Page*
 pages_add(Pages* self)
 {
 	// create new page
-	auto page = page_allocate(self->size);
+	auto page = page_mgr_pop(self->mgr);
 	page->type    = self->type;
-	page->psn     = state_psn_next();
-	page->id      = self->id_next++;
+	page->id      = self->id++;
+	page->id_rel  = *self->id_rel;
 	self->current = page;
 
-	if (self->retention)
-		page->id_seq = retention_attach(self->retention);
-
 	buf_write(&self->list, &page, sizeof(Page*));
-	self->list_count++;
+	self->count++;
 	return page;
 }
 
+static inline Page*
+pages_pop(Pages* self)
+{
+	auto page = pages_at(self, 0);
+	self->count--;
+
+	auto to_move = self->count * sizeof(Page*);
+	memmove(self->list.start, self->list.start + sizeof(Page*), to_move);
+	buf_truncate(&self->list, sizeof(Page*));
+
+	if (self->count > 0)
+	{
+		self->id_first = ((Page**)self->list.start)[0]->id;
+	} else
+	{
+		self->id_first = 0;
+		self->id       = 0;
+	}
+	return page;
+}
+
+bool
+pages_retention(Pages* self, uint32_t* id)
+{
+	if (! self->retention)
+		return false;
+
+	int count = self->retention->count;
+	if (count == INT_MAX)
+		return false;
+
+	// everything < watermark considered for removal
+	*id = 0;
+	if (unlikely(self->count > count))
+	{
+		assert((int)self->id >= count);
+		*id = self->id - count;
+	}
+	if (! *id)
+		return false;
+
+	// drop all pages < id
+	auto changed = false;
+	while (self->count > 1)
+	{
+		auto first = pages_at(self, 0);
+		if (first->id >= *id)
+			break;
+		auto page = pages_pop(self);
+		assert(page);
+		page_mgr_push(self->mgr, page);
+		changed = true;
+	}
+
+	return changed;
+}
+
+#if 0
 void
-pages_open(Pages* self, uint64_t checkpoint,
-             int      pages_count,
-             int64_t* pages)
+pages_open(Pages*   self, uint64_t checkpoint,
+           int      pages_count,
+           int64_t* pages)
 {
 	auto retention = self->retention;
 	pages_free(self);
@@ -114,50 +173,4 @@ pages_open(Pages* self, uint64_t checkpoint,
 		id++;
 	self->id_next = id;
 }
-
-static inline Page*
-pages_pop(Pages* self)
-{
-	auto page = pages_at(self, 0);
-	self->list_count--;
-
-	auto to_move = self->list_count * sizeof(Page*);
-	memmove(self->list.start, self->list.start + sizeof(Page*), to_move);
-	buf_truncate(&self->list, sizeof(Page*));
-
-	if (self->list_count > 0)
-	{
-		self->id_first = ((Page**)self->list.start)[0]->id;
-	} else
-	{
-		self->id_first = 0;
-		self->id_next  = 0;
-	}
-	return page;
-}
-
-bool
-pages_retention(Pages* self, uint32_t* id)
-{
-	if (! self->retention)
-		return false;
-
-	*id = retention_run(self->retention);
-	if (likely(*id  == 0))
-		return false;
-
-	// drop all pages < id
-	auto changed = false;
-	while (self->list_count > 1)
-	{
-		auto first = pages_at(self, 0);
-		if (first->id_seq >= *id)
-			break;
-		auto page = pages_pop(self);
-		assert(page);
-		page_free(page);
-		changed = true;
-	}
-
-	return changed;
-}
+#endif

@@ -40,7 +40,7 @@ stream_export(Stream* self, Row* row)
 	Value value;
 	value_init(&value);
 
-	uint64_t id = heap_page_of(row)->id * (2 * 1024 * 1024) + row->offset;
+	uint64_t id = heap_page_of(row)->id * (64 * 1024) + row->offset;
 	auto buf = &self->data;
 	buf_format(buf, "id: {u64}\n", id);
 	buf_write(buf, "data: ", 6);

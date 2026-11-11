@@ -17,6 +17,7 @@ struct TableConfig
 {
 	Str     name;
 	Str     description;
+	Uuid    id;
 	Columns columns;
 	List    indexes;
 	int     indexes_count;
@@ -32,6 +33,7 @@ table_config_allocate(void)
 	self->retention     = -1;
 	str_init(&self->name);
 	str_init(&self->description);
+	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
 	return self;

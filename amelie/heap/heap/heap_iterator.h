@@ -61,7 +61,7 @@ heap_iterator_next_row(HeapIterator* self)
 	}
 
 	// next page
-	if (unlikely((self->page_order + 1) >= self->pages->list_count))
+	if (unlikely((self->page_order + 1) >= self->pages->count))
 	{
 		self->eof = true;
 		return;
@@ -101,7 +101,7 @@ heap_iterator_open(HeapIterator* self, Heap* heap, bool last)
 
 	if (last)
 	{
-		auto order = pages->list_count - 1;
+		auto order = pages->count - 1;
 		self->page       = pages_at(pages, order);
 		self->page_order = order;
 		self->eof        = true;
@@ -129,7 +129,7 @@ heap_iterator_set(HeapIterator* self, uint32_t page_id, uint32_t page_offset)
 	if (page_id < pages->id_first)
 		return false;
 
-	auto last = pages_at(pages, pages->list_count - 1);
+	auto last = pages_at(pages, pages->count - 1);
 	if (page_id > last->id)
 		return false;
 
@@ -158,7 +158,7 @@ heap_iterator_set_stop(HeapIterator* self)
 	auto pages = self->pages;
 	if (pages_empty(pages))
 		return;
-	auto page_order = pages->list_count - 1;
+	auto page_order = pages->count - 1;
 	auto page = pages_at(pages, page_order);
 	self->stop = heap_at(self->heap, page_order, page->position_last);
 }

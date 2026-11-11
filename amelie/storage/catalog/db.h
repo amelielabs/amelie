@@ -23,6 +23,7 @@ struct Db
 	uint64_t  inv_revoked;
 	int       commit;
 	Task*     compute;
+	PageMgr   page_mgr;
 	DbConfig* config;
 };
 

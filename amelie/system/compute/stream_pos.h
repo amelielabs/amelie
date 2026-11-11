@@ -41,13 +41,13 @@ stream_pos_read(StreamPos* self, Str* spec)
 	if (str_u64(spec, &value) == -1)
 		return -1;
 
-	auto size = (2 * 1024 * 1024);
+	auto size = (64 * 1024);
 	self->page = value / size;
 	self->page_offset = value % size;
 
-	if (self->page > (1 << 17))
+	if (self->page > (1 << 22))
 		return -1;
-	if (self->page_offset > (1 << 21))
+	if (self->page_offset > (1 << 16))
 		return -1;
 
 	return 0;

@@ -11,9 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-// page
+// retention
 #include "page/retention.h"
+
+// page
 #include "page/page.h"
+#include "page/page_mgr.h"
 #include "page/pages.h"
 
 // compression

@@ -76,7 +76,6 @@ show
   "uuid": "00000000-0000-0000-0000-000000000001",
   "compute": 1,
   "lsn": 1,
-  "psn": 0,
   "checkpoint": 0
 }
 # test: replicas

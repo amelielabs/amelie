@@ -41,7 +41,8 @@ heap_prepare(Heap* self)
 
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
-	pages_add_meta(&self->pages, size);
+	pages_add_meta(&self->pages);
+	self->pages.meta->position += size;
 
 	auto header = (HeapHeader*)self->pages.meta->data;
 	memset(header->free, 0, sizeof(header->free));
@@ -76,12 +77,12 @@ heap_prepare(Heap* self)
 }
 
 Heap*
-heap_allocate(Retention* retention)
+heap_allocate(PageMgr* page_mgr, Retention* retention, Uuid* id)
 {
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	pages_init(&self->pages, retention, PAGE_HEAP_META, PAGE_HEAP);
+	pages_init(&self->pages, page_mgr, retention, id, PAGE_HEAP_META, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }
@@ -230,7 +231,7 @@ heap_add(Heap* self, int size)
 		row->prev           = 0;
 		row->prev_offset    = 0;
 		row->free           = false;
-		heap_page_of(row)->changed = true;
+		heap_page_of(row)->dirty = true;
 
 		// mark bucket as empty
 		if (! bucket->list_offset)
@@ -248,13 +249,13 @@ heap_add(Heap* self, int size)
 
 		page->position_last = page->position;
 		page->position += bucket->size;
-		page->changed = true;
+		page->dirty = true;
 	}
 
 	// update total used metrics
 	self->header->used_count++;
 	self->header->used += bucket->size;
-	self->pages.meta->changed = true;
+	self->pages.meta->dirty = true;
 
 	assert(misalign_of(row->data) == 0);
 	return row;
@@ -276,12 +277,12 @@ heap_remove(Heap* self, Row* row)
 		heap_bucket_set(self, bucket);
 
 	auto page = heap_page_of(row);
-	page->changed = true;
+	page->dirty = true;
 	bucket->list        = page->id;
 	bucket->list_offset = row->offset;
 
 	// update total used metrics
 	self->header->used_count--;
 	self->header->used -= bucket->size;
-	self->pages.meta->changed = true;
+	self->pages.meta->dirty = true;
 }

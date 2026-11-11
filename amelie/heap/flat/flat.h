@@ -25,8 +25,8 @@ union FlatRow
 	// row reference (64 bit)
 	struct
 	{
-		uint64_t row_page:   17;
-		uint64_t row_offset: 21;
+		uint64_t row_page:   22;
+		uint64_t row_offset: 16;
 		uint64_t padding:    26;
 	} packed;
 
@@ -104,7 +104,7 @@ flat_set(Flat* self, int page_id, int page_row, bool active)
 	auto bucket    = page_row >> 6;
 	auto bit_index = page_row & 63;
 	auto mask      = 1ULL << bit_index;
-	page->changed = true;
+	page->dirty = true;
 	if (active)
 		bitmap[bucket] |= mask;
 	else
@@ -119,7 +119,7 @@ flat_set_at(Flat* self, uint32_t id, bool active)
 	flat_set(self, page_id, page_row, active);
 }
 
-Flat*    flat_allocate(Column*);
+Flat*    flat_allocate(PageMgr*, Uuid*, Column*);
 void     flat_free(Flat*);
 void     flat_open(Flat*);
 uint32_t flat_add(Flat*, int, int);

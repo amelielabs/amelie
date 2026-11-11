@@ -51,9 +51,15 @@ db_free(Db* self, bool drop)
 	// undeploy
 	self->databases->iface->detach(self->databases, self);
 
+	// free relations
 	catalog_free(&self->catalog);
+
+	// free pages
+	page_mgr_free(&self->page_mgr);
+
 	if (self->config)
 		db_config_free(self->config);
+
 	am_free(self);
 }
 
@@ -76,6 +82,7 @@ db_allocate(Catalog* databases, DbConfig* config)
 	self->commit      = 0;
 	self->compute     = NULL;
 	self->databases   = databases;
+	page_mgr_init(&self->page_mgr);
 
 	// prepare memory usage
 	usage_init(&self->memory, "memory");

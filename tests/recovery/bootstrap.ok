@@ -43,7 +43,6 @@ state
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "compute": 1,
   "lsn": 1,
-  "psn": 0,
   "checkpoint": 0
 }
 # test: ensure uuid recover
@@ -93,7 +92,6 @@ state
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "compute": 1,
   "lsn": 1,
-  "psn": 0,
   "checkpoint": 0
 }
 disconnect S0;

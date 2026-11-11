@@ -1076,7 +1076,7 @@ select show('table', 'test', null, "verbose").retention;
 
 retention
 ─────────
-2097152
+65536
 drop table test;
 disconnect S0;
 close E0;

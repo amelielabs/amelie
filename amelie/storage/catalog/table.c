@@ -50,13 +50,15 @@ table_allocate(Catalog* catalog, TableConfig* config)
 	// part context
 	auto arg = &self->part_arg;
 	arg->rel       = &self->rel;
+	arg->rel_id    = &self->config->id;
 	arg->memory    = catalog->memory;
 	arg->columns   = &self->config->columns;
 	arg->retention = &self->retention;
+	arg->page_mgr  = &db_of(catalog->parent)->page_mgr;
 
 	// retention
 	retention_init(&self->retention);
-	retention_set(&self->retention, self->config->retention);
+	retention_set(&self->retention, arg->page_mgr->size_page, self->config->retention);
 
 	// set relation
 	auto rel = &self->rel;
@@ -72,7 +74,8 @@ static void
 table_open(Table* self)
 {
 	// create partition
-	auto part = part_allocate(&self->part_arg);
+	auto arg  = &self->part_arg;
+	auto part = part_allocate(arg);
 	self->part = part;
 
 	// create indexes and stores
@@ -88,7 +91,7 @@ table_open(Table* self)
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		auto flat = flat_allocate(column);
+		auto flat = flat_allocate(arg->page_mgr, arg->rel_id, column);
 		flats_add(&part->flats, flat);
 	}
 

@@ -312,7 +312,8 @@ retention_if_commit(Log* self, LogOp* op)
 {
 	unused(self);
 	auto table = table_of(op->rel);
-	retention_set(&table->retention, table->config->retention);
+	retention_set(&table->retention, table->part_arg.page_mgr->size_page,
+	               table->config->retention);
 }
 
 static void

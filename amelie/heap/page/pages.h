@@ -18,20 +18,20 @@ struct Pages
 	Page*      current;
 	Page*      meta;
 	Buf        list;
-	int        list_count;
-	Retention* retention;
+	int        count;
+	uint32_t   id;
+	uint32_t   id_first;
+	Uuid*      id_rel;
 	int        type;
 	int        type_meta;
-	uint32_t   id_first;
-	uint32_t   id_next;
-	int        size;
+	Retention* retention;
+	PageMgr*   mgr;
 };
 
-void  pages_init(Pages*, Retention*, int, int);
+void  pages_init(Pages*, PageMgr*, Retention*, Uuid*, int, int);
 void  pages_free(Pages*);
-Page* pages_add_meta(Pages*, int);
+Page* pages_add_meta(Pages*);
 Page* pages_add(Pages*);
-void  pages_open(Pages*, uint64_t, int, int64_t*);
 bool  pages_retention(Pages*, uint32_t*);
 
 always_inline static inline Page*
@@ -55,20 +55,20 @@ pages_pointer_of(Pages* self, uint32_t page, int offset)
 static inline bool
 pages_empty(Pages* self)
 {
-	return !self->list_count;
+	return !self->count;
 }
 
 static inline size_t
 pages_size(Pages* self)
 {
-	return self->list_count * self->size;
+	return self->count * self->mgr->size_page;
 }
 
 hot static inline bool
 pages_ensure(Pages* self, uint32_t size)
 {
 	// ensure size can fit the page
-	uint32_t max = self->size - sizeof(Page);
+	uint32_t max = self->mgr->size_page - sizeof(Page);
 	if (unlikely(size > max))
 		error("storage: max page capacity {u32} exceeded", max);
 

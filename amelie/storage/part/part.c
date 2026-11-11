@@ -22,7 +22,7 @@ part_allocate(PartArg* arg)
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->in_progress   = NULL;
-	self->heap          = heap_allocate(arg->retention);
+	self->heap          = heap_allocate(arg->page_mgr, arg->retention, arg->rel_id);
 	self->arg           = arg;
 	flats_init(&self->flats);
 	subs_init(&self->subs);
@@ -177,7 +177,7 @@ part_truncate(Part* self)
 	auto arg = self->arg;
 
 	// create a new empty heap
-	auto new = heap_allocate(arg->retention);
+	auto new = heap_allocate(arg->page_mgr, arg->retention, arg->rel_id);
 	int64_t delta = -pages_size(&self->heap->pages) + pages_size(&new->pages);
 	heap_free(self->heap);
 	self->heap = new;
@@ -195,7 +195,7 @@ part_truncate(Part* self)
 		auto column = list_at(Column, link);
 		if (column->type != TYPE_VECTOR)
 			continue;
-		auto flat = flat_allocate(column);
+		auto flat = flat_allocate(arg->page_mgr, arg->rel_id, column);
 		flats_add(flats, flat);
 	}
 
@@ -224,7 +224,8 @@ part_column_create(Part* self, Column* column)
 		return;
 
 	// create flat store
-	auto flat = flat_allocate(column);
+	auto arg  = self->arg;
+	auto flat = flat_allocate(arg->page_mgr, arg->rel_id, column);
 	flats_add(&self->flats, flat);
 }
 

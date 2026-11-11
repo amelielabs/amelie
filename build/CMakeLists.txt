@@ -185,7 +185,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/servers.c)
 
 set(AMELIE_SOURCES_HEAP
-    ${AMELIE_ROOT}/heap/page/page.c
+    ${AMELIE_ROOT}/heap/page/page_mgr.c
     ${AMELIE_ROOT}/heap/page/pages.c
     ${AMELIE_ROOT}/heap/flat/flat.c
     ${AMELIE_ROOT}/heap/heap/heap.c
@@ -199,6 +199,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/transaction/rels.c
     ${AMELIE_ROOT}/storage/part/part.c
     ${AMELIE_ROOT}/storage/part/part_op.c
+
     ${AMELIE_ROOT}/storage/catalog/db.c
     ${AMELIE_ROOT}/storage/catalog/table.c
     ${AMELIE_ROOT}/storage/catalog/table_alter.c

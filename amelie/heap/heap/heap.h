@@ -19,8 +19,8 @@ struct HeapBucket
 {
 	// 8 bytes
 	uint64_t size:        16;
-	uint64_t list:        17;
-	uint64_t list_offset: 21;
+	uint64_t list:        22;
+	uint64_t list_offset: 16;
 	uint64_t id:           8;
 	uint64_t unused:       2;
 } packed;
@@ -52,7 +52,7 @@ heap_page_of(Row* self)
 	return (Page*)((uintptr_t)self - self->offset);
 }
 
-Heap* heap_allocate(Retention*);
+Heap* heap_allocate(PageMgr*, Retention*, Uuid*);
 void  heap_free(Heap*);
 void  heap_open(Heap*);
 Row*  heap_add(Heap*, int);

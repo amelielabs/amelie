@@ -16,7 +16,7 @@
 #include <amelie_flat.h>
 
 Flat*
-flat_allocate(Column* column)
+flat_allocate(PageMgr* page_mgr, Uuid* id, Column* column)
 {
 	auto self = (Flat*)am_malloc(sizeof(Flat));
 	self->dim = column->size_flat / sizeof(float);
@@ -27,7 +27,7 @@ flat_allocate(Column* column)
 	//
 	// [page_header][bitmap][vectors_sq8][rows][vectors]
 	//
-	auto size_page   = (2 * 1024 * 1024);
+	auto size_page   = page_mgr->size_page;
 	auto size_bucket =
 		sizeof(uint64_t) +         // 64 vectors bitmap
 		(64 * self->dim) +         // 64 vectors in SQ8 encoding (i8)
@@ -46,11 +46,12 @@ flat_allocate(Column* column)
 	self->page_offset_vectors = self->page_offset_rows + (self->page_rows * sizeof(FlatRow));
 
 	auto pages = &self->pages;
-	pages_init(pages, NULL, PAGE_FLAT_META, PAGE_FLAT);
-	pages_add_meta(pages, sizeof(FlatHeader));
+	pages_init(pages, page_mgr, NULL, id, PAGE_FLAT_META, PAGE_FLAT);
+	pages_add_meta(pages);
 
 	self->header = (FlatHeader*)pages->meta->data;
 	self->header->list_free = UINT32_MAX;
+	pages->meta->position += sizeof(FlatHeader);
 
 	self->column = column;
 	return self;
@@ -84,7 +85,7 @@ flat_add(Flat* self, int row_page, int row_offset)
 
 		// mark row as being used and update free list
 		self->header->list_free = row->row_next;
-		self->pages.meta->changed = true;
+		self->pages.meta->dirty = true;
 
 		row->row_page   = row_page;
 		row->row_offset = row_offset;
@@ -101,7 +102,7 @@ flat_add(Flat* self, int row_page, int row_offset)
 
 		// prepare the page bitmap
 		auto current = pages->current;
-		current->position = pages->size;
+		current->position = pages->mgr->size_page;
 		memset(current->data, 0, self->page_bitmap);
 	}
 	auto page     = pages->current;
@@ -136,18 +137,18 @@ flat_remove(Flat* self, uint32_t id)
 	// update free list
 	row->row_next = self->header->list_free;
 	self->header->list_free = id;
-	self->pages.meta->changed = true;
+	self->pages.meta->dirty = true;
 }
 
 hot void
 flat_retention(Flat* self, uint32_t page_wm)
 {
 	// free all vectors/rows which has row page < page_wm as
-	auto pages = &self->pages;
-	auto header  = self->header;
-	auto changed = false;
+	auto pages  = &self->pages;
+	auto header = self->header;
+	auto dirty  = false;
 	const auto page_chunks = self->page_rows / 64;
-	for (auto i = 0; i < pages->list_count; i++)
+	for (auto i = 0; i < pages->count; i++)
 	{
 		auto page = pages_at(pages, i);
 
@@ -180,12 +181,12 @@ flat_retention(Flat* self, uint32_t page_wm)
 					// update free list
 					row->row_next = header->list_free;
 					header->list_free = i * self->page_rows + page_row;
-					changed = true;
+					dirty = true;
 				}
 
 				mask &= mask - 1;
 			}
 		}
 	}
-	pages->meta->changed = changed;
+	pages->meta->dirty = dirty;
 }

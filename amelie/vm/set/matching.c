@@ -125,7 +125,7 @@ matching_execute(Matching* self, const float* __restrict query)
 	}
 
 	int32_t bottom = INT32_MIN;
-	for (auto i = 0; i < flat->pages.list_count; i++)
+	for (auto i = 0; i < flat->pages.count; i++)
 	{
 		auto page = pages_at(&flat->pages, i);
 

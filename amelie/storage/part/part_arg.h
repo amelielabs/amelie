@@ -16,7 +16,9 @@ typedef struct PartArg PartArg;
 struct PartArg
 {
 	Rel*       rel;
+	Uuid*      rel_id;
 	Usage*     memory;
-	Retention* retention;
 	Columns*   columns;
+	Retention* retention;
+	PageMgr*   page_mgr;
 };
