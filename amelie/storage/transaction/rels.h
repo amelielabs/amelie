@@ -30,4 +30,5 @@ void rels_rename(Rels*, Rel*, Str*);
 void rels_list(Rels*, RelType, Buf*, Str*, int);
 void rels_list_rel(Rels*, Buf*, Str*, int);
 Rel* rels_find(Rels*, RelType, Str*, bool);
+Rel* rels_find_by(Rels*, RelType, Uuid*, bool);
 int  rels_count(Rels*, RelType);

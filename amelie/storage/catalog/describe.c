@@ -163,6 +163,17 @@ describe_table(Table* self, Buf* buf, int flags)
 	}
 	buf_write(buf, ")", 1);
 
+	// id
+	if (verbose)
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, " id {qs}\n", id);
+	} else
+	{
+		buf_write(buf, "\n", 1);
+	}
+
 	// description
 	if (! str_empty(&config->description))
 		buf_format(buf, "  description {qstr}\n", &config->description);
@@ -268,6 +279,14 @@ describe_db(Db* self, Buf* buf, int flags)
 
 	// create database
 	buf_format(buf, "create database {str}\n", &config->name);
+
+	// id
+	if (verbose)
+	{
+		char id[UUID_SZ];
+		uuid_get(&config->id, id, sizeof(id));
+		buf_format(buf, "  id {qs}\n", id);
+	}
 
 	// description
 	if (! str_empty(&config->description))

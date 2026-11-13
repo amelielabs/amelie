@@ -76,6 +76,12 @@ catalog_find(Catalog* self, RelType type, Str* name, bool error_if_not_exists)
 	return rels_find(&self->rels, type, name, error_if_not_exists);
 }
 
+static inline Rel*
+catalog_find_by(Catalog* self, RelType type, Uuid* id, bool error_if_not_exists)
+{
+	return rels_find_by(&self->rels, type, id, error_if_not_exists);
+}
+
 static inline Table*
 catalog_find_table(Catalog* self, Str* name, bool error_if_not_exists)
 {

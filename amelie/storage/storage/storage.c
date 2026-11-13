@@ -93,6 +93,7 @@ storage_bootstrap(Storage* self)
 		Str name;
 		str_init(&name);
 		str_set_cstr(&name, "amelie");
+		db_config_set_id(config, &config()->uuid.uuid);
 		db_config_set_name(config, &name);
 		db_config_set_system(config, true);
 		db_create(&self->databases, &tr, config, false);

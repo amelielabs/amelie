@@ -98,6 +98,7 @@ db_allocate(Catalog* databases, DbConfig* config)
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_DB);
+	rel_set_id(rel, &self->config->id);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
 	rel_set_show(rel, (RelShow)db_show);
@@ -122,6 +123,12 @@ db_create(Catalog*  self,
 			error("db '{str}': already exists", &config->name);
 		return false;
 	}
+
+	// make sure db id is unique
+	auto rel_id = catalog_find_by(self, REL_UNDEF, &config->id, false);
+	if (rel_id)
+		error("db '{str}': conflict by uuid with existing database",
+		       rel_id->name);
 
 	// create db
 	db = db_allocate(self, config);

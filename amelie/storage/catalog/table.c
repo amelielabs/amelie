@@ -63,6 +63,7 @@ table_allocate(Catalog* catalog, TableConfig* config)
 	// set relation
 	auto rel = &self->rel;
 	rel_init(rel, REL_TABLE);
+	rel_set_id(rel, &self->config->id);
 	rel_set_name(rel, &self->config->name);
 	rel_set_description(rel, &self->config->description);
 	rel_set_show(rel, (RelShow)table_show);
@@ -117,6 +118,12 @@ table_create(Catalog*     self,
 			error("relation '{str}': already exists", &config->name);
 		return false;
 	}
+
+	// make sure table id is unique
+	auto rel_id = catalog_find_by(self, REL_UNDEF, &config->id, false);
+	if (rel_id)
+		error("relation '{str}': conflict by uuid with existing relation",
+		       rel_id->name);
 
 	// check limit
 	catalog_limit(self, tr, REL_TABLE, LIMIT_TABLES);

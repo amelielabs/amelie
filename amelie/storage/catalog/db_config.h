@@ -64,6 +64,12 @@ db_config_set_description(DbConfig* self, Str* value)
 }
 
 static inline void
+db_config_set_id(DbConfig* self, Uuid* id)
+{
+	self->id = *id;
+}
+
+static inline void
 db_config_set_created_at(DbConfig* self, Str* value)
 {
 	str_free(&self->created_at);
@@ -89,6 +95,7 @@ db_config_copy(DbConfig* self)
 	auto copy = db_config_allocate();
 	db_config_set_name(copy, &self->name);
 	db_config_set_description(copy, &self->description);
+	db_config_set_id(copy, &self->id);
 	db_config_set_created_at(copy, &self->created_at);
 	db_config_set_revoked_at(copy, &self->revoked_at);
 	db_config_set_system(copy, self->system);
@@ -106,6 +113,7 @@ db_config_read(uint8_t** pos)
 	{
 		{ DECODE_STR,  "name",        &self->name        },
 		{ DECODE_STR,  "description", &self->description },
+		{ DECODE_UUID, "id",          &self->id          },
 		{ DECODE_STR,  "created_at",  &self->created_at  },
 		{ DECODE_STR,  "revoked_at",  &self->revoked_at  },
 		{ DECODE_BOOL, "system",      &self->system      },
@@ -140,6 +148,10 @@ db_config_write(DbConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// created_at
 	encode_raw(buf, "created_at", 10);

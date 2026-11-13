@@ -367,10 +367,10 @@ parse_table_create(Stmt* self)
 {
 	// CREATE TABLE [IF NOT EXISTS] name
 	// (columns)
+	// [ID]
 	// [DESCRIPTION]
 	// [RETENTION]
 	// [INDEX]
-	// [GRANT]
 	//
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
@@ -385,6 +385,13 @@ parse_table_create(Stmt* self)
 	auto config = table_config_allocate();
 	stmt->config = config;
 	table_config_set_name(config, &name->string);
+
+	// set id
+	Uuid id;
+	uuid_init(&id);
+	auto local = self->parser->local;
+	uuid_generate(&id, &local->random, local->time_ms);
+	table_config_set_id(config, &id);
 
 	// (columns)
 	parse_columns(self, config);
@@ -401,20 +408,15 @@ parse_table_create(Stmt* self)
 			break;
 		}
 
-		// RETENTION int
-		if (str_is_case(&name->string, "retention", 9))
+		// ID string
+		if (str_is_case(&name->string, "id", 2))
 		{
-			auto value = stmt_expect(self, KINT);
-			if (value->integer <= 0)
-				stmt_error(self, value, "invalid retention size");
-
-			// align to the page size
-			auto page_size = 64 * 1024;
-			value->integer = ((value->integer + page_size - 1) / page_size) * page_size;
-
-			if (config->indexes_count > 0)
-				stmt_error(self, value, "using indexes with retention is not supported");
-			table_config_set_retention(config, value->integer);
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			table_config_set_id(config, &id);
 			continue;
 		}
 
@@ -440,6 +442,23 @@ parse_table_create(Stmt* self)
 
 			auto primary = table_config_primary(config);
 			parse_index_create_inline(self, primary, secondary);
+			continue;
+		}
+
+		// RETENTION int
+		if (str_is_case(&name->string, "retention", 9))
+		{
+			auto value = stmt_expect(self, KINT);
+			if (value->integer <= 0)
+				stmt_error(self, value, "invalid retention size");
+
+			// align to the page size
+			auto page_size = 64 * 1024;
+			value->integer = ((value->integer + page_size - 1) / page_size) * page_size;
+
+			if (config->indexes_count > 0)
+				stmt_error(self, value, "using indexes with retention is not supported");
+			table_config_set_retention(config, value->integer);
 			continue;
 		}
 

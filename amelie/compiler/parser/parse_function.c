@@ -68,7 +68,6 @@ parse_function_create(Stmt* self, bool or_replace)
 	//   block
 	// END
 	// [DESCRIPTION]
-	// [GRANT]
 	auto stmt = ast_function_create_allocate();
 	self->ast = &stmt->ast;
 

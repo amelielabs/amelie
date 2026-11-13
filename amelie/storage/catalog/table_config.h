@@ -70,6 +70,12 @@ table_config_set_description(TableConfig* self, Str* value)
 }
 
 static inline void
+table_config_set_id(TableConfig* self, Uuid* id)
+{
+	self->id = *id;
+}
+
+static inline void
 table_config_set_retention(TableConfig* self, int64_t value)
 {
 	self->retention = value;
@@ -114,6 +120,7 @@ table_config_copy(TableConfig* self)
 	auto copy = table_config_allocate();
 	table_config_set_name(copy, &self->name);
 	table_config_set_description(copy, &self->description);
+	table_config_set_id(copy, &self->id);
 	table_config_set_retention(copy, self->retention);
 	columns_copy(&copy->columns, &self->columns);
 
@@ -138,6 +145,7 @@ table_config_read(uint8_t** pos)
 	{
 		{ DECODE_STR,   "name",        &self->name        },
 		{ DECODE_STR,   "description", &self->description },
+		{ DECODE_UUID,  "id",          &self->id          },
 		{ DECODE_ARRAY, "columns",     &pos_columns       },
 		{ DECODE_ARRAY, "indexes",     &pos_indexes       },
 		{ DECODE_INT,   "retention",   &self->retention   },
@@ -178,6 +186,10 @@ table_config_write(TableConfig* self, Buf* buf, int flags)
 		encode_obj_end(buf);
 		return;
 	}
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// columns
 	encode_raw(buf, "columns", 7);

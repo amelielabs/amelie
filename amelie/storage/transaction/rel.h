@@ -26,11 +26,13 @@ typedef enum
 
 struct Rel
 {
+	Uuid*    id;
 	Str*     name;
 	RelType  type;
 	Str*     description;
 	RelShow  show;
 	RelFree  free;
+	Hashnode link_htid;
 	Hashnode link_ht;
 	List     link;
 };
@@ -53,13 +55,21 @@ rel_type_of(RelType type)
 static inline void
 rel_init(Rel* self, RelType type)
 {
+	self->id          = NULL;
 	self->name        = NULL;
 	self->type        = type;
 	self->description = NULL;
 	self->show        = NULL;
 	self->free        = NULL;
+	hashnode_init(&self->link_htid);
 	hashnode_init(&self->link_ht);
 	list_init(&self->link);
+}
+
+static inline void
+rel_set_id(Rel* self, Uuid* id)
+{
+	self->id = id;
 }
 
 static inline void
