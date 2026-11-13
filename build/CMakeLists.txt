@@ -189,6 +189,7 @@ set(AMELIE_SOURCES_HEAP
     ${AMELIE_ROOT}/heap/page/page_mgr.c
     ${AMELIE_ROOT}/heap/page/pages.c
     ${AMELIE_ROOT}/heap/page/checkpoint.c
+    ${AMELIE_ROOT}/heap/page/checkpoints.c
     ${AMELIE_ROOT}/heap/flat/flat.c
     ${AMELIE_ROOT}/heap/heap/heap.c
     ${AMELIE_ROOT}/heap/heap/row_encode.c

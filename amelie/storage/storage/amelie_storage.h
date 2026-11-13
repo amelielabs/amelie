@@ -11,12 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-#if 0
-// checkpoint
-#include "storage/checkpoints.h"
-#include "storage/checkpoint.h"
-#endif
-
 // syncer
 #include "storage/syncer.h"
 

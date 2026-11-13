@@ -37,6 +37,44 @@ storage_free(Storage* self)
 	wal_free(&self->wal);
 }
 
+#if 0
+static void
+checkpoints_open_schema(Checkpoints* self, Manifest* manifest)
+{
+	// restore last checkpoint schema
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/storage/{u64}/schema.sql",
+	       state_directory(), state_checkpoint());
+
+	// read file
+	Separator sep;
+	separator_init(&sep);
+	defer(separator_free, &sep);
+	file_import_stream(&sep.buf, "{s}", path);
+
+	// prepare eval
+	auto catalog = self->catalog;
+	Eval eval;
+	eval_init(&eval, catalog->iface_eval, catalog->iface_arg);
+	eval_create(&eval);
+	defer(eval_free, &eval);
+
+	// set manifest used during recovery
+	catalog->manifest = manifest;
+
+	// parse and execute statements
+	Str command;
+	while (separator_read(&sep, &command))
+	{
+		eval_execute(&eval, &command);
+		separator_advance(&sep);
+	}
+
+	catalog->manifest = NULL;
+}
+#endif
+
+
 static void
 storage_bootstrap(Storage* self)
 {
@@ -82,15 +120,8 @@ storage_open(Storage* self, bool bootstrap)
 	// create system db
 	storage_bootstrap(self);
 
-	// create initial checkpoint
-	if (bootstrap)
-	{
-		// create initial checkpoint
-		// storage_checkpoint(self);
-		return;
-	}
-
-	// todo: restore last checkpoint
+	// todo: restore databases
+	(void)bootstrap;
 }
 
 void

@@ -25,3 +25,4 @@
 
 // checkpoint
 #include "page/checkpoint.h"
+#include "page/checkpoints.h"

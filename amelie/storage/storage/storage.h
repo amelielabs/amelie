@@ -18,7 +18,6 @@ struct Storage
 	Catalog databases;
 	Wal     wal;
 	Syncer  syncer;
-	// checkpoints
 };
 
 void storage_init(Storage*, CatalogIf*, EvalIf*, void*);
