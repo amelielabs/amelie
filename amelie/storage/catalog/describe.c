@@ -328,6 +328,59 @@ describe_db(Db* self, Buf* buf, int flags)
 		buf_write(buf, "\n", 1);
 }
 
+static void
+describe_db_recovery(Db* self, Buf* buf)
+{
+	auto config = self->config;
+
+	// database
+	char id[UUID_SZ];
+	uuid_get(&config->id, id, sizeof(id));
+	buf_format(buf, "alter database `{s}` rename to {str};\n",
+	           id, &config->name);
+
+	// description
+	if (! str_empty(&config->description))
+		buf_format(buf, "alter database {str} description {qstr};\n",
+		           &config->name,
+		           &config->description);
+
+#if 0
+	// created
+	if (! str_empty(&config->created_at))
+		buf_format(buf, "  created {qstr}\n", &config->created_at);
+
+	// revoked
+	if (! str_empty(&config->revoked_at))
+		buf_format(buf, "  revoked {qstr}\n", &config->revoked_at);
+
+	// limit name = value, ...
+	auto limit_clause = false;
+	auto limits = &config->limits;
+	for (auto i = 0; i < LIMIT_MAX; i++)
+	{
+		if (! limits_is_set(limits, i))
+			continue;
+
+		if (! limit_clause)
+		{
+			buf_format(buf, "  limit ");
+			limit_clause = true;
+		} else {
+			buf_format(buf, ", ");
+		}
+		buf_format(buf, "{s} = {i64}", limits_of(i),
+		           limits->limits[i]);
+	}
+	if (limit_clause)
+		buf_write(buf, "\n", 1);
+
+#endif
+
+	if (buf->position[-1] != '\n')
+		buf_write(buf, "\n", 1);
+}
+
 void
 describe_text(Rel* self, Buf* buf, int flags)
 {
@@ -381,6 +434,9 @@ describe_rels(Rels* rels, RelType type, Buf* schema)
 void
 describe_catalog(Catalog* self, Buf* schema)
 {
+	// db
+	describe_db_recovery(db_of(self->parent), schema);
+
 	// tables, udfs
 	describe_rels(&self->rels, REL_TABLE, schema);
 	describe_rels(&self->rels, REL_UDF, schema);

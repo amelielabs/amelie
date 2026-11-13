@@ -78,9 +78,9 @@ checkpoints_open_schema(Checkpoints* self, Manifest* manifest)
 static void
 storage_bootstrap(Storage* self)
 {
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
+	Str name;
+	str_init(&name);
+	str_set_cstr(&name, "amelie");
 
 	Tr tr;
 	tr_init(&tr);
@@ -90,9 +90,6 @@ storage_bootstrap(Storage* self)
 		// create amelie db
 		auto config = db_config_allocate();
 		defer(db_config_free, config);
-		Str name;
-		str_init(&name);
-		str_set_cstr(&name, "amelie");
 		db_config_set_id(config, &config()->uuid.uuid);
 		db_config_set_name(config, &name);
 		db_config_set_system(config, true);
@@ -106,6 +103,10 @@ storage_bootstrap(Storage* self)
 		tr_abort(&tr);
 		rethrow();
 	}
+
+	// checkpoint
+	auto amelie = catalog_find_db(&self->databases, &name, true);
+	storage_checkpoint(self, amelie);
 }
 
 void
@@ -118,8 +119,12 @@ storage_open(Storage* self, bool bootstrap)
 	// to the wal_truncate option
 	wal_open(&self->wal);
 
-	// create system db
-	storage_bootstrap(self);
+	// create system database once
+	if (bootstrap)
+	{
+		storage_bootstrap(self);
+		return;
+	}
 
 	// todo: restore databases
 	(void)bootstrap;

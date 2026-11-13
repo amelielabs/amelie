@@ -92,7 +92,7 @@ checkpoint_create(Checkpoint* self)
 
 	// done
 	double total = file.size / 1024.0 / 1024.0;
-	info("checkpoint: {s}/{u64} ({.2f} mb}",
+	info("checkpoint: {s}/{u64} ({.2f} mb)",
 	     self->path, self->lsn, total);
 }
 

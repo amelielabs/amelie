@@ -209,7 +209,7 @@ parse_database_alter(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
 
-	// RENAME | REVOKE | DESCRIPTION | SET | UNSET | ADD | DROP
+	// RENAME | REVOKE | DESCRIPTION | SET | UNSET
 	if (stmt_if(self, KRENAME))
 	{
 		// RENAME
