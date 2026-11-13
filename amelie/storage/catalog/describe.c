@@ -334,10 +334,8 @@ describe_db_recovery(Db* self, Buf* buf)
 	auto config = self->config;
 
 	// database
-	char id[UUID_SZ];
-	uuid_get(&config->id, id, sizeof(id));
-	buf_format(buf, "alter database `{s}` rename to {str};\n",
-	           id, &config->name);
+	buf_format(buf, "alter database current_recovery rename to {str};\n",
+	           &config->name);
 
 	// description
 	if (! str_empty(&config->description))
@@ -376,9 +374,7 @@ describe_db_recovery(Db* self, Buf* buf)
 		buf_write(buf, "\n", 1);
 
 #endif
-
-	if (buf->position[-1] != '\n')
-		buf_write(buf, "\n", 1);
+	buf_write(buf, "\n", 1);
 }
 
 void

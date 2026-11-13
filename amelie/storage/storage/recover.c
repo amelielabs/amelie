@@ -64,6 +64,7 @@ recover_read(Recover* self, RecordMsg* msg)
 	if (str_empty(&name))
 		error("recover: db field not found");
 
+	// todo: find by uuid <<
 	return catalog_find_db(&self->storage->databases, &name, true);
 }
 
@@ -71,6 +72,13 @@ void
 recover_next(Recover* self, RecordMsg* msg)
 {
 	auto db = recover_read(self, msg);
+	if (! db)
+		return;
+
+	// skip all records that we included in the checkpoint
+	// used during recovery
+	if (db->checkpoints.current->id >= msg->record->lsn)
+		return;
 
 	// sync on ddl (wait for completion)
 	auto sync = &self->sync;
@@ -99,8 +107,7 @@ recover_wal_main(Recover* self)
 	auto wal = &self->storage->wal;
 	auto wal_crc = opt_int_of(&config()->wal_crc);
 
-	// replay wals starting after last checkpoint
-	uint64_t id = state_checkpoint() + 1;
+	uint64_t id = 0;
 	for (;;)
 	{
 		uint64_t count = 0;

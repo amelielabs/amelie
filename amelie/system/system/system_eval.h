@@ -53,7 +53,7 @@ system_eval_create(SystemEval* self)
 }
 
 static inline void
-system_eval(SystemEval* self, Str* command)
+system_eval(SystemEval* self, Str* db, Str* command)
 {
 	buf_reset(&self->portal_buf);
 
@@ -66,9 +66,7 @@ system_eval(SystemEval* self, Str* command)
 	portal_prepare(portal);
 
 	// auth portal
-	Str db;
-	str_set(&db, "amelie", 6);
-	portal_set(portal, &db, false);
+	portal_set(portal, db, false);
 
 	// set request
 	auto req = &self->request;

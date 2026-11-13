@@ -24,7 +24,8 @@ storage_init(Storage*   self,
              EvalIf*    iface_eval,
              void*      iface_arg)
 {
-	unused(iface_eval);
+	self->iface     = iface_eval;
+	self->iface_arg = iface_arg;
 	catalog_init(&self->databases, iface, iface_arg, NULL, NULL);
 	wal_init(&self->wal);
 	syncer_init(&self->syncer, self);
@@ -37,14 +38,56 @@ storage_free(Storage* self)
 	wal_free(&self->wal);
 }
 
-#if 0
-static void
-checkpoints_open_schema(Checkpoints* self, Manifest* manifest)
+static Db*
+storage_create(Storage* self, Uuid* id, Str* name)
 {
-	// restore last checkpoint schema
+	Tr tr;
+	tr_init(&tr);
+	defer(tr_free, &tr);
+
+	// create amelie db
+	auto config = db_config_allocate();
+	defer(db_config_free, config);
+	db_config_set_id(config, id);
+	if (name) {
+		db_config_set_name(config, name);
+	} else
+	{
+		// use temporary name during recovery
+		Str str;
+		str_init(&str);
+		str_set(&str, "current_recovery", 16);
+		db_config_set_name(config, &str);
+	}
+	db_create(&self->databases, &tr, config, false);
+
+	// commit
+	tr_commit(&tr);
+	return (Db*)catalog_find_by(&self->databases, REL_DB, id, true);
+}
+
+static void
+storage_recover_db(Storage* self, Uuid* id)
+{
+	// recreate db (start with temprorary name)
+	auto db = storage_create(self, id, NULL);
+
+	// read database directory
+	auto cp = &db->checkpoints;
+	checkpoints_open(cp, UINT64_MAX);
+	if (! cp->current)
+	{
+		error("");
+		return;
+	}
+
+	// restore last db checkpoint schema
+	char uuid[UUID_SZ];
+	uuid_get(id, uuid, sizeof(uuid));
+
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/storage/{u64}/schema.sql",
-	       state_directory(), state_checkpoint());
+	format(path, sizeof(path), "{s}/storage/{s}/{u64}.sql",
+	       state_directory(), uuid, cp->current->id);
 
 	// read file
 	Separator sep;
@@ -53,60 +96,56 @@ checkpoints_open_schema(Checkpoints* self, Manifest* manifest)
 	file_import_stream(&sep.buf, "{s}", path);
 
 	// prepare eval
-	auto catalog = self->catalog;
 	Eval eval;
-	eval_init(&eval, catalog->iface_eval, catalog->iface_arg);
+	eval_init(&eval, self->iface, self->iface_arg);
 	eval_create(&eval);
 	defer(eval_free, &eval);
-
-	// set manifest used during recovery
-	catalog->manifest = manifest;
 
 	// parse and execute statements
 	Str command;
 	while (separator_read(&sep, &command))
 	{
-		eval_execute(&eval, &command);
+		eval_execute(&eval, &db->config->name, &command);
 		separator_advance(&sep);
 	}
-
-	catalog->manifest = NULL;
 }
-#endif
-
 
 static void
-storage_bootstrap(Storage* self)
+storage_recover(Storage* self)
 {
-	Str name;
-	str_init(&name);
-	str_set_cstr(&name, "amelie");
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/storage", state_directory());
 
-	Tr tr;
-	tr_init(&tr);
-	defer(tr_free, &tr);
-	auto on_error = error_catch
-	(
-		// create amelie db
-		auto config = db_config_allocate();
-		defer(db_config_free, config);
-		db_config_set_id(config, &config()->uuid.uuid);
-		db_config_set_name(config, &name);
-		db_config_set_system(config, true);
-		db_create(&self->databases, &tr, config, false);
-
-		// commit
-		tr_commit(&tr);
-	);
-	if (on_error)
+	// read databases
+	auto dir = opendir(path);
+	if (unlikely(dir == NULL))
+		error("storage: directory '{s}' open error", path);
+	defer(fs_closedir_defer, dir);
+	for (;;)
 	{
-		tr_abort(&tr);
-		rethrow();
+		auto entry = readdir(dir);
+		if (entry == NULL)
+			break;
+		if (entry->d_name[0] == '.')
+			continue;
+
+		// uuid
+		Str str;
+		str_init(&str);
+		str_set_cstr(&str, entry->d_name);
+		Uuid id;
+		if (uuid_set_nothrow(&id, &str) == -1)
+		{
+			info("storage: invalid database directory '{s}/{str}'",
+			     path, &str);
+			continue;
+		}
+
+		// restore
+		storage_recover_db(self, &id);
 	}
 
-	// checkpoint
-	auto amelie = catalog_find_db(&self->databases, &name, true);
-	storage_checkpoint(self, amelie);
+	// todo: deploy
 }
 
 void
@@ -122,12 +161,16 @@ storage_open(Storage* self, bool bootstrap)
 	// create system database once
 	if (bootstrap)
 	{
-		storage_bootstrap(self);
+		Str name;
+		str_init(&name);
+		str_set_cstr(&name, "amelie");
+		auto amelie = storage_create(self, &config()->uuid.uuid, &name);
+		storage_checkpoint(self, amelie);
 		return;
 	}
 
-	// todo: restore databases
-	(void)bootstrap;
+	// read and restore databases
+	storage_recover(self);
 }
 
 void

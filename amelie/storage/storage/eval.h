@@ -18,7 +18,7 @@ struct EvalIf
 {
 	void (*create)(Eval*);
 	void (*free)(Eval*);
-	void (*execute)(Eval*, Str*);
+	void (*execute)(Eval*, Str*, Str*);
 };
 
 struct Eval
@@ -51,7 +51,7 @@ eval_free(Eval* self)
 }
 
 static inline void
-eval_execute(Eval* self, Str* command)
+eval_execute(Eval* self, Str* db, Str* command)
 {
-	self->iface->execute(self, command);
+	self->iface->execute(self, db, command);
 }

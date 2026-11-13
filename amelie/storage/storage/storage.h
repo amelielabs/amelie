@@ -18,6 +18,8 @@ struct Storage
 	Catalog databases;
 	Wal     wal;
 	Syncer  syncer;
+	EvalIf* iface;
+	void*   iface_arg;
 };
 
 void storage_init(Storage*, CatalogIf*, EvalIf*, void*);

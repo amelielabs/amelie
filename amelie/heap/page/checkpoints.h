@@ -24,14 +24,15 @@ struct CheckpointsRef
 struct Checkpoints
 {
 	Spinlock        lock;
-	CheckpointsRef* last;
+	CheckpointsRef* current;
 	List            list;
 	int             list_count;
 	Uuid            id;
 };
 
-void     checkpoints_init(Checkpoints*, Uuid*);
-void     checkpoints_free(Checkpoints*);
-uint64_t checkpoints_open(Checkpoints*, uint64_t);
-void     checkpoints_gc(Checkpoints*, uint64_t);
-void     checkpoints_add(Checkpoints*, uint64_t);
+void checkpoints_init(Checkpoints*, Uuid*);
+void checkpoints_free(Checkpoints*);
+void checkpoints_open(Checkpoints*, uint64_t);
+void checkpoints_gc(Checkpoints*, uint64_t);
+CheckpointsRef*
+checkpoints_add(Checkpoints*, uint64_t);

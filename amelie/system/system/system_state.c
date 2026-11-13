@@ -46,6 +46,10 @@ system_state_read(System* self)
 {
 	unused(self);
 
+	Str db;
+	str_init(&db);
+	str_set_cstr(&db, "amelie");
+
 	// read file
 	Separator sep;
 	separator_init(&sep);
@@ -61,7 +65,7 @@ system_state_read(System* self)
 	Str command;
 	while (separator_read(&sep, &command))
 	{
-		system_eval(eval, &command);
+		system_eval(eval, &db, &command);
 		separator_advance(&sep);
 	}
 }

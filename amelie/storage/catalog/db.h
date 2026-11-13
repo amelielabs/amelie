@@ -15,16 +15,17 @@ typedef struct Db Db;
 
 struct Db
 {
-	Rel       rel;
-	Catalog   catalog;
-	Catalog*  databases;
-	Usage     memory;
-	uint32_t  inv_seq;
-	uint64_t  inv_revoked;
-	int       commit;
-	Task*     compute;
-	PageMgr   page_mgr;
-	DbConfig* config;
+	Rel         rel;
+	Catalog     catalog;
+	Catalog*    databases;
+	Usage       memory;
+	PageMgr     page_mgr;
+	Checkpoints checkpoints;
+	uint32_t    inv_seq;
+	uint64_t    inv_revoked;
+	int         commit;
+	Task*       compute;
+	DbConfig*   config;
 };
 
 bool db_create(Catalog*, Tr*, DbConfig*, bool);

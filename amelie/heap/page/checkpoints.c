@@ -33,7 +33,7 @@ checkpoints_ref_free(CheckpointsRef* self)
 void
 checkpoints_init(Checkpoints* self, Uuid* id)
 {
-	self->last       = NULL;
+	self->current    = NULL;
 	self->id         = *id;
 	self->list_count = 0;
 	list_init(&self->list);
@@ -75,7 +75,7 @@ checkpoint_id_of(const char* name, uint64_t* lsn,  bool* incomplete)
 	return -1;
 }
 
-uint64_t
+void
 checkpoints_open(Checkpoints* self, uint64_t lsn_wal)
 {
 	// create directory
@@ -87,15 +87,13 @@ checkpoints_open(Checkpoints* self, uint64_t lsn_wal)
 
 	// ensure directory exists
 	if (! fs_exists("{s}", path))
-		return UINT64_MAX;
+		return;
 
 	// read directory, get a list of checkpoints
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("db: directory '{s}' open error", path);
 	defer(fs_closedir_defer, dir);
-
-	uint64_t lsn_open = UINT64_MAX;
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -118,14 +116,15 @@ checkpoints_open(Checkpoints* self, uint64_t lsn_wal)
 			continue;
 		}
 
-		checkpoints_add(self, lsn);
+		auto ref = checkpoints_add(self, lsn);
 
 		// track last checkpoint matching min wal lsn
-		if (lsn <= lsn_open && lsn <= lsn_wal)
-			lsn_open = lsn;
+		if (lsn <= lsn_wal)
+		{
+			if (!self->current || ref->id > self->current->id)
+				self->current = ref;
+		}
 	}
-
-	return lsn_open;
 }
 
 void
@@ -136,7 +135,7 @@ checkpoints_gc(Checkpoints* self, uint64_t wm)
 	// todo: remove all files <= wm which has no alive page references
 }
 
-void
+CheckpointsRef*
 checkpoints_add(Checkpoints* self, uint64_t lsn)
 {
 	auto ref = checkpoints_ref_allocate(lsn);
@@ -145,8 +144,6 @@ checkpoints_add(Checkpoints* self, uint64_t lsn)
 	list_append(&self->list, &ref->link);
 	self->list_count++;
 
-	if (!self->last || self->last->id < ref->id)
-		self->last = ref;
-
 	spinlock_unlock(&self->lock);
+	return ref;
 }

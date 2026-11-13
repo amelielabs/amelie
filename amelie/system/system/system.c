@@ -159,9 +159,9 @@ eval_if_free(Eval* self)
 }
 
 static void
-eval_if_execute(Eval* self, Str* command)
+eval_if_execute(Eval* self, Str* db, Str* command)
 {
-	system_eval(self->state, command);
+	system_eval(self->state, db, command);
 }
 
 static EvalIf eval_if =

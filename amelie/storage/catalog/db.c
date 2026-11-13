@@ -56,6 +56,7 @@ db_free(Db* self, bool drop)
 
 	// free pages
 	page_mgr_free(&self->page_mgr);
+	checkpoints_free(&self->checkpoints);
 
 	if (self->config)
 		db_config_free(self->config);
@@ -82,10 +83,12 @@ db_allocate(Catalog* databases, DbConfig* config)
 	self->commit      = 0;
 	self->compute     = NULL;
 	self->databases   = databases;
-	page_mgr_init(&self->page_mgr);
+	checkpoints_init(&self->checkpoints, &self->config->id);
 
-	// prepare memory usage
+	// prepare arena
+	page_mgr_init(&self->page_mgr);
 	usage_init(&self->memory, "memory");
+
 	db_sync_limits(self);
 
 	// prepare catalog
