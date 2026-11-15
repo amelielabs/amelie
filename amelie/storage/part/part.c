@@ -59,15 +59,13 @@ part_free(Part* self)
 	am_free(self);
 }
 
-#if 0
 static void
-part_open_heap(Part* self, ManifestRel* ref)
+part_open_heap(Part* self)
 {
 	auto heap    = self->heap;
 	auto pages = &heap->pages;
 
-	// open partition page files
-	pages_open(pages, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
+	// prepare heap (pages are already imported)
 	heap_open(heap);
 
 	// rebuild indexes
@@ -109,61 +107,30 @@ part_open_heap(Part* self, ManifestRel* ref)
 	usage_update(self->arg->memory, pages_size(pages));
 
 	auto total = (double)pages_size(pages) / 1024 / 1024;
-	info("recover: {str} ({d} files, {.2f} MB)",
+	info("recover: {str} ({d} pages, {.2f} MB)",
 	     self->arg->rel->name,
-	     pages->list_count,
+	     pages->count,
 	     total);
 }
-
-static void
-part_open_flat(Part* self, Flat* flat, ManifestRel* ref)
-{
-	// open partition column pages
-	auto pages = &flat->pages;
-	pages_open(pages, state_checkpoint(), ref->pages_count, (int64_t*)ref->pages.start);
-	flat_open(flat);
-	usage_update(self->arg->memory, pages_size(pages));
-
-	auto total = (double)pages_size(pages) / 1024 / 1024;
-	info("recover: {str} ({d} column, {d} files, {.2f} MB)",
-	     self->arg->rel->name,
-	     flat->column->order,
-	     pages->list_count,
-	     total);
-}
-#endif
 
 void
 part_open(Part* self)
 {
-	(void)self;
-#if 0
-	auto rel = self->arg->rel;
+	// open heap and rebuild indexes
+	part_open_heap(self);
 
-	// find partition manifest
-	auto ref = manifest_find(manifest, rel->name, -1);
-	if (! ref)
-		error("recover: manifest is missing {str}.{str}",
-		      rel->user, rel->name);
-
-	// open pages and rebuild indexes
-	part_open_heap(self, ref);
-
-	// open pages per vector column
+	// open vector stores per column
 	auto columns = self->arg->columns;
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		if (! column->size_flat)
 			continue;
-		ref = manifest_find(manifest, rel->user, rel->name, column->order);
-		if (! ref)
-			error("recover: manifest is missing {str}.{str}.{d}",
-			      rel->user, rel->name, column->order);
 		auto flat = flats_at(&self->flats, column);
-		part_open_flat(self, flat, ref);
+		auto pages = &flat->pages;
+		flat_open(flat);
+		usage_update(self->arg->memory, pages_size(pages));
 	}
-#endif
 }
 
 void

@@ -32,6 +32,8 @@ void  pages_init(Pages*, PageMgr*, Retention*, Uuid*, int, int);
 void  pages_free(Pages*);
 Page* pages_add_meta(Pages*);
 Page* pages_add(Pages*);
+void  pages_import(Pages*, Page*);
+void  pages_import_done(Pages*);
 bool  pages_retention(Pages*, uint32_t*);
 
 always_inline static inline Page*

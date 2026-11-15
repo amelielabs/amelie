@@ -14,8 +14,8 @@
 #include <amelie_type.h>
 #include <amelie_page.h>
 
-void
-page_save(Page* self, File* file)
+uint64_t
+page_save(Page* self, File* file, uint64_t offset)
 {
 	// prepare encoder
 	Encoder ec;
@@ -27,7 +27,9 @@ page_save(Page* self, File* file)
 	memcpy(&header, self, sizeof(Page));
 
 	// write header (incomplete)
-	file_write(file, &header, sizeof(header));
+	auto start = offset;
+	file_pwrite(file, &header, sizeof(header), offset);
+	offset += sizeof(header);
 
 	// compress page
 	auto page_data = self->data;
@@ -39,7 +41,8 @@ page_save(Page* self, File* file)
 	// write page
 	page_data = iov->iov_base;
 	page_size = iov->iov_len;
-	file_write(file, page_data, page_size);
+	file_pwrite(file, page_data, page_size, offset);
+	offset += page_size;
 
 	// update header
 	header.compression     = encoder_compression(&ec);
@@ -47,11 +50,13 @@ page_save(Page* self, File* file)
 	if (opt_int_of(&config()->storage_crc))
 		header.crc_data = encoder_iov_crc(&ec);
 	header.crc = runtime()->crc(0, &header.crc_data, sizeof(header) - sizeof(uint32_t));
-	file_write(file, &header, sizeof(header));
+	file_pwrite(file, &header, sizeof(header), start);
+
+	return offset;
 }
 
-int64_t
-page_load(Page* self, File* file, int64_t offset)
+uint64_t
+page_load(Page* self, File* file, uint64_t offset)
 {
 	// read header
 	Page header;
@@ -90,7 +95,7 @@ page_load(Page* self, File* file, int64_t offset)
 		}
 
 		encoder_decode(&ec, self->data,
-					   self->position - sizeof(Page),
+		               self->position - sizeof(Page),
 		               buf->start,
 		               buf_size(buf));
 	} else

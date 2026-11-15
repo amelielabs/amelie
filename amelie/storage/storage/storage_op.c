@@ -21,17 +21,58 @@
 void
 storage_open(Storage* self, Db* db)
 {
+	unused(self);
+
 	// open last checkpoint
+	char uuid[UUID_SZ];
+	char path[PATH_MAX];
+	uuid_get(&db->config->id, uuid, sizeof(uuid));
+	format(path, sizeof(path), "{s}/storage/{s}/{u64}",
+	       state_directory(), uuid,
+	       db->checkpoints.current->id);
 
-	// iterate file
-		// rel = find_by_id(page.rel_id)
-		// pages_import(table.pages, page)
+	// read pages
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_RDONLY, 0);
 
-	// foreach table
-		// build indexes
+	uint64_t offset = 0;
+	while (offset < file.size)
+	{
+		auto page = page_mgr_pop(&db->page_mgr);
+		offset = page_load(page, &file, offset);
 
-	(void)self;
-	(void)db;
+		auto rel = catalog_find_by(&db->catalog, REL_TABLE, &page->id_rel, true);
+		auto table = table_of(rel);
+
+		switch (page->type) {
+		case PAGE_HEAP_META:
+		case PAGE_HEAP:
+			pages_import(&table->part->heap->pages, page);
+			break;
+		case PAGE_FLAT_META:
+		case PAGE_FLAT:
+			// todo: support flat/columns
+			break;
+		default:
+			break;
+		}
+	}
+
+	// build indexes
+	list_foreach(&db->catalog.rels.list)
+	{
+		auto rel = list_at(Rel, link);
+		if (rel->type != REL_TABLE)
+			continue;
+		auto table = table_of(rel);
+		auto part  = table->part;
+		pages_import_done(&part->heap->pages);
+		// todo: flats
+
+		part_open(part);
+	}
 }
 
 void

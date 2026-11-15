@@ -18,6 +18,12 @@ compare_int32(int32_t a, int32_t b)
 }
 
 always_inline static inline int
+compare_uint32(uint32_t a, uint32_t b)
+{
+	return (a > b) - (a < b);
+}
+
+always_inline static inline int
 compare_int64(int64_t a, int64_t b)
 {
 	return (a > b) - (a < b);

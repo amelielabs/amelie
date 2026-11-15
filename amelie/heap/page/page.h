@@ -55,5 +55,5 @@ page_end(Page* self)
 	return (uintptr_t)self + self->position;
 }
 
-void    page_save(Page*, File*);
-int64_t page_load(Page*, File*, int64_t);
+uint64_t page_save(Page*, File*, uint64_t);
+uint64_t page_load(Page*, File*, uint64_t);

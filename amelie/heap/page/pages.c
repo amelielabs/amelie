@@ -76,6 +76,53 @@ pages_add(Pages* self)
 	return page;
 }
 
+void
+pages_import(Pages* self, Page* page)
+{
+	if (page->type == PAGE_HEAP_META ||
+	    page->type == PAGE_FLAT_META)
+	{
+		// (from initial creation)
+		if (self->meta)
+			page_mgr_push(self->mgr, self->meta);
+		self->meta = page;
+		return;
+	}
+	buf_write(&self->list, &page, sizeof(Page*));
+	self->count++;
+}
+
+hot static int
+pages_cmp(const void* p1, const void* p2, void* arg)
+{
+	unused(arg);
+	auto a = *(Page**)p1;
+	auto b = *(Page**)p2;
+	return compare_uint32(a->id, b->id);
+}
+
+void
+pages_import_done(Pages* self)
+{
+	if (! self->count)
+	{
+		self->id_first = 0;
+		self->id       = 0;
+		return;
+	}
+
+	// sort pages by id
+	qsort_r(self->list.start, self->count, sizeof(Page*),
+	        pages_cmp, self);
+
+	// set first id
+	self->id_first = pages_at(self, 0)->id;
+
+	// set last
+	self->current = pages_at(self, self->count - 1);
+	self->id = self->current->id + 1;
+}
+
 static inline Page*
 pages_pop(Pages* self)
 {
@@ -132,45 +179,3 @@ pages_retention(Pages* self, uint32_t* id)
 
 	return changed;
 }
-
-#if 0
-void
-pages_open(Pages*   self, uint64_t checkpoint,
-           int      pages_count,
-           int64_t* pages)
-{
-	auto retention = self->retention;
-	pages_free(self);
-	pages_init(self, retention, self->type_meta, self->type);
-
-	// load meta page
-	self->meta = page_load(checkpoint, pages[0]);
-
-	// load pages
-	uint32_t id = 0;
-	for (auto pos = 1; pos < pages_count; pos++)
-	{
-		auto page = page_load(checkpoint, pages[pos]);
-		buf_write(&self->list, &page, sizeof(Page*));
-		self->list_count++;
-
-		if (pos == 1)
-			self->id_first = page->id;
-
-		if (page->id > id)
-			id = page->id;
-
-		// restore retention state
-		if (retention)
-			retention_follow(retention, page->id_seq);
-
-		// last page
-		self->current = page;
-	}
-
-	// set next page id
-	if (self->list_count > 0)
-		id++;
-	self->id_next = id;
-}
-#endif

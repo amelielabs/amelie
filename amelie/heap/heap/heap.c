@@ -101,7 +101,7 @@ heap_open(Heap* self)
 	auto pages = &self->pages;
 	auto size = sizeof(Page) + sizeof(HeapHeader) + sizeof(HeapBucket) * 256;
 	unused(size);
-	assert(pages->meta && pages->meta->size == size);
+	assert(pages->meta && pages->meta->position == size);
 	self->header  = (HeapHeader*)pages->meta->data;
 	self->buckets = self->header->buckets;
 }

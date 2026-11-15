@@ -74,13 +74,14 @@ checkpoint_create(Checkpoint* self)
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_WRONLY, 0644);
 
+	uint64_t offset = 0;
 	auto page_mgr = self->page_mgr;
 	for (auto i = 0; i < page_mgr->count; i++)
 	{
 		auto page = page_mgr_at(page_mgr, i);
 		if (page->free)
 			continue;
-		page_save(page, &file);
+		offset = page_save(page, &file, offset);
 	}
 
 	// sync

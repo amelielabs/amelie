@@ -95,10 +95,6 @@ table_open(Table* self)
 		auto flat = flat_allocate(arg->page_mgr, arg->rel_id, column);
 		flats_add(&part->flats, flat);
 	}
-
-	// open partition files
-	if (opt_int_of(&state()->recover) == RECOVER_CHECKPOINT)
-		part_open(part);
 }
 
 bool
@@ -139,7 +135,7 @@ table_create(Catalog*     self,
 	// update tables
 	rels_create(&self->rels, tr, &table->rel);
 
-	// prepare table and recover
+	// prepare table
 	table_open(table);
 	return true;
 }

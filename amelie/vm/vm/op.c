@@ -505,6 +505,11 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         &column->name);
 			break;
 		}
+		case CCHECKPOINT:
+		{
+			op_write(buf, op, false, false, false, NULL);
+			break;
+		}
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
