@@ -15,10 +15,11 @@
 #include <amelie_page.h>
 
 void
-pages_init(Pages* self, PageMgr* mgr, Retention* retention,
-           Uuid*  id_rel,
-           int    type_meta,
-           int    type)
+pages_init(Pages*   self, PageMgr* mgr, Retention* retention,
+           Uuid*    id_rel,
+           uint32_t id_column,
+           int      type_meta,
+           int      type)
 {
 	self->current   = NULL;
 	self->meta      = NULL;
@@ -26,6 +27,7 @@ pages_init(Pages* self, PageMgr* mgr, Retention* retention,
 	self->id        = 0;
 	self->id_first  = 0;
 	self->id_rel    = id_rel;
+	self->id_column = id_column;
 	self->type_meta = type_meta;
 	self->type      = type;
 	self->retention = retention;
@@ -53,11 +55,12 @@ pages_add_meta(Pages* self)
 	// create and set meta page
 	assert(! self->meta);
 	auto page = page_mgr_pop(self->mgr);
-	page->type     = self->type_meta;
-	page->id       = UINT32_MAX;
-	page->id_rel   = *self->id_rel;
-	page->position = sizeof(Page);
-	self->meta     = page;
+	page->type      = self->type_meta;
+	page->id        = UINT32_MAX;
+	page->id_rel    = *self->id_rel;
+	page->id_column = self->id_column;
+	page->position  = sizeof(Page);
+	self->meta      = page;
 	return page;
 }
 
@@ -66,9 +69,10 @@ pages_add(Pages* self)
 {
 	// create new page
 	auto page = page_mgr_pop(self->mgr);
-	page->type    = self->type;
-	page->id      = self->id++;
-	page->id_rel  = *self->id_rel;
+	page->type      = self->type;
+	page->id        = self->id++;
+	page->id_rel    = *self->id_rel;
+	page->id_column = self->id_column;
 	self->current = page;
 
 	buf_write(&self->list, &page, sizeof(Page*));

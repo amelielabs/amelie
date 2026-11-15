@@ -29,6 +29,7 @@ struct Page
 	uint32_t crc_data;
 	uint32_t id;
 	Uuid     id_rel;
+	uint32_t id_column;
 	uint8_t  type;
 	uint8_t  compression;
 	uint8_t  dirty;
@@ -39,7 +40,7 @@ struct Page
 	uint32_t size_compressed;
 	uint32_t position;
 	uint32_t position_last;
-	uint8_t  padding[16];
+	uint8_t  padding[12];
 	uint8_t  data[];
 } packed;
 

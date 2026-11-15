@@ -22,13 +22,14 @@ struct Pages
 	uint32_t   id;
 	uint32_t   id_first;
 	Uuid*      id_rel;
+	uint32_t   id_column;
 	int        type;
 	int        type_meta;
 	Retention* retention;
 	PageMgr*   mgr;
 };
 
-void  pages_init(Pages*, PageMgr*, Retention*, Uuid*, int, int);
+void  pages_init(Pages*, PageMgr*, Retention*, Uuid*, uint32_t, int, int);
 void  pages_free(Pages*);
 Page* pages_add_meta(Pages*);
 Page* pages_add(Pages*);

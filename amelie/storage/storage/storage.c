@@ -173,19 +173,24 @@ storage_start(Storage* self, bool bootstrap)
 	// to the wal_truncate option
 	wal_open(&self->wal);
 
-	// create system database once
+	Str name;
+	str_init(&name);
+	str_set_cstr(&name, "amelie");
+
 	if (bootstrap)
 	{
-		Str name;
-		str_init(&name);
-		str_set_cstr(&name, "amelie");
+		// create system database once
 		auto amelie = storage_create(self, &config()->uuid.uuid, &name);
 		storage_checkpoint(self, amelie);
 		return;
+	} else
+	{
+		// read and restore databases
+		storage_recover(self);
 	}
 
-	// read and restore databases
-	storage_recover(self);
+	auto amelie = catalog_find_db(&self->databases, &name, true);
+	db_config_set_system(amelie->config, true);
 }
 
 void

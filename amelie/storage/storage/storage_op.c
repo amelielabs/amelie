@@ -43,34 +43,51 @@ storage_open(Storage* self, Db* db)
 		auto page = page_mgr_pop(&db->page_mgr);
 		offset = page_load(page, &file, offset);
 
-		auto rel = catalog_find_by(&db->catalog, REL_TABLE, &page->id_rel, true);
+		auto rel   = catalog_find_by(&db->catalog, REL_TABLE, &page->id_rel, true);
 		auto table = table_of(rel);
+		auto part  = table->part;
 
 		switch (page->type) {
 		case PAGE_HEAP_META:
 		case PAGE_HEAP:
-			pages_import(&table->part->heap->pages, page);
+		{
+			pages_import(&part->heap->pages, page);
 			break;
+		}
 		case PAGE_FLAT_META:
 		case PAGE_FLAT:
-			// todo: support flat/columns
+		{
+			auto column = columns_find_by(&table->config->columns, page->id_column);
+			auto flat = flats_at(&part->flats, column);
+			pages_import(&flat->pages, page);
 			break;
+		}
 		default:
 			break;
 		}
 	}
 
-	// build indexes
+	// complete
 	list_foreach(&db->catalog.rels.list)
 	{
 		auto rel = list_at(Rel, link);
 		if (rel->type != REL_TABLE)
 			continue;
+
+		// finilize import
 		auto table = table_of(rel);
 		auto part  = table->part;
 		pages_import_done(&part->heap->pages);
-		// todo: flats
+		list_foreach(&table->config->columns.list)
+		{
+			auto column = list_at(Column, link);
+			if (! column->size_flat)
+				continue;
+			auto flat = flats_at(&part->flats, column);
+			pages_import_done(&flat->pages);
+		}
 
+		// build indexes
 		part_open(part);
 	}
 }

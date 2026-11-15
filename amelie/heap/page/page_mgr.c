@@ -93,6 +93,7 @@ page_mgr_push(PageMgr* self, Page* page)
 	page->free          = true;
 	page->dirty         = false;
 	page->id            = 0;
+	page->id_column     = UINT32_MAX;
 	page->position      = sizeof(Page);
 	page->position_last = page->position;
 

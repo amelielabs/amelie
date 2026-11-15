@@ -82,7 +82,8 @@ heap_allocate(PageMgr* page_mgr, Retention* retention, Uuid* id)
 	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets = NULL;
 	self->header  = NULL;
-	pages_init(&self->pages, page_mgr, retention, id, PAGE_HEAP_META, PAGE_HEAP);
+	pages_init(&self->pages, page_mgr, retention, id, UINT32_MAX,
+	           PAGE_HEAP_META, PAGE_HEAP);
 	heap_prepare(self);
 	return self;
 }

@@ -46,7 +46,8 @@ flat_allocate(PageMgr* page_mgr, Uuid* id, Column* column)
 	self->page_offset_vectors = self->page_offset_rows + (self->page_rows * sizeof(FlatRow));
 
 	auto pages = &self->pages;
-	pages_init(pages, page_mgr, NULL, id, PAGE_FLAT_META, PAGE_FLAT);
+	pages_init(pages, page_mgr, NULL, id, column->order,
+	           PAGE_FLAT_META, PAGE_FLAT);
 	pages_add_meta(pages);
 
 	self->header = (FlatHeader*)pages->meta->data;
@@ -69,7 +70,7 @@ flat_open(Flat* self)
 {
 	// set header
 	auto pages = &self->pages;
-	assert(pages->meta && pages->meta->size == sizeof(Page) + sizeof(FlatHeader));
+	assert(pages->meta && pages->meta->position == sizeof(Page) + sizeof(FlatHeader));
 	self->header = (FlatHeader*)pages->meta->data;
 }
 
