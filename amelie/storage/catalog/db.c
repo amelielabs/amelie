@@ -78,6 +78,7 @@ db_allocate(Catalog* databases, DbConfig* config)
 {
 	Db* self = am_malloc(sizeof(Db));
 	self->config      = db_config_copy(config);
+	self->system      = str_is(&config->name, "amelie", 6);
 	self->inv_seq     = 0;
 	self->inv_revoked = 0;
 	self->commit      = 0;
@@ -163,7 +164,7 @@ db_drop(Catalog* self,
 	db_check_ownership(tr, db);
 
 	// system is immutable
-	if (db->config->system)
+	if (db->system)
 		error("db '{str}': system db cannot be dropped", name);
 
 	// invalidate tokens
@@ -218,7 +219,7 @@ db_rename(Catalog* self,
 	db_check_ownership(tr, db);
 
 	// system is immutable
-	if (db->config->system)
+	if (db->system)
 		error("db '{str}': system db cannot be renamed", name);
 
 	// ensure new db does not exists
@@ -284,7 +285,7 @@ db_revoke_token(Catalog* self,
 	db_check_ownership(tr, db);
 
 	// system is immutable
-	if (db->config->system)
+	if (db->system)
 		error("db '{str}': system db is immutable", name);
 
 	// invalidate tokens
@@ -348,7 +349,7 @@ db_describe(Catalog* self,
 	db_check_ownership(tr, db);
 
 	// system is immutable
-	if (db->config->system)
+	if (db->system)
 		error("db '{str}': system db is immutable", name);
 
 	// update db

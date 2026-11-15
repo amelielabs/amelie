@@ -183,14 +183,10 @@ storage_start(Storage* self, bool bootstrap)
 		auto amelie = storage_create(self, &config()->uuid.uuid, &name);
 		storage_checkpoint(self, amelie);
 		return;
-	} else
-	{
-		// read and restore databases
-		storage_recover(self);
 	}
 
-	auto amelie = catalog_find_db(&self->databases, &name, true);
-	db_config_set_system(amelie->config, true);
+	// read and restore databases
+	storage_recover(self);
 }
 
 void

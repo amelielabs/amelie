@@ -20,7 +20,6 @@ struct DbConfig
 	Uuid   id;
 	Str    created_at;
 	Str    revoked_at;
-	bool   system;
 	Limits limits;
 };
 
@@ -29,7 +28,6 @@ db_config_allocate()
 {
 	DbConfig* self;
 	self = am_malloc(sizeof(DbConfig));
-	self->system = false;
 	str_init(&self->name);
 	str_init(&self->description);
 	uuid_init(&self->id);
@@ -83,12 +81,6 @@ db_config_set_revoked_at(DbConfig* self, Str* value)
 	str_copy(&self->revoked_at, value);
 }
 
-static inline void
-db_config_set_system(DbConfig* self, bool value)
-{
-	self->system = value;
-}
-
 static inline DbConfig*
 db_config_copy(DbConfig* self)
 {
@@ -98,7 +90,6 @@ db_config_copy(DbConfig* self)
 	db_config_set_id(copy, &self->id);
 	db_config_set_created_at(copy, &self->created_at);
 	db_config_set_revoked_at(copy, &self->revoked_at);
-	db_config_set_system(copy, self->system);
 	limits_copy(&copy->limits, &self->limits);
 	return copy;
 }
@@ -116,7 +107,6 @@ db_config_read(uint8_t** pos)
 		{ DECODE_UUID, "id",          &self->id          },
 		{ DECODE_STR,  "created_at",  &self->created_at  },
 		{ DECODE_STR,  "revoked_at",  &self->revoked_at  },
-		{ DECODE_BOOL, "system",      &self->system      },
 		{ DECODE_OBJ,  "limits",      &pos_limits        },
 		{ 0,            NULL,          NULL              },
 	};
@@ -160,10 +150,6 @@ db_config_write(DbConfig* self, Buf* buf, int flags)
 	// revoked_at
 	encode_raw(buf, "revoked_at", 10);
 	encode_str(buf, &self->revoked_at);
-
-	// system
-	encode_raw(buf, "system", 6);
-	encode_bool(buf, self->system);
 
 	// limits
 	encode_raw(buf, "limits", 6);

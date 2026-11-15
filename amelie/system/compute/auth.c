@@ -169,7 +169,7 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 
 	// system can connect only from localhost/unixsocket (trusted source)
 	auto trusted = opt_int_of(&endpoint->trusted);
-	if (db->config->system && !trusted)
+	if (db->system && !trusted)
 		error("auth: system can connect only from localhost");
 
 	// set token

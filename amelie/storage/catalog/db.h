@@ -21,6 +21,7 @@ struct Db
 	Usage       memory;
 	PageMgr     page_mgr;
 	Checkpoints checkpoints;
+	bool        system;
 	uint32_t    inv_seq;
 	uint64_t    inv_revoked;
 	int         commit;
