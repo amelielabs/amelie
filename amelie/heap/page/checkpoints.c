@@ -76,7 +76,7 @@ checkpoint_id_of(const char* name, uint64_t* lsn,  bool* incomplete)
 }
 
 void
-checkpoints_open(Checkpoints* self, uint64_t lsn_wal)
+checkpoints_open(Checkpoints* self)
 {
 	// create directory
 	char uuid[UUID_SZ];
@@ -118,21 +118,17 @@ checkpoints_open(Checkpoints* self, uint64_t lsn_wal)
 
 		auto ref = checkpoints_add(self, lsn);
 
-		// track last checkpoint matching min wal lsn
-		if (lsn <= lsn_wal)
-		{
-			if (!self->current || ref->id > self->current->id)
-				self->current = ref;
-		}
+		// track last checkpoint
+		if (!self->current || ref->id > self->current->id)
+			self->current = ref;
 	}
 }
 
 void
-checkpoints_gc(Checkpoints* self, uint64_t wm)
+checkpoints_gc(Checkpoints* self)
 {
 	(void)self;
-	(void)wm;
-	// todo: remove all files <= wm which has no alive page references
+	// todo: remove all files which has no alive page references
 }
 
 CheckpointsRef*

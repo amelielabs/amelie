@@ -73,12 +73,18 @@ recover_next(Recover* self, RecordMsg* msg)
 {
 	auto db = recover_read(self, msg);
 	if (! db)
+	{
+		buf_free(msg->msg_buf);
 		return;
+	}
 
 	// skip all records that we included in the checkpoint
 	// used during recovery
 	if (db->checkpoints.current->id >= msg->record->lsn)
+	{
+		buf_free(msg->msg_buf);
 		return;
+	}
 
 	// sync on ddl (wait for completion)
 	auto sync = &self->sync;

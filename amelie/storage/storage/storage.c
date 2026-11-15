@@ -45,7 +45,7 @@ storage_create(Storage* self, Uuid* id, Str* name)
 	tr_init(&tr);
 	defer(tr_free, &tr);
 
-	// create amelie db
+	// create db
 	auto config = db_config_allocate();
 	defer(db_config_free, config);
 	db_config_set_id(config, id);
@@ -74,7 +74,7 @@ storage_recover_db(Storage* self, Uuid* id)
 
 	// read database directory
 	auto cp = &db->checkpoints;
-	checkpoints_open(cp, UINT64_MAX);
+	checkpoints_open(cp);
 	if (! cp->current)
 	{
 		error("");
@@ -145,11 +145,26 @@ storage_recover(Storage* self)
 		storage_recover_db(self, &id);
 	}
 
-	// todo: deploy
+	// open databases
+	RpcSet set;
+	rpc_set_init(&set);
+	defer(rpc_set_free, &set);
+	rpc_set_prepare(&set, self->databases.rels.list_count);
+
+	auto order = 0;
+	list_foreach(&self->databases.rels.list)
+	{
+		auto db = db_of(list_at(Rel, link));
+		auto rpc = rpc_set_add(&set, order, MSG_OPEN, db);
+		rpc_send(rpc, db->compute);
+		order++;
+	}
+
+	rpc_set_wait(&set);
 }
 
 void
-storage_open(Storage* self, bool bootstrap)
+storage_start(Storage* self, bool bootstrap)
 {
 	state_lsn_set(1);
 	state_checkpoint_set(0);
@@ -174,7 +189,7 @@ storage_open(Storage* self, bool bootstrap)
 }
 
 void
-storage_close(Storage* self)
+storage_stop(Storage* self)
 {
 	// stop syncer
 	syncer_stop(&self->syncer);

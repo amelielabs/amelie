@@ -54,6 +54,13 @@ compute_rpc(Rpc* rpc, void* arg)
 {
 	Compute* self = arg;
 	switch (rpc->msg.id) {
+	case MSG_OPEN:
+	{
+		// open db checkpoint
+		Db* db = rpc->arg;
+		storage_open(share()->storage, db);
+		break;
+	}
 	case MSG_STOP:
 	{
 		// disconnect clients

@@ -24,6 +24,6 @@ struct Storage
 
 void storage_init(Storage*, CatalogIf*, EvalIf*, void*);
 void storage_free(Storage*);
-void storage_open(Storage*, bool);
-void storage_close(Storage*);
+void storage_start(Storage*, bool);
+void storage_stop(Storage*);
 void storage_state(Storage*, Buf*);

@@ -24,6 +24,9 @@ typedef enum
 	// wal
 	MSG_RECORD,
 
+	// storage
+	MSG_OPEN,
+
 	// commit
 	MSG_GTR,
 

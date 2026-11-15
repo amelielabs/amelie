@@ -219,7 +219,6 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/wal/wal_cursor.c
     ${AMELIE_ROOT}/storage/wal/wal_slot.c
     ${AMELIE_ROOT}/storage/wal/wal_subscribe.c
-    #${AMELIE_ROOT}/storage/storage/checkpoints.c
     ${AMELIE_ROOT}/storage/storage/syncer.c
     ${AMELIE_ROOT}/storage/storage/storage.c
     ${AMELIE_ROOT}/storage/storage/storage_op.c

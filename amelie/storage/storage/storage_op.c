@@ -19,6 +19,22 @@
 #include <amelie_storage.h>
 
 void
+storage_open(Storage* self, Db* db)
+{
+	// open last checkpoint
+
+	// iterate file
+		// rel = find_by_id(page.rel_id)
+		// pages_import(table.pages, page)
+
+	// foreach table
+		// build indexes
+
+	(void)self;
+	(void)db;
+}
+
+void
 storage_checkpoint(Storage* self, Db* db)
 {
 	unused(self);

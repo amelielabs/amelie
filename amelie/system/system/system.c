@@ -245,8 +245,8 @@ system_recover(System* self, bool bootstrap)
 	// files loaded during pod deployment
 	opt_int_set(&state()->recover, RECOVER_CHECKPOINT);
 
-	// restore catalog
-	storage_open(&self->storage, bootstrap);
+	// open databases
+	storage_start(&self->storage, bootstrap);
 
 	opt_int_set(&state()->recover, RECOVER_WAL);
 
@@ -327,7 +327,7 @@ system_stop(System* self)
 	commit_stop(&self->commit);
 
 	// stop storage
-	storage_close(&self->storage);
+	storage_stop(&self->storage);
 }
 
 static void
