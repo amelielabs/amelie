@@ -26,7 +26,7 @@ static inline Program*
 program_allocate(void)
 {
 	auto self = (Program*)am_malloc(sizeof(Program));
-	self->utility      = false;
+	self->utility = false;
 	code_init(&self->code);
 	code_data_init(&self->code_data);
 	access_init(&self->access);
@@ -48,7 +48,7 @@ program_free(Program* self)
 static inline void
 program_reset(Program* self, SetCache* cache)
 {
-	self->utility      = false;
+	self->utility = false;
 	code_reset(&self->code);
 	code_data_reset(&self->code_data);
 	access_reset(&self->access);

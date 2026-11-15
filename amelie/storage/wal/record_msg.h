@@ -18,7 +18,6 @@ struct RecordMsg
 {
 	Msg    msg;
 	Buf*   msg_buf;
-	Db*    db;
 	void*  arg;
 	Record record[];
 };

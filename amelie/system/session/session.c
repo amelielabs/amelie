@@ -274,18 +274,6 @@ session_run_utility(Session* self)
 		storage_write(share()->storage, &write_list);
 	}
 
-#if 0
-	// wal write
-	if (!recovery && !ro && tr_active(&gtr->tr))
-	{
-		auto write = &gtr->write;
-		write_set_flags(write, RECORD_UTILITY);
-		request_write(self->req, &portal->endpoint, &write->record_data);
-
-		commit(share()->commit, gtr);
-	}
-#endif
-
 	// commit
 	tr_commit(&gtr->tr);
 

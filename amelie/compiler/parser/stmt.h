@@ -193,3 +193,17 @@ stmt_is_utility_ro(Stmt* self)
 	}
 	return false;
 }
+
+static inline bool
+stmt_is_utility_db(Stmt* self)
+{
+	switch (self->id) {
+	case STMT_CREATE_DATABASE:
+	case STMT_DROP_DATABASE:
+	case STMT_ALTER_DATABASE:
+		return true;
+	default:
+		break;
+	}
+	return false;
+}

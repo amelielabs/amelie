@@ -226,6 +226,7 @@ emit_ddl(Compiler* self)
 		abort();
 		break;
 	}
+
 	op3(self, CDDL, offset, flags, db);
 }
 

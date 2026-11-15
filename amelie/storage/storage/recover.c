@@ -41,8 +41,8 @@ recover_wait(Recover* self)
 static inline Db*
 recover_read(Recover* self, RecordMsg* msg)
 {
-	Str name;
-	str_init(&name);
+	Uuid id;
+	uuid_init(&id);
 
 	auto record = msg->record;
 	auto pos = record_data(record);
@@ -52,20 +52,21 @@ recover_read(Recover* self, RecordMsg* msg)
 		int64_t field;
 		unpack_int(&pos, &field);
 
-		// META_DB
+		// META_ID
 		if (field == 0)
 		{
-			unpack_str(&pos, &name);
+			Str uuid;
+			unpack_str(&pos, &uuid);
+			uuid_set(&id, &uuid);
 			break;
 		}
 		data_skip(&pos);
 	}
 
-	if (str_empty(&name))
+	if (uuid_empty(&id))
 		error("recover: db field not found");
 
-	// todo: find by uuid <<
-	return catalog_find_db(&self->storage->databases, &name, true);
+	return (Db*)catalog_find_by(&self->storage->databases, REL_DB, &id, true);
 }
 
 void
@@ -97,7 +98,6 @@ recover_next(Recover* self, RecordMsg* msg)
 
 	// send for execution
 	recover_sync_add(sync);
-	msg->db  = db;
 	msg->arg = sync;
 	task_send(db->compute, &msg->msg);
 

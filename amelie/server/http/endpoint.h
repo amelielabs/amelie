@@ -52,6 +52,7 @@ struct Endpoint
 	Opt  content_type;
 	Opt  accept;
 	Opt  db;
+	Opt  db_id;
 	Opt  rel;
 	// context
 	Opt  timezone;

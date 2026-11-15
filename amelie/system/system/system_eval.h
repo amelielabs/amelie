@@ -66,7 +66,7 @@ system_eval(SystemEval* self, Str* db, Str* command)
 	portal_prepare(portal);
 
 	// auth portal
-	portal_set(portal, db, false);
+	portal_bind_name(portal, db);
 
 	// set request
 	auto req = &self->request;

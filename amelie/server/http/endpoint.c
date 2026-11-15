@@ -43,6 +43,7 @@ endpoint_init(Endpoint* self)
 		{ "accept",       OPT_STRING,  OPT_C|OPT_A,        &self->accept,       NULL, 0          },
 		// relation
 		{ "db",           OPT_STRING,  OPT_C,              &self->db,           NULL, 0          },
+		{ "db_id",        OPT_UUID,    OPT_E,              &self->db_id,        NULL, 0          },
 		{ "rel",          OPT_STRING,  OPT_C,              &self->rel,          NULL, 0          },
 		// context
 		{ "timezone",     OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->timezone,     NULL, 0          },

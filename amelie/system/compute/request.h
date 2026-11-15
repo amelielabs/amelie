@@ -15,7 +15,7 @@ typedef struct Request Request;
 
 typedef enum
 {
-	META_DB,
+	META_UUID,
 	META_TIMEZONE,
 	META_TIME,
 	META_SEED,
@@ -60,9 +60,9 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 	// []
 	encode_array(buf);
 
-	// db
-	encode_int(buf, META_DB);
-	encode_str(buf, opt_string_of(&endpoint->db));
+	// uuid
+	encode_int(buf, META_UUID);
+	encode_uuid(buf, opt_uuid_of(&endpoint->db_id));
 
 	// timezone
 	encode_int(buf, META_TIMEZONE);
@@ -108,9 +108,13 @@ request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
 
 		int64_t integer;
 		switch (field) {
-		case META_DB:
-			unpack_str(&pos, &endpoint->db.string);
+		case META_UUID:
+		{
+			Str uuid;
+			unpack_str(&pos, &uuid);
+			uuid_set(&endpoint->db_id.uuid, &uuid);
 			break;
+		}
 		case META_TIMEZONE:
 			unpack_str(&pos, &endpoint->timezone.string);
 			break;

@@ -66,9 +66,7 @@ replay_run(Replay* self, RecordMsg* record)
 		request_read(&self->req, endpoint, record);
 
 		// set db (takes shared storage lock)
-
-		// ignore limits during recovery
-		portal_set(portal, opt_string_of(&endpoint->db), false);
+		portal_bind(portal, opt_uuid_of(&endpoint->db_id));
 
 		// execute
 		compute->iface->session_execute(self->session, portal, &self->req);

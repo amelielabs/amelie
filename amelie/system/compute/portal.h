@@ -102,6 +102,9 @@ portal_auth(Portal* self, Auth* auth, Token* token)
 	// authenticate token
 	auto endpoint = &self->endpoint;
 	self->db = auth_run(auth, endpoint, token);
+
+	// set db id
+	opt_uuid_set(&endpoint->db_id, &self->db->config->id);
 }
 
 hot static inline void
@@ -127,17 +130,38 @@ portal_set_local(Portal* self, bool with_limits)
 }
 
 hot static inline void
-portal_set(Portal* self, Str* db, bool with_limits)
+portal_set(Portal* self, Db* db, bool with_limits)
 {
-	// take storage lock
-	portal_lock(self, LOCK_SHARED);
+	// set db
+	self->db = db;
+	opt_string_set(&self->endpoint.db, &self->db->config->name);
 
-	// find db
-	self->db = catalog_find_db(&share()->storage->databases, db, true);
+	// set db id
+	opt_uuid_set(&self->endpoint.db_id, &self->db->config->id);
 
 	// configure local
 	portal_set_local(self, with_limits);
 
 	// set output local (enforce send limit)
 	output_set_local(&self->output, &self->local);
+}
+
+hot static inline void
+portal_bind(Portal* self, Uuid* id)
+{
+	// take storage lock
+	portal_lock(self, LOCK_SHARED);
+
+	auto rel = catalog_find_by(&share()->storage->databases, REL_DB, id, true);
+	portal_set(self, db_of(rel), false);
+}
+
+hot static inline void
+portal_bind_name(Portal* self, Str* name)
+{
+	// take storage lock
+	portal_lock(self, LOCK_SHARED);
+
+	auto db = catalog_find_db(&share()->storage->databases, name, true);
+	portal_set(self, db, false);
 }
