@@ -103,7 +103,7 @@ bench_create(Bench* self)
 		str_set_cstr(&str, name);
 
 		char cmd[256];
-		format(cmd, sizeof(cmd), "drop database if exists {str} cascade", &str);
+		format(cmd, sizeof(cmd), "drop database if exists {str}", &str);
 		client_run(client, cmd);
 
 		format(cmd, sizeof(cmd), "create database {str}", &str);

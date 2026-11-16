@@ -15,11 +15,12 @@ typedef struct Storage Storage;
 
 struct Storage
 {
-	Catalog databases;
-	Wal     wal;
-	Syncer  syncer;
-	EvalIf* iface;
-	void*   iface_arg;
+	Catalog  catalog;
+	uint64_t catalog_lsn;
+	Wal      wal;
+	Syncer   syncer;
+	EvalIf*  iface;
+	void*    iface_arg;
 };
 
 void storage_init(Storage*, CatalogIf*, EvalIf*, void*);

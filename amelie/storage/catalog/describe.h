@@ -14,3 +14,4 @@
 void describe_text(Rel*, Buf*, int);
 void describe(Rel*, Buf*, int);
 void describe_catalog(Catalog*, Buf*);
+void describe_databases(Catalog*, Buf*);

@@ -152,7 +152,7 @@ portal_bind(Portal* self, Uuid* id)
 	// take storage lock
 	portal_lock(self, LOCK_SHARED);
 
-	auto rel = catalog_find_by(&share()->storage->databases, REL_DB, id, true);
+	auto rel = catalog_find_by(&share()->storage->catalog, REL_DB, id, true);
 	portal_set(self, db_of(rel), false);
 }
 
@@ -162,6 +162,6 @@ portal_bind_name(Portal* self, Str* name)
 	// take storage lock
 	portal_lock(self, LOCK_SHARED);
 
-	auto db = catalog_find_db(&share()->storage->databases, name, true);
+	auto db = catalog_find_db(&share()->storage->catalog, name, true);
 	portal_set(self, db, false);
 }

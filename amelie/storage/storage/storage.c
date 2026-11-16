@@ -24,9 +24,10 @@ storage_init(Storage*   self,
              EvalIf*    iface_eval,
              void*      iface_arg)
 {
-	self->iface     = iface_eval;
-	self->iface_arg = iface_arg;
-	catalog_init(&self->databases, iface, iface_arg, NULL, NULL);
+	self->iface       = iface_eval;
+	self->iface_arg   = iface_arg;
+	self->catalog_lsn = 0;
+	catalog_init(&self->catalog, iface, iface_arg, NULL, NULL);
 	wal_init(&self->wal);
 	syncer_init(&self->syncer, self);
 }
@@ -34,12 +35,12 @@ storage_init(Storage*   self,
 void
 storage_free(Storage* self)
 {
-	catalog_free(&self->databases);
+	catalog_free(&self->catalog);
 	wal_free(&self->wal);
 }
 
 static Db*
-storage_create(Storage* self, Uuid* id, Str* name)
+storage_bootstrap(Storage* self)
 {
 	Tr tr;
 	tr_init(&tr);
@@ -48,75 +49,51 @@ storage_create(Storage* self, Uuid* id, Str* name)
 	// create db
 	auto config = db_config_allocate();
 	defer(db_config_free, config);
-	db_config_set_id(config, id);
-	if (name) {
-		db_config_set_name(config, name);
-	} else
-	{
-		// use temporary name during recovery
-		Str str;
-		str_init(&str);
-		str_set(&str, "current_recovery", 16);
-		db_config_set_name(config, &str);
-	}
-	db_create(&self->databases, &tr, config, false);
+
+	Str name;
+	str_init(&name);
+	str_set_cstr(&name, "amelie");
+	db_config_set_name(config, &name);
+	db_create(&self->catalog, &tr, config, false);
 
 	// commit
 	tr_commit(&tr);
-	return (Db*)catalog_find_by(&self->databases, REL_DB, id, true);
+	return catalog_find_db(&self->catalog, &name, true);
 }
 
-static void
-storage_recover_db(Storage* self, Uuid* id)
+static inline int
+storage_recover_id_of(const char* name, uint64_t* lsn,  bool* incomplete)
 {
-	// recreate db (start with temprorary name)
-	auto db = storage_create(self, id, NULL);
-
-	// read database directory
-	auto cp = &db->checkpoints;
-	checkpoints_open(cp);
-	if (! cp->current)
+	// <lsn>[.incomplete]
+	*lsn = 0;
+	while (*name && *name != '.')
 	{
-		error("");
-		return;
+		if (unlikely(! isdigit(*name)))
+			return -1;
+		if (unlikely(uint64_mul_add_overflow(lsn, *lsn, 10, *name - '0')))
+			return -1;
+		name++;
 	}
-
-	// restore last db checkpoint schema
-	char uuid[UUID_SZ];
-	uuid_get(id, uuid, sizeof(uuid));
-
-	char path[PATH_MAX];
-	format(path, sizeof(path), "{s}/storage/{s}/{u64}.sql",
-	       state_directory(), uuid, cp->current->id);
-
-	// read file
-	Separator sep;
-	separator_init(&sep);
-	defer(separator_free, &sep);
-	file_import_stream(&sep.buf, "{s}", path);
-
-	// prepare eval
-	Eval eval;
-	eval_init(&eval, self->iface, self->iface_arg);
-	eval_create(&eval);
-	defer(eval_free, &eval);
-
-	// parse and execute statements
-	Str command;
-	while (separator_read(&sep, &command))
+	if (! *name)
 	{
-		eval_execute(&eval, &db->config->name, &command);
-		separator_advance(&sep);
+		*incomplete = false;
+		return 0;
 	}
+	*incomplete = !strcmp(name, ".incomplete");
+	if (*incomplete)
+		return 0;
+	return -1;
 }
 
 static void
-storage_recover(Storage* self)
+storage_recover_catalog(Storage* self)
 {
 	char path[PATH_MAX];
 	format(path, sizeof(path), "{s}/storage", state_directory());
 
-	// read databases
+	// find latest catalog file
+	uint64_t lsn_catalog = 0;
+
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("storage: directory '{s}' open error", path);
@@ -129,30 +106,71 @@ storage_recover(Storage* self)
 		if (entry->d_name[0] == '.')
 			continue;
 
-		// uuid
-		Str str;
-		str_init(&str);
-		str_set_cstr(&str, entry->d_name);
-		Uuid id;
-		if (uuid_set_nothrow(&id, &str) == -1)
+		// read file name
+		bool incomplete = false;
+		uint64_t lsn;
+		if (storage_recover_id_of(entry->d_name, &lsn, &incomplete) == -1)
+			continue;
+
+		// remove incomplete file
+		if (incomplete)
 		{
-			info("storage: invalid database directory '{s}/{str}'",
-			     path, &str);
+			info("storage: removing incomplete catalog file: '{s}/{s}'",
+			     path, entry->d_name);
+			fs_unlink_if_exists("{s}/{u64}.incomplete", path, lsn);
 			continue;
 		}
 
-		// restore
-		storage_recover_db(self, &id);
+		// track last version
+		if (lsn_catalog < lsn)
+			lsn_catalog = lsn;
 	}
+
+	if (! lsn_catalog)
+		error("storage: catalog file is missing");
+
+	// read file
+	Separator sep;
+	separator_init(&sep);
+	defer(separator_free, &sep);
+	file_import_stream(&sep.buf, "{s}/storage/{u64}", state_directory(),
+	                   lsn_catalog);
+
+	// prepare eval
+	Eval eval;
+	eval_init(&eval, self->iface, self->iface_arg);
+	eval_create(&eval);
+	defer(eval_free, &eval);
+
+	// parse and execute statements
+	Str db;
+	str_init(&db);
+	str_set_cstr(&db, "amelie");
+	Str command;
+	while (separator_read(&sep, &command))
+	{
+		eval_execute(&eval, &db, &command);
+		separator_advance(&sep);
+	}
+
+	// set lsn
+	self->catalog_lsn = lsn_catalog;
+}
+
+static void
+storage_recover(Storage* self)
+{
+	// read catalog and recreate databases
+	storage_recover_catalog(self);
 
 	// open databases
 	RpcSet set;
 	rpc_set_init(&set);
 	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, self->databases.rels.list_count);
+	rpc_set_prepare(&set, self->catalog.rels.list_count);
 
 	auto order = 0;
-	list_foreach(&self->databases.rels.list)
+	list_foreach(&self->catalog.rels.list)
 	{
 		auto db = db_of(list_at(Rel, link));
 		auto rpc = rpc_set_add(&set, order, MSG_OPEN, db);
@@ -173,15 +191,13 @@ storage_start(Storage* self, bool bootstrap)
 	// to the wal_truncate option
 	wal_open(&self->wal);
 
-	Str name;
-	str_init(&name);
-	str_set_cstr(&name, "amelie");
+	// create system db
+	storage_bootstrap(self);
 
 	if (bootstrap)
 	{
-		// create system database once
-		auto amelie = storage_create(self, &config()->uuid.uuid, &name);
-		storage_checkpoint(self, amelie);
+		// create initial checkpoint
+		storage_checkpoint_catalog(self);
 		return;
 	}
 

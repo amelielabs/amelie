@@ -54,7 +54,7 @@ ccreate_token(Vm* self, Op* op)
 	unpack_str(&pos, &interval);
 
 	// find db
-	auto db = catalog_find_db(&share()->storage->databases, &name, true);
+	auto db = catalog_find_db(&share()->storage->catalog, &name, true);
 
 	// allow to create tokens only for child dbs (or anyone if system)
 	db_check_ownership(&self->gtr->tr, db);
@@ -176,6 +176,6 @@ cddl(Vm* self, Op* op)
 	// use db catalog or storage catalog
 	Catalog* catalog = &db->catalog;
 	if  (op->c)
-		catalog = &share()->storage->databases;
+		catalog = &share()->storage->catalog;
 	catalog_execute(catalog, &self->gtr->tr, pos, flags);
 }

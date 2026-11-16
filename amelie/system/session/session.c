@@ -203,8 +203,10 @@ session_run_utility(Session* self)
 	auto req      = self->req;
 
 	// prevent client writes on replica
-	auto ro = stmt_is_utility_ro(compiler_stmt(compiler));
-	if (!req->replay && !ro && !state_is_primary())
+	auto stmt = compiler_stmt(compiler);
+	auto is_db = stmt_is_utility_db(stmt);
+	auto is_ro = stmt_is_utility_ro(stmt);
+	if (!req->replay && !is_ro && !state_is_primary())
 		error("system is in read-only mode");
 
 	// todo: take system lock
@@ -247,8 +249,6 @@ session_run_utility(Session* self)
 		{
 			Str name;
 			str_set(&name, "result", 6);
-
-			auto stmt = compiler_stmt(compiler);
 			if (stmt->ret)
 			{
 				auto column = columns_first(&stmt->ret->columns);
@@ -264,8 +264,13 @@ session_run_utility(Session* self)
 		Write write;
 		write_init(&write);
 		defer(write_free, &write);
-		write_set_flags(&write, RECORD_UTILITY);
 
+		// handle db ddl as amelie
+		if (is_db)
+		{
+			write_set_flags(&write, RECORD_UTILITY);
+			uuid_init(&portal->endpoint.db_id.uuid);
+		}
 		request_write(req, &portal->endpoint, &write.record_data);
 
 		WriteList write_list;
@@ -276,6 +281,10 @@ session_run_utility(Session* self)
 
 	// commit
 	tr_commit(&gtr->tr);
+
+	// create new system catalog file on db ddl
+	if (is_db && !req->replay)
+		storage_checkpoint_catalog(share()->storage);
 
 	// profile
 	if (compiler->program_profile)

@@ -237,7 +237,7 @@ fn_show(Call* self)
 	if (wrap)
 		encode_array(buf);
 
-	auto db = catalog_find_db(&share()->storage->databases, &self->local->db, true);
+	auto db = catalog_find_db(&share()->storage->catalog, &self->local->db, true);
 	auto catalog = &db->catalog;
 	switch (cmd->id) {
 	case SHOW_REPLICAS:
@@ -289,12 +289,12 @@ fn_show(Call* self)
 	}
 	case SHOW_DATABASES:
 	{
-		rels_list(&share()->storage->databases.rels, REL_DB, buf, NULL, flags);
+		rels_list(&share()->storage->catalog.rels, REL_DB, buf, NULL, flags);
 		break;
 	}
 	case SHOW_DATABASE:
 	{
-		rels_list(&share()->storage->databases.rels, REL_DB, buf, &name, flags);
+		rels_list(&share()->storage->catalog.rels, REL_DB, buf, &name, flags);
 		break;
 	}
 	case SHOW_TABLES:

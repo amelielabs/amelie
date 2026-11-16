@@ -41,9 +41,6 @@ recover_wait(Recover* self)
 static inline Db*
 recover_read(Recover* self, RecordMsg* msg)
 {
-	Uuid id;
-	uuid_init(&id);
-
 	auto record = msg->record;
 	auto pos = record_data(record);
 	unpack_array(&pos);
@@ -55,23 +52,57 @@ recover_read(Recover* self, RecordMsg* msg)
 		// META_ID
 		if (field == 0)
 		{
-			Str uuid;
-			unpack_str(&pos, &uuid);
-			uuid_set(&id, &uuid);
-			break;
+			Uuid id;
+			uuid_init(&id);
+			Str str;
+			unpack_str(&pos, &str);
+			uuid_set(&id, &str);
+			return (Db*)catalog_find_by(&self->storage->catalog, REL_DB, &id, false);
 		}
 		data_skip(&pos);
 	}
 
-	if (uuid_empty(&id))
-		error("recover: db field not found");
-
-	return (Db*)catalog_find_by(&self->storage->databases, REL_DB, &id, true);
+	error("recover: db field not found");
+	return NULL;
 }
 
 void
 recover_next(Recover* self, RecordMsg* msg)
 {
+	// global (catalog)
+	auto sync = &self->sync;
+	if ((msg->record->flags & RECORD_UTILITY) > 0)
+	{
+		// applied
+		if (likely(self->storage->catalog_lsn >= msg->record->lsn))
+		{
+			buf_free(msg->msg_buf);
+			return;
+		}
+
+		// Normally this path should never be executed, because
+		// each db ddl creates new catalog file.
+		//
+		// The only exception is replication or previous errors.
+		//
+
+		// wait for completion
+		recover_wait(self);
+
+		// execute (under amelie)
+		auto db = recover_read(self, msg);
+		assert(db);
+
+		recover_sync_add(sync);
+		msg->arg = sync;
+		task_send(db->compute, &msg->msg);
+
+		// wait for completion
+		recover_wait(self);
+		return;
+	}
+
+	// local (per database)
 	auto db = recover_read(self, msg);
 	if (! db)
 	{
@@ -79,31 +110,22 @@ recover_next(Recover* self, RecordMsg* msg)
 		return;
 	}
 
-	// skip all records that we included in the checkpoint
-	// used during recovery
-	if (db->checkpoints.current->id >= msg->record->lsn)
+	// applied (as part of the last checkpoint)
+	if (db->checkpoints.current &&
+	    db->checkpoints.current->id >= msg->record->lsn)
 	{
 		buf_free(msg->msg_buf);
 		return;
 	}
 
-	// sync on ddl (wait for completion)
-	auto sync = &self->sync;
-	auto sync_after = false;
-	if (unlikely((msg->record->flags & RECORD_UTILITY) > 0))
-	{
-		recover_wait(self);
-		sync_after = true;
-	}
-
-	// send for execution
+	// execute
 	recover_sync_add(sync);
 	msg->arg = sync;
 	task_send(db->compute, &msg->msg);
 
 	// sync
 	uint64_t total = atomic_u64_of(&sync->total);
-	if (sync_after || (total % 100000) == 0)
+	if ((total % 100000) == 0)
 		recover_wait(self);
 }
 

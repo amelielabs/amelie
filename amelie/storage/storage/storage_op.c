@@ -18,18 +18,54 @@
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 
-void
-storage_open(Storage* self, Db* db)
+static bool
+storage_open_schema(Storage* self, Db* db)
 {
-	unused(self);
+	// read database directory
+	auto cp = &db->checkpoints;
+	checkpoints_open(cp);
+	if (! cp->current)
+		return false;
 
+	// restore last db checkpoint schema
+	char uuid[UUID_SZ];
+	uuid_get(&db->config->id, uuid, sizeof(uuid));
+
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/storage/{s}/{u64}.sql",
+	       state_directory(), uuid, cp->current->id);
+
+	// read file
+	Separator sep;
+	separator_init(&sep);
+	defer(separator_free, &sep);
+	file_import_stream(&sep.buf, "{s}", path);
+
+	// prepare eval
+	Eval eval;
+	eval_init(&eval, self->iface, self->iface_arg);
+	eval_create(&eval);
+	defer(eval_free, &eval);
+
+	// parse and execute statements
+	Str command;
+	while (separator_read(&sep, &command))
+	{
+		eval_execute(&eval, &db->config->name, &command);
+		separator_advance(&sep);
+	}
+	return true;
+}
+
+void
+storage_open_db(Db* db)
+{
 	// open last checkpoint
 	char uuid[UUID_SZ];
 	char path[PATH_MAX];
 	uuid_get(&db->config->id, uuid, sizeof(uuid));
-	format(path, sizeof(path), "{s}/storage/{s}/{u64}",
-	       state_directory(), uuid,
-	       db->checkpoints.current->id);
+	format(path, sizeof(path), "{s}/storage/{s}/{u64}", state_directory(),
+	       uuid, db->checkpoints.current->id);
 
 	// read pages
 	File file;
@@ -93,11 +129,18 @@ storage_open(Storage* self, Db* db)
 }
 
 void
+storage_open(Storage* self, Db* db)
+{
+	if (storage_open_schema(self, db))
+		storage_open_db(db);
+}
+
+void
 storage_checkpoint(Storage* self, Db* db)
 {
 	unused(self);
 
-	// prepare db schema
+	// prepare schema
 	auto schema = buf_create();
 	defer_buf(schema);
 	describe_catalog(&db->catalog, schema);
@@ -109,6 +152,48 @@ storage_checkpoint(Storage* self, Db* db)
 	checkpoint_prepare(&cp, &db->page_mgr, &db->config->id, schema);
 	if (checkpoint(&cp))
 		; // add
+}
+
+void
+storage_checkpoint_catalog(Storage* self)
+{
+	auto lsn = state_lsn();
+	if (lsn == self->catalog_lsn)
+		return;
+
+	// prepare databases schema
+	auto schema = buf_create();
+	defer_buf(schema);
+	describe_databases(&self->catalog, schema);
+
+	// write catalog file
+	char path[PATH_MAX];
+	format(path, sizeof(path), "{s}/storage/{u64}.incomplete",
+	       state_directory(), lsn);
+
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_WRONLY, 0644);
+	if (! buf_empty(schema))
+		file_write_buf(&file, schema);
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&file);
+
+	// rename as completed
+	fs_rename(path, "{s}/storage/{u64}", state_directory(), lsn);
+
+	// sync storage directory
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}/storage", state_directory());
+
+	auto catalog_lsn_prev = self->catalog_lsn;
+	self->catalog_lsn = lsn;
+
+	// remove previous catalog file
+	if (catalog_lsn_prev > 0)
+		fs_unlink("{s}/storage/{u64}", state_directory(),
+		          catalog_lsn_prev);
 }
 
 static void

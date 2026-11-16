@@ -390,9 +390,13 @@ dst_run(Dst* self)
 			if (self->step % ddl == 0)
 				dst_step_ddl(db);
 
+			(void)backup;
+			(void)dst_backup;
+			/*
 			// backup
 			if (self->step % backup == 0)
 				dst_backup(self);
+				*/
 
 			// checkpoint
 			if (self->step % checkpoint == 0)

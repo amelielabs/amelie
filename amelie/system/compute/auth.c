@@ -143,7 +143,7 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 
 	// find database
 	auto db_name = opt_string_of(&endpoint->db);
-	auto db = catalog_find_db(&share()->storage->databases, db_name, true);
+	auto db = catalog_find_db(&share()->storage->catalog, db_name, true);
 
 	// validate previous token
 	auto token_str = opt_string_of(&endpoint->token);

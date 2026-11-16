@@ -92,7 +92,7 @@ checkpoint_create(Checkpoint* self)
 	fs_rename(path, "{s}/{u64}", self->path, self->lsn);
 
 	// done
-	double total = file.size / 1024.0 / 1024.0;
+	double total = offset / 1024.0 / 1024.0;
 	info("checkpoint: {s}/{u64} ({.2f} mb)",
 	     self->path, self->lsn, total);
 }
@@ -119,7 +119,8 @@ checkpoint(Checkpoint* self)
 	if (! fs_exists("{s}", path))
 	{
 		fs_mkdir(0755, "{s}", path);
-		fs_syncdir("{s}/storage", state_directory());
+		if (opt_int_of(&config()->storage_sync))
+			fs_syncdir("{s}/storage", state_directory());
 	}
 
 	// checkpoint already exists

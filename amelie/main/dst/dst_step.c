@@ -328,7 +328,7 @@ dst_step_ddl_db(DstDb* self)
 		// drop any db
 		auto db_order = random_generate(&am_task->random) % dst->dbs_count;
 		auto db = dst_db(dst, db_order);
-		dst_execute(dst, client, "DROP DATABASE db_{u64} CASCADE",
+		dst_execute(dst, client, "DROP DATABASE db_{u64}",
 		            db->id);
 		dst_stat(&dst->stats, DST_STAT_DROP);
 
