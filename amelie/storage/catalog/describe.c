@@ -272,6 +272,30 @@ describe_udf(Udf* self, Buf* buf, int flags)
 }
 
 static void
+describe_limits(Limits* self, Buf* buf, bool set)
+{
+	// limit name = value, ...
+	auto limit_clause = false;
+	for (auto i = 0; i < LIMIT_MAX; i++)
+	{
+		if (! limits_is_set(self, i))
+			continue;
+
+		if (! limit_clause)
+		{
+			buf_format(buf, "  {s}limit ", set ? "set ": "");
+			limit_clause = true;
+		} else {
+			buf_format(buf, ", ");
+		}
+		buf_format(buf, "{s} = {i64}", limits_of(i),
+		           self->limits[i]);
+	}
+	if (limit_clause)
+		buf_write(buf, "\n", 1);
+}
+
+static void
 describe_db(Db* self, Buf* buf, int flags)
 {
 	auto verbose = !flags_has(flags, FMINIMAL);
@@ -304,25 +328,7 @@ describe_db(Db* self, Buf* buf, int flags)
 		buf_format(buf, "  revoked {qstr}\n", &config->revoked_at);
 
 	// limit name = value, ...
-	auto limit_clause = false;	
-	auto limits = &config->limits;
-	for (auto i = 0; i < LIMIT_MAX; i++)
-	{
-		if (! limits_is_set(limits, i))
-			continue;
-
-		if (! limit_clause)
-		{
-			buf_format(buf, "  limit ");
-			limit_clause = true;
-		} else {
-			buf_format(buf, ", ");
-		}
-		buf_format(buf, "{s} = {i64}", limits_of(i),
-		           limits->limits[i]);
-	}
-	if (limit_clause)
-		buf_write(buf, "\n", 1);
+	describe_limits(&config->limits, buf, false);
 
 	if (buf->position[-1] != '\n')
 		buf_write(buf, "\n", 1);
@@ -386,6 +392,17 @@ describe_catalog(Catalog* self, Buf* schema)
 	describe_rels(&self->rels, REL_UDF, schema);
 }
 
+static void
+describe_amelie(Db* db, Buf* buf)
+{
+	// amelie
+	buf_format(buf, "alter database amelie\n");
+	describe_limits(&db->config->limits, buf, true);
+	if (!buf_empty(buf) && buf->position[-1] == '\n')
+		buf_truncate(buf, 1);
+	buf_write(buf, ";", 1);
+}
+
 void
 describe_databases(Catalog* self, Buf* schema)
 {
@@ -397,8 +414,9 @@ describe_databases(Catalog* self, Buf* schema)
 			continue;
 		auto db = db_of(rel);
 		if (db->system)
-			continue;
-		describe_text(&db->rel, schema, 0);
+			describe_amelie(db, schema);
+		else
+			describe_text(&db->rel, schema, 0);
 		buf_write(schema, "\n\n", 2);
 	}
 }

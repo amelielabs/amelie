@@ -189,6 +189,9 @@ parse_database_drop(Stmt* self)
 	// name
 	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
+
+	// [CASCADE]
+	stmt_if(self, KCASCADE);
 }
 
 void

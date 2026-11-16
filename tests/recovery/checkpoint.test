@@ -10,18 +10,15 @@ select show('state').checkpoint;
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
-select show('state').psn;
 select show('state').checkpoint;
 
 # test: create table
 create table test (id i64 primary key);
 select show('state').lsn;
-select show('state').psn;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').psn;
 select show('state').checkpoint;
 
 # test: restart/recover
@@ -30,7 +27,6 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-select show('state').psn;
 select show('state').checkpoint;
 select * from test;
 
@@ -140,8 +136,8 @@ select show('state').checkpoint;
 show functions verbose;
 select [1,2,3]::reverse;
 
-# test: create user
-create user test;
+# test: create database
+create database test;
 select show('state').lsn;
 
 # test: restart/recover (checkpoint + wal)
@@ -152,7 +148,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select show('user', 'test').name;
+select show('database', 'test').name;
 
 # test: checkpoint
 checkpoint;
@@ -167,7 +163,7 @@ connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
 select show('state').checkpoint;
-select show('user', 'test').name;
+select show('database', 'test').name;
 
 # test: truncate
 drop table test cascade;
@@ -233,9 +229,9 @@ drop table test;
 # test: limits
 show rels;
 
-create user x;
-alter user x set limit tables = 0;
-alter user amelie set limit tables = 0;
+create database x;
+alter database x set limit tables = 0;
+alter database amelie set limit tables = 0;
 
 # test: restart/recover (checkpoint)
 checkpoint;
@@ -253,7 +249,7 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 
-drop user x cascade;
+drop database x cascade;
 
 disconnect S0;
 close E0;

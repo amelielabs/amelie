@@ -79,7 +79,6 @@ select * from test;
 # test: checkpoint
 checkpoint;
 select show('state').checkpoint;
-select show('state').psn;
 
 # test: restart/recover
 disconnect S0;
@@ -87,7 +86,6 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').checkpoint;
-select show('state').psn;
 
 select * from test;
 drop table test cascade;

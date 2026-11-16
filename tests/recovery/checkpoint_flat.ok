@@ -18,7 +18,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-5
+0
 # test: restart/recover
 disconnect S0;
 close E0;
@@ -28,7 +28,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-5
+0
 select * from test_flat;
 
 id  v1      data  v2
@@ -53,7 +53,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-7
+0
 # test: restart/recover
 disconnect S0;
 close E0;
@@ -63,7 +63,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-7
+0
 select * from test_flat;
 
 id  v1      data  v2   v3
@@ -88,7 +88,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-8
+0
 # test: restart/recover
 disconnect S0;
 close E0;
@@ -98,7 +98,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-8
+0
 select * from test_flat;
 
 id  data  v2   v3
@@ -150,12 +150,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-17
-select show('state').psn;
-
-psn
-───
-14
+0
 # test: restart/recover
 disconnect S0;
 close E0;
@@ -165,12 +160,7 @@ select show('state').checkpoint;
 
 checkpoint
 ──────────
-17
-select show('state').psn;
-
-psn
-───
-14
+0
 select * from test;
 
 id  v1

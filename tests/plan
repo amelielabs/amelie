@@ -127,8 +127,8 @@ group recovery
 test bootstrap
 test wal_dml
 test wal_ddl
-#test checkpoint
-#test checkpoint_flat
+test checkpoint
+test checkpoint_flat
 #test backup
 
 # tls
