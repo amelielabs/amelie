@@ -12,7 +12,8 @@
 //
 
 void storage_open(Storage*, Db*);
-void storage_checkpoint(Storage*, Db*);
+void storage_checkpoint(Storage*);
+void storage_checkpoint_db(Storage*, Db*);
 void storage_checkpoint_catalog(Storage*);
 void storage_sync(Storage*, uint64_t, bool);
 void storage_write(Storage*, WriteList*);

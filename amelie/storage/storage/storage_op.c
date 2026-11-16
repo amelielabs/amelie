@@ -136,7 +136,26 @@ storage_open(Storage* self, Db* db)
 }
 
 void
-storage_checkpoint(Storage* self, Db* db)
+storage_checkpoint(Storage* self)
+{
+	uint64_t min = UINT64_MAX;
+	list_foreach(&self->catalog.rels.list)
+	{
+		auto db = db_of(list_at(Rel, link));
+		uint64_t checkpoint = UINT64_MAX;
+		void* argv[] = { db, &checkpoint };
+		rpc(db->compute, MSG_CHECKPOINT, argv);
+		if (checkpoint < min)
+			min = checkpoint;
+	}
+	if (min == UINT64_MAX)
+		return;
+
+	wal_gc(&self->wal, min);
+}
+
+void
+storage_checkpoint_db(Storage* self, Db* db)
 {
 	unused(self);
 
@@ -151,7 +170,7 @@ storage_checkpoint(Storage* self, Db* db)
 	defer(checkpoint_free, &cp);
 	checkpoint_prepare(&cp, &db->page_mgr, &db->config->id, schema);
 	if (checkpoint(&cp))
-		; // add
+		checkpoints_add(&db->checkpoints, cp.lsn);
 }
 
 void

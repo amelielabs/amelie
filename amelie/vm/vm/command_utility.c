@@ -83,12 +83,12 @@ void
 ccheckpoint(Vm* self, Op* op)
 {
 	// [db*]
+	unused(op);
 
 	// PERM_SYSTEM
 	check_permission(&self->gtr->tr, PERM_SYSTEM);
 
-	auto db = (Db*)op->a;
-	storage_checkpoint(share()->storage, db);
+	storage_checkpoint(share()->storage);
 }
 
 void

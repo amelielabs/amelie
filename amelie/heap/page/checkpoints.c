@@ -116,11 +116,7 @@ checkpoints_open(Checkpoints* self)
 			continue;
 		}
 
-		auto ref = checkpoints_add(self, lsn);
-
-		// track last checkpoint
-		if (!self->current || ref->id > self->current->id)
-			self->current = ref;
+		checkpoints_add(self, lsn);
 	}
 }
 
@@ -131,7 +127,7 @@ checkpoints_gc(Checkpoints* self)
 	// todo: remove all files which has no alive page references
 }
 
-CheckpointsRef*
+void
 checkpoints_add(Checkpoints* self, uint64_t lsn)
 {
 	auto ref = checkpoints_ref_allocate(lsn);
@@ -140,6 +136,9 @@ checkpoints_add(Checkpoints* self, uint64_t lsn)
 	list_append(&self->list, &ref->link);
 	self->list_count++;
 
+	// track last checkpoint
+	if (!self->current || ref->id > self->current->id)
+		self->current = ref;
+
 	spinlock_unlock(&self->lock);
-	return ref;
 }

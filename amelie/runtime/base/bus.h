@@ -26,7 +26,7 @@ bus_init(Bus* self)
 {
 	self->sleep = 0;
 	ring_init(&self->ring);
-	ring_prepare(&self->ring, 1024);
+	ring_prepare(&self->ring, 16384);
 	mailbox_init(&self->mailbox);
 	notify_init(&self->notify);
 }
