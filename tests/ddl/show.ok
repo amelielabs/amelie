@@ -275,8 +275,7 @@ STATE
   "directory": "./_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000001",
   "compute": 1,
-  "lsn": 4,
-  "checkpoint": 0
+  "lsn": 4
 }
 select show('state', null, null);
 
@@ -287,8 +286,7 @@ show
   "directory": "./_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000001",
   "compute": 1,
-  "lsn": 4,
-  "checkpoint": 0
+  "lsn": 4
 }
 select show('state', null, null).directory;
 

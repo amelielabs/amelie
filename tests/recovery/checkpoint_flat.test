@@ -12,14 +12,12 @@ select * from test_flat;
 
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
 
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
 select * from test_flat;
 
 # test: add column (vector)
@@ -29,14 +27,12 @@ select * from test_flat;
 
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
 
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
 select * from test_flat;
 
 # test: drop column (vector)
@@ -45,14 +41,12 @@ select * from test_flat;
 
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
 
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
 select * from test_flat;
 
 # test: delete/insert
@@ -78,14 +72,12 @@ select * from test;
 
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
 
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
 
 select * from test;
 drop table test cascade;

@@ -14,21 +14,11 @@ id  v1      data  v2
 2   [2, 2]  null  [2]
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 select * from test_flat;
 
 id  v1      data  v2
@@ -49,21 +39,11 @@ id  v1      data  v2   v3
 3   [3, 3]  null  [3]  [1, 2, 3]
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 select * from test_flat;
 
 id  v1      data  v2   v3
@@ -84,21 +64,11 @@ id  data  v2   v3
 3   null  [3]  [1, 2, 3]
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 select * from test_flat;
 
 id  data  v2   v3
@@ -146,21 +116,11 @@ id  v1
 ────────
 # test: checkpoint
 checkpoint;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select show('state').checkpoint;
-
-checkpoint
-──────────
-0
 select * from test;
 
 id  v1

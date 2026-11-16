@@ -13,8 +13,7 @@ state
   "directory": "./_output/E0",
   "uuid": "00000000-0000-0000-0000-000000000001",
   "compute": 1,
-  "lsn": 1,
-  "checkpoint": 0
+  "lsn": 1
 }
 explain watch show('state').lsn::int = 1;
 

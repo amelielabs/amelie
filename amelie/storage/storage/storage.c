@@ -185,7 +185,6 @@ void
 storage_start(Storage* self, bool bootstrap)
 {
 	state_lsn_set(1);
-	state_checkpoint_set(0);
 
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option
@@ -242,10 +241,6 @@ storage_state(Storage* self, Buf* buf)
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_int(buf, state_lsn());
-
-	// checkpoint
-	encode_raw(buf, "checkpoint", 10);
-	encode_int(buf, state_checkpoint());
 
 	encode_obj_end(buf);
 }

@@ -38,7 +38,6 @@ state_prepare(State* self)
 		// system
 		{ "directory",       OPT_STRING, OPT_E,             &self->directory,      NULL,           0           },
 		{ "lsn",             OPT_INT,    OPT_E,             &self->lsn,            NULL,           0           },
-		{ "checkpoint",      OPT_INT,    OPT_E,             &self->checkpoint,     NULL,           0           },
 		{ "recover",         OPT_INT,    OPT_E|OPT_H,       &self->recover,        NULL,           0           },
 		// persistent
 		{ "secret",          OPT_STRING, OPT_C|OPT_S|OPT_H, &self->secret,         0,              0           },

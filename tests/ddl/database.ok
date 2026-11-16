@@ -284,7 +284,7 @@ name
 "test2"
 drop database test2;
 drop database test2 cascade;
-error: drop database test2 ❰cascade❱ ⟵ ; expected
+error: db 'test2': not exists
 # test: alter database description
 create database test;
 alter database test description;

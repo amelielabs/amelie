@@ -3,14 +3,9 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: default checkpoint
-select show('state').lsn;
-select show('state').checkpoint;
-
 # test: checkpoint (no data)
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
 
 # test: create table
 create table test (id i64 primary key);
@@ -19,7 +14,6 @@ select show('state').lsn;
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
 
 # test: restart/recover
 disconnect S0;
@@ -27,7 +21,6 @@ close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select show('state').lsn;
-select show('state').checkpoint;
 select * from test;
 
 # test: insert
@@ -40,13 +33,11 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 select * from test;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -55,7 +46,6 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 select * from test;
 
 # test: create function
@@ -77,14 +67,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 show functions verbose;
 select [1,2,3]::reverse;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -93,7 +81,6 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 show functions verbose;
 select [1,2,3]::reverse;
 
@@ -116,14 +103,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 show functions verbose;
 select [1,2,3]::reverse;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -132,7 +117,6 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 show functions verbose;
 select [1,2,3]::reverse;
 
@@ -147,13 +131,11 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 select show('database', 'test').name;
 
 # test: checkpoint
 checkpoint;
 select show('state').lsn;
-select show('state').checkpoint;
 
 # test: restart/recover (checkpoint)
 disconnect S0;
@@ -162,7 +144,6 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 select show('state').lsn;
-select show('state').checkpoint;
 select show('database', 'test').name;
 
 # test: truncate
@@ -204,8 +185,6 @@ drop table test cascade;
 create table test (id int primary key, old_col text, keep_col int);
 insert into test values (1, 'gone', 10), (2, 'gone2', 20);
 
-select show('state').checkpoint;
-
 alter table test drop column old_col;
 
 select show('table', 'test', null, "verbose").columns;
@@ -218,8 +197,6 @@ disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-
-select show('state').checkpoint;
 
 select show('table', 'test', null, "verbose").columns;
 select old_col from test order by id;

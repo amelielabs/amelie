@@ -42,8 +42,7 @@ state
   "directory": "./_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "compute": 1,
-  "lsn": 1,
-  "checkpoint": 0
+  "lsn": 1
 }
 # test: ensure uuid recover
 disconnect S0;
@@ -91,8 +90,7 @@ state
   "directory": "./_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "compute": 1,
-  "lsn": 1,
-  "checkpoint": 0
+  "lsn": 1
 }
 disconnect S0;
 close E0;

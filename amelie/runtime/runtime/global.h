@@ -49,19 +49,6 @@ state_directory(void)
 	return str_of(opt_string_of(&state()->directory));
 }
 
-// checkpoint
-static inline uint64_t
-state_checkpoint(void)
-{
-	return opt_int_of(&state()->checkpoint);
-}
-
-static inline void
-state_checkpoint_set(uint64_t value)
-{
-	return opt_int_set(&state()->checkpoint, value);
-}
-
 // lsn
 static inline uint64_t
 state_lsn(void)

@@ -25,7 +25,6 @@ struct State
 {
 	Opt  directory;
 	Opt  lsn;
-	Opt  checkpoint;
 	Opt  recover;
 	Opt  secret;
 	Opt  secret_seq;
