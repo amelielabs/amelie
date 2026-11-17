@@ -11,7 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-void storage_open(Storage*, Db*);
 void storage_checkpoint(Storage*);
 void storage_checkpoint_db(Storage*, Db*);
 void storage_checkpoint_catalog(Storage*);

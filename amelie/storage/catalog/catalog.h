@@ -22,6 +22,7 @@ struct CatalogIf
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
 	bool (*udf_depends)(Udf*, Str*);
+	void (*open)(Catalog*);
 	void (*attach)(Catalog*, Db*);
 	void (*detach)(Catalog*, Db*);
 };

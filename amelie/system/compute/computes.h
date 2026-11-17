@@ -103,7 +103,7 @@ computes_next_connect(Computes* self)
 }
 
 static inline void
-computes_deploy(Computes* self, Db* db)
+computes_attach(Computes* self, Db* db)
 {
 	auto id = computes_next(self);
 	auto compute = &self->workers[id];
@@ -111,10 +111,27 @@ computes_deploy(Computes* self, Db* db)
 }
 
 static inline void
-computes_undeploy(Computes* self, Db* db)
+computes_detach(Computes* self, Db* db)
 {
 	unused(self);
 	db->compute = NULL;
+}
+
+static inline void
+computes_open(Computes* self)
+{
+	RpcSet set;
+	rpc_set_init(&set);
+	defer(rpc_set_free, &set);
+	rpc_set_prepare(&set, self->workers_count);
+
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto rpc = rpc_set_add(&set, i, MSG_OPEN, NULL);
+		rpc_send(rpc, &self->workers[i].task);
+	}
+
+	rpc_set_wait(&set);
 }
 
 static inline void

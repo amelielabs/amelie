@@ -222,6 +222,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/storage/syncer.c
     ${AMELIE_ROOT}/storage/storage/storage.c
     ${AMELIE_ROOT}/storage/storage/storage_op.c
+    ${AMELIE_ROOT}/storage/storage/storage_open.c
     ${AMELIE_ROOT}/storage/storage/recover.c
     ${AMELIE_ROOT}/storage/storage/backup.c)
 

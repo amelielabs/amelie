@@ -56,9 +56,8 @@ compute_rpc(Rpc* rpc, void* arg)
 	switch (rpc->msg.id) {
 	case MSG_OPEN:
 	{
-		// open db last checkpoint
-		Db* db = rpc->arg;
-		storage_open(share()->storage, db);
+		// open databases
+		storage_open(share()->storage, &self->task);
 		break;
 	}
 	case MSG_CHECKPOINT:

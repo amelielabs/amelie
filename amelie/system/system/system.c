@@ -80,17 +80,24 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 }
 
 static void
-catalog_if_attach(Catalog* databases, Db* db)
+catalog_if_open(Catalog* catalog)
 {
-	System* system = databases->iface_arg;
-	computes_deploy(&system->computes, db);
+	System* system = catalog->iface_arg;
+	computes_open(&system->computes);
 }
 
 static void
-catalog_if_detach(Catalog* databases, Db* db)
+catalog_if_attach(Catalog* catalog, Db* db)
 {
-	System* system = databases->iface_arg;
-	computes_undeploy(&system->computes, db);
+	System* system = catalog->iface_arg;
+	computes_attach(&system->computes, db);
+}
+
+static void
+catalog_if_detach(Catalog* catalog, Db* db)
+{
+	System* system = catalog->iface_arg;
+	computes_detach(&system->computes, db);
 }
 
 static CatalogIf catalog_if =
@@ -98,6 +105,7 @@ static CatalogIf catalog_if =
 	.udf_compile = catalog_if_udf_compile,
 	.udf_free    = catalog_if_udf_free,
 	.udf_depends = catalog_if_udf_depends,
+	.open        = catalog_if_open,
 	.attach      = catalog_if_attach,
 	.detach      = catalog_if_detach
 };
@@ -241,8 +249,7 @@ system_recover(System* self, bool bootstrap)
 {
 	info("");
 
-	// set system recover state, this will lead to the partition heap
-	// files loaded during pod deployment
+	// set system recover state
 	opt_int_set(&state()->recover, RECOVER_CHECKPOINT);
 
 	// open databases

@@ -163,24 +163,10 @@ storage_recover(Storage* self)
 	// read catalog and recreate databases
 	storage_recover_catalog(self);
 
-	// open databases
-	RpcSet set;
-	rpc_set_init(&set);
-	defer(rpc_set_free, &set);
-	rpc_set_prepare(&set, self->catalog.rels.list_count);
+	self->catalog.iface->open(&self->catalog);
 
-	auto order = 0;
-	list_foreach(&self->catalog.rels.list)
-	{
-		auto db = db_of(list_at(Rel, link));
-		auto rpc = rpc_set_add(&set, order, MSG_OPEN, db);
-		rpc_send(rpc, db->compute);
-		order++;
-	}
-
-	rpc_set_wait(&set);
-
-	info("recover: storage ({d} databases)", self->catalog.rels.list_count);
+	info("recover: storage ({d} databases)",
+	     self->catalog.rels.list_count);
 }
 
 void

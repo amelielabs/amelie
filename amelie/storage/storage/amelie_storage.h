@@ -18,6 +18,7 @@
 #include "storage/eval.h"
 #include "storage/storage.h"
 #include "storage/storage_op.h"
+#include "storage/storage_open.h"
 
 // recover
 #include "storage/recover_sync.h"
