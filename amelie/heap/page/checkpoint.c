@@ -90,11 +90,6 @@ checkpoint_create(Checkpoint* self)
 
 	// rename as completed
 	fs_rename(path, "{s}/{u64}", self->path, self->lsn);
-
-	// done
-	double total = offset / 1024.0 / 1024.0;
-	info("checkpoint: {s}/{u64} ({.2f} mb)",
-	     self->path, self->lsn, total);
 }
 
 static void

@@ -157,6 +157,7 @@ storage_checkpoint(Storage* self)
 
 	// create new system catalog file
 	storage_checkpoint_catalog(self);
+	info("checkpoint: {d} databases", self->catalog.rels.list_count);
 
 	// remove older wal files
 	wal_gc(&self->wal, min);

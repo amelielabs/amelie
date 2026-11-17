@@ -105,12 +105,6 @@ part_open_heap(Part* self)
 		}
 	}
 	usage_update(self->arg->memory, pages_size(pages));
-
-	auto total = (double)pages_size(pages) / 1024 / 1024;
-	info("recover: {str} ({d} pages, {.2f} MB)",
-	     self->arg->rel->name,
-	     pages->count,
-	     total);
 }
 
 void

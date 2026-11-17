@@ -19,56 +19,43 @@ page_mgr_init(PageMgr* self)
 {
 	self->count      = 0;
 	self->count_free = 0;
-	self->count_huge = 0;
 	self->size_page  = 64 * 1024;
-	self->size_huge  = 2  * 1024 * 1024;
 	buf_init(&self->list);
 	buf_init(&self->list_free);
-	buf_init(&self->list_huge);
 }
 
 void
 page_mgr_free(PageMgr* self)
 {
-	for (auto i = 0; i < self->count_huge; i++)
+	for (auto i = 0; i < self->count; i++)
 	{
-		void* pointer = ((void**)self->list_huge.start)[i];
-		vfs_munmap(pointer, self->size_huge);
+		void* pointer = page_mgr_at(self, i);
+		vfs_munmap(pointer, self->size_page);
 	}
 	buf_free(&self->list);
 	buf_free(&self->list_free);
-	buf_free(&self->list_huge);
 }
 
 static void
 page_mgr_allocate(PageMgr* self)
 {
-	// allocate huge page
+	// allocate page
 	auto prot = PROT_READ|PROT_WRITE;
-	uint8_t* pointer = mmap(NULL, self->size_huge, prot, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	uint8_t* pointer = mmap(NULL, self->size_page, prot, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	if (unlikely(pointer == MAP_FAILED))
 		error_system();
-	madvise(pointer, self->size_huge, MADV_HUGEPAGE);
 
-	buf_write(&self->list_huge, &pointer, sizeof(void**));
-	self->count_huge++;
+	auto page = (Page*)(pointer);
+	memset(page, 0, sizeof(Page));
+	page->free          = true;
+	page->size          = self->size_page;
+	page->position      = sizeof(Page);
+	page->position_last = page->position;
 
-	// populate free list
-	auto n = self->size_huge / self->size_page;
-	for (auto i = 0; i < n; i++)
-	{
-		auto page = (Page*)(pointer + (i * self->size_page));
-		memset(page, 0, sizeof(Page));
-		page->free          = true;
-		page->size          = self->size_page;
-		page->position      = sizeof(Page);
-		page->position_last = page->position;
-
-		buf_write(&self->list, &page, sizeof(Page**));
-		buf_write(&self->list_free, &page, sizeof(Page**));
-		self->count++;
-		self->count_free++;
-	}
+	buf_write(&self->list, &page, sizeof(Page**));
+	buf_write(&self->list_free, &page, sizeof(Page**));
+	self->count++;
+	self->count_free++;
 }
 
 Page*
@@ -109,12 +96,12 @@ page_mgr_status(PageMgr* self, Buf* buf)
 	encode_obj(buf);
 
 	// usage
-	encode_raw(buf, "usage", 5);
-	encode_int(buf, (self->count_huge * self->size_huge) / 1024 / 1024);
+	encode_raw(buf, "usage_mb", 8);
+	encode_int(buf, (self->count * self->size_page) / 1024 / 1024);
 
-	// huge
-	encode_raw(buf, "huge", 4);
-	encode_int(buf, self->count_huge);
+	// usage
+	encode_raw(buf, "usage_kb", 8);
+	encode_int(buf, (self->count * self->size_page) / 1024);
 
 	// pages
 	encode_raw(buf, "pages", 5);

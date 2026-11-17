@@ -179,6 +179,8 @@ storage_recover(Storage* self)
 	}
 
 	rpc_set_wait(&set);
+
+	info("recover: storage ({d} databases)", self->catalog.rels.list_count);
 }
 
 void
