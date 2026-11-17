@@ -179,6 +179,10 @@ session_run(Session* self)
 		commit(share()->commit, gtr);
 	}
 
+	// mark for checkpoint
+	if (! ro)
+		db_set_dirty(portal->db, true);
+
 	// commit
 	tr_commit(&gtr->tr);
 
@@ -279,12 +283,12 @@ session_run_utility(Session* self)
 		storage_write(share()->storage, &write_list);
 	}
 
+	// mark for checkpoint
+	if (! is_ro)
+		db_set_dirty(portal->db, true);
+
 	// commit
 	tr_commit(&gtr->tr);
-
-	// create new system catalog file on db ddl
-	if (is_db && !req->replay)
-		storage_checkpoint_catalog(share()->storage);
 
 	// profile
 	if (compiler->program_profile)

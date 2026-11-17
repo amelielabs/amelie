@@ -25,6 +25,7 @@ struct Db
 	uint32_t    inv_seq;
 	uint64_t    inv_revoked;
 	int         commit;
+	bool        dirty;
 	Task*       compute;
 	DbConfig*   config;
 };
@@ -47,6 +48,12 @@ static inline void
 db_invalidate(Db* self)
 {
 	self->inv_seq++;
+}
+
+static inline void
+db_set_dirty(Db* self, bool value)
+{
+	self->dirty = value;
 }
 
 static inline void

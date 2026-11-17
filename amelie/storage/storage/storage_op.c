@@ -133,6 +133,8 @@ storage_open(Storage* self, Db* db)
 {
 	if (storage_open_schema(self, db))
 		storage_open_db(db);
+
+	db_set_dirty(db, false);
 }
 
 void
@@ -151,6 +153,12 @@ storage_checkpoint(Storage* self)
 	if (min == UINT64_MAX)
 		return;
 
+	// todo: requires global checkpoint lock
+
+	// create new system catalog file
+	storage_checkpoint_catalog(self);
+
+	// remove older wal files
 	wal_gc(&self->wal, min);
 }
 
@@ -158,6 +166,8 @@ void
 storage_checkpoint_db(Storage* self, Db* db)
 {
 	unused(self);
+	if (! db->dirty)
+		return;
 
 	// prepare schema
 	auto schema = buf_create();
@@ -171,6 +181,8 @@ storage_checkpoint_db(Storage* self, Db* db)
 	checkpoint_prepare(&cp, &db->page_mgr, &db->config->id, schema);
 	if (checkpoint(&cp))
 		checkpoints_add(&db->checkpoints, cp.lsn);
+
+	db_set_dirty(db, false);
 }
 
 void

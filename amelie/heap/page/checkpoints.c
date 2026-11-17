@@ -37,7 +37,6 @@ checkpoints_init(Checkpoints* self, Uuid* id)
 	self->id         = *id;
 	self->list_count = 0;
 	list_init(&self->list);
-	spinlock_init(&self->lock);
 }
 
 void
@@ -48,7 +47,6 @@ checkpoints_free(Checkpoints* self)
 		auto cp = list_at(CheckpointsRef, link);
 		checkpoints_ref_free(cp);
 	}
-	spinlock_free(&self->lock);
 }
 
 static inline int
@@ -131,7 +129,6 @@ void
 checkpoints_add(Checkpoints* self, uint64_t lsn)
 {
 	auto ref = checkpoints_ref_allocate(lsn);
-	spinlock_lock(&self->lock);
 
 	list_append(&self->list, &ref->link);
 	self->list_count++;
@@ -139,6 +136,4 @@ checkpoints_add(Checkpoints* self, uint64_t lsn)
 	// track last checkpoint
 	if (!self->current || ref->id > self->current->id)
 		self->current = ref;
-
-	spinlock_unlock(&self->lock);
 }

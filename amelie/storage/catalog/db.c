@@ -82,6 +82,7 @@ db_allocate(Catalog* databases, DbConfig* config)
 	self->inv_seq     = 0;
 	self->inv_revoked = 0;
 	self->commit      = 0;
+	self->dirty       = true;
 	self->compute     = NULL;
 	self->databases   = databases;
 	checkpoints_init(&self->checkpoints, &self->config->id);

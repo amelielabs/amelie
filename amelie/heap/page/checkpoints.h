@@ -23,7 +23,6 @@ struct CheckpointsRef
 
 struct Checkpoints
 {
-	Spinlock        lock;
 	CheckpointsRef* current;
 	List            list;
 	int             list_count;

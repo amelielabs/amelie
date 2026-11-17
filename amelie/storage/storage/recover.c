@@ -80,12 +80,6 @@ recover_next(Recover* self, RecordMsg* msg)
 			return;
 		}
 
-		// Normally this path should never be executed, because
-		// each db ddl creates new catalog file.
-		//
-		// The only exception is replication or previous errors.
-		//
-
 		// wait for completion
 		recover_wait(self);
 
