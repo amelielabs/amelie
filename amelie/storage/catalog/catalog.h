@@ -31,6 +31,7 @@ struct Catalog
 {
 	Rels       rels;
 	Usage*     memory;
+	Db*        gc;
 	Rel*       parent;
 	CatalogIf* iface;
 	void*      iface_arg;
@@ -46,6 +47,7 @@ catalog_init(Catalog*   self,
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
 	self->memory    = memory;
+	self->gc        = NULL;
 	self->parent    = parent;
 	rels_init(&self->rels);
 }

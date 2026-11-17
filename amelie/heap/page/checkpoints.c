@@ -137,3 +137,28 @@ checkpoints_add(Checkpoints* self, uint64_t lsn)
 	if (!self->current || ref->id > self->current->id)
 		self->current = ref;
 }
+
+void
+checkpoints_cleanup(Uuid* id)
+{
+	char uuid[UUID_SZ];
+	uuid_get(id, uuid, sizeof(uuid));
+
+	char path[PATH_MAX];
+	char path_drop[PATH_MAX];
+	format(path, sizeof(path), "{s}/storage/{s}",
+	       state_directory(), uuid);
+	format(path_drop, sizeof(path_drop), "{s}.drop", path);
+
+	// ensure directory exists
+	if (! fs_exists("{s}", path))
+		return;
+
+	// rename and drop
+	fs_rename(path, "{s}", path_drop);
+	fs_rmdir("{s}", path_drop);
+
+	// sync
+	if (opt_int_of(&config()->storage_sync))
+		fs_syncdir("{s}/storage", state_directory());
+}

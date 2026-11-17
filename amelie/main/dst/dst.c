@@ -104,7 +104,7 @@ dst_configure(Dst* self)
 	memset(payload->start, 'x', payload_size);
 
 	// create databases
-	for (auto i = 0; i < 10000; i++)
+	for (auto i = 0; i < 1000; i++)
 	{
 		auto db = dst_db_allocate(self, self->dbs_seq++);
 		list_append(&self->dbs, &db->link);

@@ -28,6 +28,7 @@ struct Db
 	bool        dirty;
 	Task*       compute;
 	DbConfig*   config;
+	Db*         next;
 };
 
 bool db_create(Catalog*, Tr*, DbConfig*, bool);
@@ -62,4 +63,12 @@ db_check_ownership(Tr* self, Db* on)
 	// todo: use tr->grants to check if the ddl access
 	unused(self);
 	unused(on);
+}
+
+static inline void
+db_cleanup(Db* self)
+{
+	if (self->config)
+		db_config_free(self->config);
+	am_free(self);
 }

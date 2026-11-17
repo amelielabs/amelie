@@ -36,9 +36,31 @@ storage_checkpoint(Storage* self)
 
 	// todo: requires global checkpoint lock
 
+	// remove database directories
+	int removed = 0;
+	for (;;)
+	{
+		auto gc = self->catalog.gc;
+		if (! gc)
+			break;
+		self->catalog.gc = gc->next;
+		Uuid id = gc->config->id;
+		db_cleanup(gc);
+		error_catch (
+			checkpoints_cleanup(&id);
+		);
+		removed++;
+	}
+
 	// create new system catalog file
 	storage_checkpoint_catalog(self);
-	info("checkpoint: {d} databases", self->catalog.rels.list_count);
+
+	// report
+	auto count = self->catalog.rels.list_count;
+	if (removed > 0)
+		info("checkpoint: {d} databases {d} removed", count, removed);
+	else
+		info("checkpoint: {d} databases", count);
 
 	// remove older wal files
 	wal_gc(&self->wal, min);

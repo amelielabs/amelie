@@ -35,6 +35,15 @@ storage_init(Storage*   self,
 void
 storage_free(Storage* self)
 {
+	// free delayed db list
+	auto gc = self->catalog.gc;
+	while (gc)
+	{
+		auto next = gc->next;
+		db_cleanup(gc);
+		gc = next;
+	}
+
 	catalog_free(&self->catalog);
 	wal_free(&self->wal);
 }

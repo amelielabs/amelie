@@ -55,8 +55,18 @@ db_free(Db* self, bool drop)
 	catalog_free(&self->catalog);
 
 	// free pages
+	auto gc = self->checkpoints.current != NULL;
 	page_mgr_free(&self->page_mgr);
 	checkpoints_free(&self->checkpoints);
+
+	// schedule delayed storage removal,
+	// if the database has checkpoints
+	if (drop && gc)
+	{
+		self->next = self->databases->gc;
+		self->databases->gc = self;
+		return;
+	}
 
 	if (self->config)
 		db_config_free(self->config);
@@ -85,6 +95,7 @@ db_allocate(Catalog* databases, DbConfig* config)
 	self->dirty       = true;
 	self->compute     = NULL;
 	self->databases   = databases;
+	self->next        = NULL;
 	checkpoints_init(&self->checkpoints, &self->config->id);
 
 	// prepare arena

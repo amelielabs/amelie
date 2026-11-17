@@ -34,3 +34,4 @@ void checkpoints_free(Checkpoints*);
 void checkpoints_open(Checkpoints*);
 void checkpoints_gc(Checkpoints*);
 void checkpoints_add(Checkpoints*, uint64_t);
+void checkpoints_cleanup(Uuid*);
