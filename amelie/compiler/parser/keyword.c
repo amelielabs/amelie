@@ -142,9 +142,9 @@ Keyword keywords[] =
 
 	// p
 	{ KPROFILE,               "profile",               7  },
-	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
 	{ KPAUSE,                 "pause",                 5  },
+	{ KPUBLISH,               "publish",               7  },
 
 	// r
 	{ KRIGHT,                 "right",                 5  },

@@ -177,9 +177,9 @@ enum
 
 	// p
 	KPROFILE,
-	KPOOL,
 	KPRIMARY,
 	KPAUSE,
+	KPUBLISH,
 
 	// q
 

@@ -317,8 +317,7 @@ session_main(Session* self, Portal* portal, Request* req)
 		compiler_parse(compiler, &req->content);
 	} else
 	{
-		compiler_parse_copy(compiler, &req->rel,
-		                    &req->content_type,
+		compiler_parse_copy(compiler, &req->rel, &req->content_type,
 		                    &req->content);
 	}
 

@@ -11,11 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LogIf LogIf;
-typedef struct LogOp LogOp;
-typedef struct Log   Log;
-typedef struct Part  Part;
-typedef struct Rel   Rel;
+typedef struct LogIf  LogIf;
+typedef struct LogOp  LogOp;
+typedef struct LogPub LogPub;
+typedef struct Log    Log;
+typedef struct Part   Part;
+typedef struct Rel    Rel;
 
 struct LogIf
 {
@@ -40,17 +41,31 @@ struct LogOp
 	};
 };
 
+struct LogPub
+{
+	Rel* rel;
+	int  rel_data;
+};
+
 struct Log
 {
 	Buf op;
+	Buf op_pub;
 	Buf data;
 	int count;
+	int count_pub;
 };
 
 always_inline static inline LogOp*
 log_of(Log* self, int pos)
 {
 	return &((LogOp*)self->op.start)[pos];
+}
+
+always_inline static inline LogPub*
+log_of_pub(Log* self, int pos)
+{
+	return &((LogPub*)self->op.start)[pos];
 }
 
 always_inline static inline void*
@@ -63,7 +78,9 @@ static inline void
 log_init(Log* self)
 {
 	self->count = 0;
+	self->count_pub = 0;
 	buf_init(&self->op);
+	buf_init(&self->op_pub);
 	buf_init(&self->data);
 }
 
@@ -71,6 +88,7 @@ static inline void
 log_free(Log* self)
 {
 	buf_free(&self->op);
+	buf_free(&self->op_pub);
 	buf_free(&self->data);
 }
 
@@ -78,7 +96,9 @@ static inline void
 log_reset(Log* self)
 {
 	self->count = 0;
+	self->count_pub = 0;
 	buf_reset(&self->op);
+	buf_reset(&self->op_pub);
 	buf_reset(&self->data);
 }
 
@@ -117,4 +137,13 @@ log_ddl(Log*   self,
 	op->rel       = rel;
 	op->rel_data  = buf_size(&self->data);
 	self->count++;
+}
+
+hot static inline void
+log_publish(Log* self, Rel* rel)
+{
+	auto op = (LogPub*)buf_emplace(&self->op_pub, sizeof(LogPub));
+	op->rel      = rel;
+	op->rel_data = buf_size(&self->data);
+	self->count_pub++;
 }

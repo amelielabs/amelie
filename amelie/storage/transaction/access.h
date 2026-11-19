@@ -70,7 +70,7 @@ access_ro(Access* self)
 hot static inline void
 access_add(Access* self, Rel* rel, uint32_t perm)
 {
-	if (permission_is_dml(perm))
+	if (permission_is_dml(perm) || perm & PERM_PUBLISH)
 		self->ro = false;
 
 	// add unique relation
