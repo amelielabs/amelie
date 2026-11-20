@@ -16,6 +16,7 @@
 #include "transaction/grants.h"
 
 // transaction
+#include "transaction/publish.h"
 #include "transaction/log.h"
 #include "transaction/tr.h"
 

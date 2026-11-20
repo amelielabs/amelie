@@ -21,6 +21,9 @@
 // replay
 #include "compute/replay.h"
 
+// publisher
+#include "compute/publisher.h"
+
 // compute
 #include "compute/compute.h"
 #include "compute/computes.h"

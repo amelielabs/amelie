@@ -329,6 +329,7 @@ set(AMELIE_SOURCES_COMPILER
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/compute/auth.c
     ${AMELIE_ROOT}/system/compute/replay.c
+    ${AMELIE_ROOT}/system/compute/publisher.c
     ${AMELIE_ROOT}/system/compute/compute.c
     ${AMELIE_ROOT}/system/compute/mcp.c
     ${AMELIE_ROOT}/system/compute/mcp_execute.c

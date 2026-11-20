@@ -219,41 +219,46 @@ hot void
 cpublish(Vm* self, Op* op)
 {
 	// [db*, rel, values, refs]
-
-	// publish
-	auto tr  = &self->gtr->tr;
-	auto log = &tr->log;
-	log_publish(log, &((Db*)op->a)->rel);
+	auto buf = buf_create();
+	errdefer_buf(buf);
 
 	// relation
 	Str rel;
 	code_data_at_string(&self->program->code_data, op->b, &rel);
-	encode_str(&log->data, &rel);
+	encode_str(buf, &rel);
 
-	// values
+	// encode value
+	encode_array(buf);
+
 	auto refs = stack_at(&self->stack, op->d);
-	encode_array(&log->data);
-
 	if (op->c != -1)
 	{
-		auto set = (Set*)op->b;
+		auto set = (Set*)op->c;
 		for (auto order = 0; order < set->count_rows; order++)
 		{
 			auto value = set_row(set, order);
 			if (value->type == TYPE_REF)
 				value = &refs[value->integer];
-			value_encode(value, self->gtr->local->timezone, &log->data);
-
-			// ensure write limit
-			if (tr->write)
-				usage_add(tr->write, 1);
+			value_encode(value, self->gtr->local->timezone, buf);
 		}
 	}
-
-	encode_array_end(&log->data);
-
 	if (op->d > 0)
 		stack_popn(&self->stack, op->d);
+
+	encode_array_end(buf);
+
+	// msg
+	auto db  = (Db*)op->a;
+	auto msg = (Publish*)buf_emplace(buf, sizeof(Publish));
+	msg_init(&msg->msg, MSG_PUBLISH);
+	msg->msg_buf = buf;
+	msg->db      = *db->rel.id;
+	msg->db_arg  = db;
+	msg->lsn     = 0;
+
+	// add to log
+	auto tr = &self->gtr->tr;
+	log_publish(&tr->log, msg);
 }
 
 void

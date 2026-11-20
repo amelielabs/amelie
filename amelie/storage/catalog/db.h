@@ -18,15 +18,18 @@ struct Db
 	Rel         rel;
 	Catalog     catalog;
 	Catalog*    databases;
+
 	Usage       memory;
 	PageMgr     page_mgr;
 	Checkpoints checkpoints;
+
 	bool        system;
 	uint32_t    inv_seq;
 	uint64_t    inv_revoked;
 	int         commit;
 	bool        dirty;
 	Task*       compute;
+
 	DbConfig*   config;
 	Db*         next;
 };

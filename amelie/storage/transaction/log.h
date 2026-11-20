@@ -13,7 +13,6 @@
 
 typedef struct LogIf  LogIf;
 typedef struct LogOp  LogOp;
-typedef struct LogPub LogPub;
 typedef struct Log    Log;
 typedef struct Part   Part;
 typedef struct Rel    Rel;
@@ -41,31 +40,19 @@ struct LogOp
 	};
 };
 
-struct LogPub
-{
-	Rel* rel;
-	int  rel_data;
-};
-
 struct Log
 {
-	Buf op;
-	Buf op_pub;
-	Buf data;
-	int count;
-	int count_pub;
+	Buf  op;
+	Buf  data;
+	List publish;
+	int  count;
+	int  count_publish;
 };
 
 always_inline static inline LogOp*
 log_of(Log* self, int pos)
 {
 	return &((LogOp*)self->op.start)[pos];
-}
-
-always_inline static inline LogPub*
-log_of_pub(Log* self, int pos)
-{
-	return &((LogPub*)self->op.start)[pos];
 }
 
 always_inline static inline void*
@@ -78,17 +65,22 @@ static inline void
 log_init(Log* self)
 {
 	self->count = 0;
-	self->count_pub = 0;
+	self->count_publish = 0;
+	list_init(&self->publish);
 	buf_init(&self->op);
-	buf_init(&self->op_pub);
 	buf_init(&self->data);
 }
 
 static inline void
 log_free(Log* self)
 {
+	list_foreach_safe(&self->publish)
+	{
+		auto msg = publish_of(list_at(Msg, link));
+		buf_free(msg->msg_buf);
+	}
+	list_init(&self->publish);
 	buf_free(&self->op);
-	buf_free(&self->op_pub);
 	buf_free(&self->data);
 }
 
@@ -96,9 +88,9 @@ static inline void
 log_reset(Log* self)
 {
 	self->count = 0;
-	self->count_pub = 0;
+	self->count_publish = 0;
+	list_init(&self->publish);
 	buf_reset(&self->op);
-	buf_reset(&self->op_pub);
 	buf_reset(&self->data);
 }
 
@@ -140,10 +132,17 @@ log_ddl(Log*   self,
 }
 
 hot static inline void
-log_publish(Log* self, Rel* rel)
+log_publish(Log* self, Publish* publish)
 {
-	auto op = (LogPub*)buf_emplace(&self->op_pub, sizeof(LogPub));
-	op->rel      = rel;
-	op->rel_data = buf_size(&self->data);
-	self->count_pub++;
+	list_append(&self->publish, &publish->msg.link);
+	self->count_publish++;
+}
+
+hot static inline Msg*
+log_publish_pop(Log* self)
+{
+	if (! self->count_publish)
+		return NULL;
+	self->count_publish--;
+	return container_of(list_pop(&self->publish), Msg, link);
 }

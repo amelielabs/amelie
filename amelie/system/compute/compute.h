@@ -25,6 +25,7 @@ struct Compute
 {
 	Clients    clients;
 	Auth       auth;
+	Publisher  publisher;
 	Replay     replay;
 	ComputeIf* iface;
 	void*      iface_arg;
