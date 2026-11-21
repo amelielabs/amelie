@@ -24,6 +24,7 @@ hot static void
 commit_main(void* arg)
 {
 	Commit* self = arg;
+	auto storage = self->storage;
 
 	Batch batch;
 	batch_init(&batch);
@@ -44,10 +45,10 @@ commit_main(void* arg)
 
 		// wal write
 		if (batch.write.list_count)
-			storage_write(self->storage, &batch.write);
+			storage_write(storage, &batch.write);
 
 		// wakeup transactions
-		batch_complete(&batch);
+		batch_complete(&batch, &storage->service);
 	}
 }
 

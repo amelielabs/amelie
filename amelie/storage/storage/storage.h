@@ -17,6 +17,7 @@ struct Storage
 {
 	Catalog  catalog;
 	uint64_t catalog_lsn;
+	Service  service;
 	Wal      wal;
 	Columns  publish;
 	Syncer   syncer;

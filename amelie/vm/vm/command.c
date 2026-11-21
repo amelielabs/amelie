@@ -219,15 +219,19 @@ hot void
 cpublish(Vm* self, Op* op)
 {
 	// [db*, rel, values, refs]
-	auto buf = buf_create();
-	errdefer_buf(buf);
+	auto db  = (Db*)op->a;
+	auto buf = &self->gtr->tr.log.actions;
+
+	auto action_offset = buf_size(buf);
+	auto action = (Action*)buf_emplace(buf, sizeof(Action));
+	action_init(action, db->rel.id);
 
 	// relation
 	Str rel;
 	code_data_at_string(&self->program->code_data, op->b, &rel);
 	encode_str(buf, &rel);
 
-	// encode value
+	// value
 	encode_array(buf);
 
 	auto refs = stack_at(&self->stack, op->d);
@@ -247,18 +251,9 @@ cpublish(Vm* self, Op* op)
 
 	encode_array_end(buf);
 
-	// msg
-	auto db  = (Db*)op->a;
-	auto msg = (Publish*)buf_emplace(buf, sizeof(Publish));
-	msg_init(&msg->msg, MSG_PUBLISH);
-	msg->msg_buf = buf;
-	msg->db      = *db->rel.id;
-	msg->db_arg  = db;
-	msg->lsn     = 0;
-
-	// add to log
-	auto tr = &self->gtr->tr;
-	log_publish(&tr->log, msg);
+	// set data size
+	action = (Action*)(buf->start + action_offset);
+	action->data_size = buf->position - action->data;
 }
 
 void

@@ -16,9 +16,9 @@ typedef struct Batch Batch;
 struct Batch
 {
 	Buf       list;
-	Buf       list_publish;
+	Buf       list_actions;
 	int       count;
-	int       count_publish;
+	int       count_actions;
 	WriteList write;
 };
 
@@ -29,18 +29,18 @@ batch_at(Batch* self, int order)
 }
 
 static inline Gtr*
-batch_at_publish(Batch* self, int order)
+batch_at_actions(Batch* self, int order)
 {
-	return ((Gtr**)self->list_publish.start)[order];
+	return ((Gtr**)self->list_actions.start)[order];
 }
 
 static inline void
 batch_init(Batch* self)
 {
 	self->count = 0;
-	self->count_publish = 0;
+	self->count_actions = 0;
 	buf_init(&self->list);
-	buf_init(&self->list_publish);
+	buf_init(&self->list_actions);
 	write_list_init(&self->write);
 }
 
@@ -48,16 +48,16 @@ static inline void
 batch_free(Batch* self)
 {
 	buf_free(&self->list);
-	buf_free(&self->list_publish);
+	buf_free(&self->list_actions);
 }
 
 static inline void
 batch_reset(Batch* self)
 {
 	self->count = 0;
-	self->count_publish = 0;
+	self->count_actions = 0;
 	buf_reset(&self->list);
-	buf_reset(&self->list_publish);
+	buf_reset(&self->list_actions);
 	write_list_reset(&self->write);
 }
 
@@ -76,30 +76,40 @@ batch_add(Batch* self, Gtr* gtr)
 	if (! access_ro(gtr->access))
 		write_list_add(&self->write, &gtr->write);
 
-	if (gtr->tr.log.count_publish)
+	if (! buf_empty(&gtr->tr.log.actions))
 	{
-		buf_write(&self->list_publish, &gtr, sizeof(Gtr**));
-		self->count_publish++;
+		buf_write(&self->list_actions, &gtr, sizeof(Gtr**));
+		self->count_actions++;
 	}
 }
 
 hot static inline void
-batch_complete(Batch* self)
+batch_publish(Batch* self, Service* service)
 {
 	// publish
-	for (auto it = 0; it < self->count_publish; it++)
+	for (auto it = 0; it < self->count_actions; it++)
 	{
-		auto gtr = batch_at_publish(self, it);
-		Msg* msg;
-		while ((msg = log_publish_pop(&gtr->tr.log)))
-		{
-			auto publish = publish_of(msg);
-			publish->lsn = gtr->write.record.lsn;
+		auto gtr = batch_at_actions(self, it);
 
-			auto db = (Db*)publish->db_arg;
-			task_send(db->compute, msg);
+		Action* pos = (Action*)gtr->tr.log.actions.start;
+		Action* end = (Action*)gtr->tr.log.actions.end;
+		while (pos < end)
+		{
+			pos->lsn = gtr->write.record.lsn;
+			service_add(service, pos);
+			pos = (Action*)(pos->data + pos->data_size);
 		}
 	}
+
+	service_resume(service);
+}
+
+hot static inline void
+batch_complete(Batch* self, Service* service)
+{
+	// publish
+	if (self->count_actions > 0)
+		batch_publish(self, service);
 
 	// wakeup transactions
 	for (auto it = 0; it < self->count; it++)

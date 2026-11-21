@@ -42,11 +42,10 @@ struct LogOp
 
 struct Log
 {
-	Buf  op;
-	Buf  data;
-	List publish;
-	int  count;
-	int  count_publish;
+	Buf op;
+	Buf data;
+	Buf actions;
+	int count;
 };
 
 always_inline static inline LogOp*
@@ -65,33 +64,26 @@ static inline void
 log_init(Log* self)
 {
 	self->count = 0;
-	self->count_publish = 0;
-	list_init(&self->publish);
 	buf_init(&self->op);
 	buf_init(&self->data);
+	buf_init(&self->actions);
 }
 
 static inline void
 log_free(Log* self)
 {
-	list_foreach_safe(&self->publish)
-	{
-		auto msg = publish_of(list_at(Msg, link));
-		buf_free(msg->msg_buf);
-	}
-	list_init(&self->publish);
 	buf_free(&self->op);
 	buf_free(&self->data);
+	buf_free(&self->actions);
 }
 
 static inline void
 log_reset(Log* self)
 {
 	self->count = 0;
-	self->count_publish = 0;
-	list_init(&self->publish);
 	buf_reset(&self->op);
 	buf_reset(&self->data);
+	buf_reset(&self->actions);
 }
 
 static inline LogOp*
@@ -129,20 +121,4 @@ log_ddl(Log*   self,
 	op->rel       = rel;
 	op->rel_data  = buf_size(&self->data);
 	self->count++;
-}
-
-hot static inline void
-log_publish(Log* self, Publish* publish)
-{
-	list_append(&self->publish, &publish->msg.link);
-	self->count_publish++;
-}
-
-hot static inline Msg*
-log_publish_pop(Log* self)
-{
-	if (! self->count_publish)
-		return NULL;
-	self->count_publish--;
-	return container_of(list_pop(&self->publish), Msg, link);
 }
