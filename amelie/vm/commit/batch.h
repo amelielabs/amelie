@@ -92,7 +92,7 @@ batch_publish(Batch* self, Service* service)
 		auto gtr = batch_at_actions(self, it);
 
 		Action* pos = (Action*)gtr->tr.log.actions.start;
-		Action* end = (Action*)gtr->tr.log.actions.end;
+		Action* end = (Action*)gtr->tr.log.actions.position;
 		while (pos < end)
 		{
 			pos->lsn = gtr->write.record.lsn;

@@ -74,9 +74,6 @@ compute_rpc(Rpc* rpc, void* arg)
 	{
 		// disconnect clients
 		clients_shutdown(&self->clients);
-
-		// stop publisher
-		publisher_stop(&self->publisher);
 		break;
 	}
 	default:
@@ -89,8 +86,8 @@ compute_main(void* arg)
 {
 	Compute* self = arg;
 
-	// start publisher
-	publisher_start(&self->publisher);
+	// start executor
+	executor_start(&self->executor);
 
 	// main
 	bool stop = false;
@@ -112,11 +109,6 @@ compute_main(void* arg)
 			replay_run(&self->replay, record);
 			break;
 		}
-		case MSG_PUBLISH:
-		{
-			publisher_add(&self->publisher, msg);
-			break;
-		}
 		default:
 		{
 			// command
@@ -136,7 +128,7 @@ compute_init(Compute* self, ComputeIf* iface, void* iface_arg)
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
 	auth_init(&self->auth);
-	publisher_init(&self->publisher, self);
+	executor_init(&self->executor, self);
 	replay_init(&self->replay, self);
 	task_init(&self->task);
 }
@@ -145,7 +137,7 @@ void
 compute_free(Compute* self)
 {
 	clients_free(&self->clients);
-	publisher_free(&self->publisher);
+	executor_free(&self->executor);
 	replay_free(&self->replay);
 	auth_free(&self->auth);
 	task_free(&self->task);

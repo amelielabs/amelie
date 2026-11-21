@@ -35,7 +35,6 @@ typedef enum
 	MSG_CLIENT,
 	MSG_STREAM,
 	MSG_STREAM_CANCEL,
-	MSG_PUBLISH,
 
 	// system
 	MSG_SHOW_METRICS

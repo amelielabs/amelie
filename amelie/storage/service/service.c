@@ -106,19 +106,9 @@ service_resume(Service* self)
 	while (sub)
 	{
 		auto next = sub->wait_next;
-
-		// set pos
-		if (sub->start == NULL)
-		{
-			sub->start = (Action*)service_at(self, 0)->data;
-			sub->pos   = sub->start;
-			sub->end   = NULL;
-		} else {
-			sub->end   = self->last;
-		}
-
+		sub->end       = self->last;
 		sub->wait_next = NULL;
-		event_signal(&next->event);
+		event_signal(&sub->event);
 
 		sub = next;
 	}
@@ -127,12 +117,16 @@ service_resume(Service* self)
 hot static inline Action*
 service_next_action(Service* self, Subscriber* sub)
 {
-	if (sub->pos == sub->end)
-		return NULL;
+	if (sub->start == NULL)
+	{
+		sub->start = (Action*)service_at(self, 0)->data;
+		sub->pos   = sub->start;
+		return sub->start;
+	}
 
 	auto page = service_get(self, sub->pos->page);
 	auto next = (Action*)(sub->pos->data + sub->pos->data_size);
-	auto next_offset = (uintptr_t)(next - (uintptr_t)page);
+	auto next_offset = (uintptr_t)(next) - (uintptr_t)page;
 
 	// next page
 	if (next_offset == page->position)
@@ -141,6 +135,7 @@ service_next_action(Service* self, Subscriber* sub)
 		next = (Action*)(page->data);
 	}
 
+	sub->pos = next;
 	return next;
 }
 
@@ -168,9 +163,7 @@ service_next(Service* self, Subscriber* sub)
 		// check if there are pending events
 		if (self->last != sub->end)
 		{
-			sub->start = sub->pos;
-			sub->end   = self->last;
-
+			sub->end = self->last;
 			spinlock_unlock(&self->subs_lock);
 			continue;
 		}

@@ -18,11 +18,9 @@
 #include "compute/request.h"
 #include "compute/portal.h"
 
-// replay
+// service
 #include "compute/replay.h"
-
-// publisher
-#include "compute/publisher.h"
+#include "compute/executor.h"
 
 // compute
 #include "compute/compute.h"
