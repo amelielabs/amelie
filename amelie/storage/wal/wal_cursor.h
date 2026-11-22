@@ -23,12 +23,11 @@ struct WalCursor
 	Wal*     wal;
 };
 
-void wal_cursor_init(WalCursor*);
-void wal_cursor_open(WalCursor*, Wal*, uint64_t, bool, bool, bool);
-void wal_cursor_close(WalCursor*);
-bool wal_cursor_active(WalCursor*);
+void   wal_cursor_init(WalCursor*);
+void   wal_cursor_open(WalCursor*, Wal*, uint64_t, bool, bool, bool);
+void   wal_cursor_close(WalCursor*);
+bool   wal_cursor_active(WalCursor*);
 
-RecordMsg*
-wal_cursor_next_msg(WalCursor*);
-Buf* wal_cursor_next(WalCursor*);
-Buf* wal_cursor_readahead(WalCursor*, int, uint64_t*, uint64_t);
+Write* wal_cursor_next_msg(WalCursor*);
+Buf*   wal_cursor_next(WalCursor*);
+Buf*   wal_cursor_readahead(WalCursor*, int, uint64_t*, uint64_t);

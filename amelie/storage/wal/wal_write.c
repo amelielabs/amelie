@@ -102,17 +102,15 @@ wal_write_list(Wal* self, WalFile* current, WalContext* context)
 	context->lsn = state_lsn() + 1;
 	list_foreach(&context->list->list)
 	{
-		auto write = list_at(Write, link);
+		auto write = list_at(Write, msg.link);
 
-		// finilize wal record
-		write_set_lsn(write, context->lsn);
-		write_seal(write);
+		// set lsn and crc
+		write_seal(write, context->lsn);
 
-		// [record][context, sql]
-		iov_add(iov, &write->record, sizeof(write->record));
-		iov_add_buf(iov, &write->record_data);
+		// [record][data]
+		iov_add(iov, &write->record, write->record->size);
 
-		if (! list_is_last(&context->list->list, &write->link))
+		if (! list_is_last(&context->list->list, &write->msg.link))
 			context->lsn++;
 	}
 

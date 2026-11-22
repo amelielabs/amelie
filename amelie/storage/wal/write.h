@@ -15,59 +15,69 @@ typedef struct Write Write;
 
 struct Write
 {
-	Record record;
-	Buf    record_data;
-	List   link;
+	Msg    msg;
+	Buf*   msg_buf;
+	void*  arg;
+	Record record[];
 };
 
-static inline void
-write_init(Write* self)
+always_inline static inline Write*
+write_of(Buf* buf)
 {
-	memset(&self->record, 0, sizeof(self->record));
-	buf_init(&self->record_data);
-	list_init(&self->link);
+	return (Write*)buf->start;
 }
 
 static inline void
-write_free(Write* self)
+write_init(Buf* buf, bool reserve_record)
 {
-	buf_free(&self->record_data);
+	auto size = sizeof(Write);
+	if (reserve_record)
+		size += sizeof(Record);
+	buf_emplace(buf, size);
+}
+
+static inline Buf*
+write_allocate(bool reserve_record)
+{
+	auto buf = buf_create();
+	write_init(buf, reserve_record);
+	return buf;
 }
 
 static inline void
-write_reset(Write* self)
+write_set(Buf* buf, MsgId id)
 {
-	memset(&self->record, 0, sizeof(self->record));
-	buf_reset(&self->record_data);
-	list_init(&self->link);
+	auto msg = (Write*)buf->start;
+	msg_init(&msg->msg, id);
+	msg->msg_buf     = buf;
+	msg->arg         = NULL;
 }
 
 static inline void
 write_set_flags(Write* self, uint8_t flags)
 {
-	self->record.flags = flags;
+	self->record[0].flags = flags;
 }
 
 static inline void
-write_set_lsn(Write* self, uint64_t lsn)
+write_seal(Write* self, uint64_t lsn)
 {
-	self->record.lsn = lsn;
-}
-
-static inline void
-write_seal(Write* self)
-{
-	auto record = &self->record;
-	auto record_data = &self->record_data;
+	auto record = &self->record[0];
 	record->crc  = 0;
-	record->size = sizeof(Record) + buf_size(record_data);
+	record->lsn  = lsn;
+	record->size = buf_size(self->msg_buf) - sizeof(Write);
 
-	// calculate header crc (header + commands)
+	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
-	{
-		uint32_t crc;
-		crc = runtime()->crc(0, &record->size, sizeof(Record) - sizeof(uint32_t));
-		crc = runtime()->crc(crc, record_data->start, buf_size(record_data));
-		record->crc = crc;
-	}
+		record->crc = runtime()->crc(0, &record->size, record->size - sizeof(uint32_t));
+}
+
+static inline Write*
+write_copy(MsgId id, Record* record)
+{
+	auto self = write_allocate(false);
+	buf_reserve(self, record->size);
+	buf_write(self, record, record->size);
+	write_set(self, id);
+	return write_of(self);
 }

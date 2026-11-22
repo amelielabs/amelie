@@ -173,8 +173,7 @@ session_run(Session* self)
 	// wal write
 	if (!req->replay && !ro)
 	{
-		auto write = &gtr->write;
-		request_write(req, &portal->endpoint, &write->record_data);
+		request_write(req, &portal->endpoint, &gtr->write, 0);
 
 		commit(share()->commit, gtr);
 	}
@@ -265,21 +264,19 @@ session_run_utility(Session* self)
 	// wal write
 	if (tr_active(&gtr->tr) && !req->replay)
 	{
-		Write write;
-		write_init(&write);
-		defer(write_free, &write);
-
 		// handle db ddl as amelie
+		auto flags = 0;
 		if (is_db)
 		{
-			write_set_flags(&write, RECORD_UTILITY);
+			flags = RECORD_UTILITY;
 			uuid_init(&portal->endpoint.db_id.uuid);
 		}
-		request_write(req, &portal->endpoint, &write.record_data);
+		auto write = &gtr->write;
+		request_write(req, &portal->endpoint, write, flags);
 
 		WriteList write_list;
 		write_list_init(&write_list);
-		write_list_add(&write_list, &write);
+		write_list_add(&write_list, write_of(write));
 		storage_write(share()->storage, &write_list);
 	}
 

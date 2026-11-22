@@ -55,8 +55,11 @@ request_set_replay(Request* self)
 }
 
 static inline void
-request_write(Request* self, Endpoint* endpoint, Buf* buf)
+request_write(Request* self, Endpoint* endpoint, Buf* buf, int flags)
 {
+	buf_reset(buf);
+	write_init(buf, true);
+
 	// []
 	encode_array(buf);
 
@@ -93,10 +96,14 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf)
 	encode_array_end(buf);
 
 	encode_array_end(buf);
+
+	// set write
+	write_set(buf, MSG_RECORD);
+	write_set_flags(write_of(buf), flags);
 }
 
 static inline void
-request_read(Request* self, Endpoint* endpoint, RecordMsg* msg)
+request_read(Request* self, Endpoint* endpoint, Write* msg)
 {
 	auto record = msg->record;
 	auto pos = record_data(record);

@@ -19,7 +19,7 @@ struct Gtr
 	Access* access;
 	Tr      tr;
 	Usage   usage;
-	Write   write;
+	Buf     write;
 	Event   on_commit;
 	Local*  local;
 };
@@ -31,7 +31,7 @@ gtr_init(Gtr* self)
 	self->local  = NULL;
 	event_init(&self->on_commit);
 	tr_init(&self->tr);
-	write_init(&self->write);
+	buf_init(&self->write);
 	usage_init(&self->usage, "write");
 	msg_init(&self->msg, MSG_GTR);
 }
@@ -42,7 +42,7 @@ gtr_reset(Gtr* self)
 	self->access = NULL;
 	self->local  = NULL;
 	tr_reset(&self->tr);
-	write_reset(&self->write);
+	buf_reset(&self->write);
 	usage_reset(&self->usage);
 }
 
@@ -51,7 +51,7 @@ gtr_free(Gtr* self)
 {
 	gtr_reset(self);
 	tr_free(&self->tr);
-	write_free(&self->write);
+	buf_free(&self->write);
 }
 
 static inline void

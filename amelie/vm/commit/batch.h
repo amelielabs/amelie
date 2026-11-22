@@ -74,7 +74,10 @@ batch_add(Batch* self, Gtr* gtr)
 	self->count++;
 
 	if (! access_ro(gtr->access))
-		write_list_add(&self->write, &gtr->write);
+	{
+		auto write = write_of(&gtr->write);
+		write_list_add(&self->write, write);
+	}
 
 	if (! buf_empty(&gtr->tr.log.actions))
 	{

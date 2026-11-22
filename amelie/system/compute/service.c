@@ -19,7 +19,7 @@
 #include <amelie_compute.h>
 
 static void
-service_execute(Service* self, RecordMsg* record)
+service_execute(Service* self, Write* record)
 {
 	defer_buf(record->msg_buf);
 
@@ -93,7 +93,7 @@ service_main(void* arg)
 		}
 
 		// replay
-		service_execute(self, (RecordMsg*)msg);
+		service_execute(self, (Write*)msg);
 	}
 }
 

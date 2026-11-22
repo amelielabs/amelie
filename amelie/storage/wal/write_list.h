@@ -37,6 +37,6 @@ write_list_reset(WriteList* self)
 static inline void
 write_list_add(WriteList* self, Write* write)
 {
-	list_append(&self->list, &write->link);
+	list_append(&self->list, &write->msg.link);
 	self->list_count++;
 }

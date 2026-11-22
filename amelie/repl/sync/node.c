@@ -67,18 +67,8 @@ node_replay(Node* self, Buf* batch)
 	while (pos < end)
 	{
 		auto record = (Record*)pos;
-
-		auto buf = buf_create();
-		buf_emplace(buf, sizeof(RecordMsg) + record->size);
-
-		auto msg = (RecordMsg*)buf->start;
-		msg_init(&msg->msg, MSG_RECORD);
-		msg->msg_buf = buf;
-		msg->arg     = NULL;
-		memcpy(msg->record, record, record->size);
-
-		// execute
-		recover_next(recover, msg);
+		auto write = write_copy(MSG_RECORD, record);
+		recover_next(recover, write);
 
 		pos += record->size;
 	}

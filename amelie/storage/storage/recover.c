@@ -39,7 +39,7 @@ recover_wait(Recover* self)
 }
 
 static inline Db*
-recover_read(Recover* self, RecordMsg* msg)
+recover_read(Recover* self, Write* msg)
 {
 	auto record = msg->record;
 	auto pos = record_data(record);
@@ -67,7 +67,7 @@ recover_read(Recover* self, RecordMsg* msg)
 }
 
 void
-recover_next(Recover* self, RecordMsg* msg)
+recover_next(Recover* self, Write* msg)
 {
 	// global (catalog)
 	auto sync = &self->sync;
