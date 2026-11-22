@@ -60,20 +60,13 @@ compute_rpc(Rpc* rpc, void* arg)
 		storage_open(share()->storage, &self->task);
 		break;
 	}
-	case MSG_CHECKPOINT:
-	{
-		// create db checkpoint
-		void**    argv = rpc->arg;
-		Db*       db = argv[0];
-		uint64_t* checkpoint = argv[1];
-		storage_checkpoint_db(share()->storage, db);
-		*checkpoint = db->checkpoints.current->id;
-		break;
-	}
 	case MSG_STOP:
 	{
 		// disconnect clients
 		clients_shutdown(&self->clients);
+
+		// stop service
+		service_stop(&self->service);
 		break;
 	}
 	default:
@@ -86,8 +79,8 @@ compute_main(void* arg)
 {
 	Compute* self = arg;
 
-	// start executor
-	executor_start(&self->executor);
+	// start service
+	service_start(&self->service);
 
 	// main
 	bool stop = false;
@@ -104,9 +97,9 @@ compute_main(void* arg)
 			break;
 		}
 		case MSG_RECORD:
+		case MSG_CHECKPOINT:
 		{
-			auto record = (RecordMsg*)msg;
-			replay_run(&self->replay, record);
+			service_add(&self->service, msg);
 			break;
 		}
 		default:
@@ -128,8 +121,7 @@ compute_init(Compute* self, ComputeIf* iface, void* iface_arg)
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
 	auth_init(&self->auth);
-	executor_init(&self->executor, self);
-	replay_init(&self->replay, self);
+	service_init(&self->service, self);
 	task_init(&self->task);
 }
 
@@ -137,8 +129,7 @@ void
 compute_free(Compute* self)
 {
 	clients_free(&self->clients);
-	executor_free(&self->executor);
-	replay_free(&self->replay);
+	service_free(&self->service);
 	auth_free(&self->auth);
 	task_free(&self->task);
 }

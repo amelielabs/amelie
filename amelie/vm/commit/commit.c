@@ -48,7 +48,7 @@ commit_main(void* arg)
 			storage_write(storage, &batch.write);
 
 		// wakeup transactions
-		batch_complete(&batch, &storage->service);
+		batch_complete(&batch);
 	}
 }
 

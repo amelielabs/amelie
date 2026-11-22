@@ -84,8 +84,10 @@ batch_add(Batch* self, Gtr* gtr)
 }
 
 hot static inline void
-batch_publish(Batch* self, Service* service)
+batch_publish(Batch* self)
 {
+	(void)self;
+#if 0
 	// publish
 	for (auto it = 0; it < self->count_actions; it++)
 	{
@@ -102,14 +104,15 @@ batch_publish(Batch* self, Service* service)
 	}
 
 	service_resume(service);
+#endif
 }
 
 hot static inline void
-batch_complete(Batch* self, Service* service)
+batch_complete(Batch* self)
 {
 	// publish
 	if (self->count_actions > 0)
-		batch_publish(self, service);
+		batch_publish(self);
 
 	// wakeup transactions
 	for (auto it = 0; it < self->count; it++)

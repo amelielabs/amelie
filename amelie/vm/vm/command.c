@@ -219,7 +219,10 @@ hot void
 cpublish(Vm* self, Op* op)
 {
 	// [db*, rel, values, refs]
-	auto db  = (Db*)op->a;
+	auto db = (Db*)op->a;
+	(void)db;
+	(void)self;
+#if 0
 	auto buf = &self->gtr->tr.log.actions;
 
 	auto action_offset = buf_size(buf);
@@ -254,6 +257,7 @@ cpublish(Vm* self, Op* op)
 	// set data size
 	action = (Action*)(buf->start + action_offset);
 	action->data_size = buf->position - action->data;
+#endif
 }
 
 void

@@ -15,7 +15,6 @@
 #include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
-#include <amelie_service.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 
@@ -29,7 +28,6 @@ storage_init(Storage*   self,
 	self->iface_arg   = iface_arg;
 	self->catalog_lsn = 0;
 	catalog_init(&self->catalog, iface, iface_arg, NULL, NULL);
-	service_init(&self->service);
 	wal_init(&self->wal);
 	columns_init(&self->publish);
 	syncer_init(&self->syncer, self);
@@ -48,7 +46,6 @@ storage_free(Storage* self)
 	}
 
 	catalog_free(&self->catalog);
-	service_free(&self->service);
 	columns_free(&self->publish);
 	wal_free(&self->wal);
 }

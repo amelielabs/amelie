@@ -19,8 +19,7 @@
 #include "compute/portal.h"
 
 // service
-#include "compute/replay.h"
-#include "compute/executor.h"
+#include "compute/service.h"
 
 // compute
 #include "compute/compute.h"
