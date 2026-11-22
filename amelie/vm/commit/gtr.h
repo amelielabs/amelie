@@ -15,20 +15,22 @@ typedef struct Gtr Gtr;
 
 struct Gtr
 {
-	Msg     msg;
-	Access* access;
-	Tr      tr;
-	Usage   usage;
-	Buf     write;
-	Event   on_commit;
-	Local*  local;
+	Msg       msg;
+	Tr        tr;
+	Usage     usage;
+	Buf       write;
+	Event     on_commit;
+	Access*   access;
+	Endpoint* endpoint;
+	Local*    local;
 };
 
 static inline void
 gtr_init(Gtr* self)
 {
-	self->access = NULL;
-	self->local  = NULL;
+	self->access   = NULL;
+	self->endpoint = NULL;
+	self->local    = NULL;
 	event_init(&self->on_commit);
 	tr_init(&self->tr);
 	buf_init(&self->write);
@@ -39,8 +41,9 @@ gtr_init(Gtr* self)
 static inline void
 gtr_reset(Gtr* self)
 {
-	self->access = NULL;
-	self->local  = NULL;
+	self->access   = NULL;
+	self->endpoint = NULL;
+	self->local    = NULL;
 	tr_reset(&self->tr);
 	buf_reset(&self->write);
 	usage_reset(&self->usage);
@@ -55,9 +58,12 @@ gtr_free(Gtr* self)
 }
 
 static inline void
-gtr_begin(Gtr* self, Local* local, Db* db, Access* access)
+gtr_begin(Gtr*      self, Local* local, Db* db,
+          Access*   access,
+          Endpoint* endpoint)
 {
-	self->local = local;
+	self->local    = local;
+	self->endpoint = endpoint;
 
 	// set write limit
 	auto limits = local->limits;

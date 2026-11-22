@@ -11,7 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Msg Msg;
+typedef struct Msg    Msg;
+typedef struct MsgBuf MsgBuf;
 
 typedef enum
 {
@@ -45,6 +46,12 @@ struct Msg
 	Ipc   ipc;
 	MsgId id;
 	List  link;
+};
+
+struct MsgBuf
+{
+	Msg  msg;
+	Buf* msg_buf;
 };
 
 static inline void

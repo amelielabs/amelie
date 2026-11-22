@@ -136,7 +136,7 @@ session_run(Session* self)
 	}
 
 	// begin transaction
-	gtr_begin(gtr, &portal->local, portal->db, access);
+	gtr_begin(gtr, &portal->local, portal->db, access, &portal->endpoint);
 
 	// do retention
 	session_retention(access, portal->db);
@@ -215,7 +215,8 @@ session_run_utility(Session* self)
 	// todo: take system lock
 
 	// begin transaction
-	gtr_begin(gtr, &portal->local, portal->db, &program->access);
+	gtr_begin(gtr, &portal->local, portal->db, &program->access,
+	          &portal->endpoint);
 
 	// [PROFILE]
 	auto profile = &self->profile;
