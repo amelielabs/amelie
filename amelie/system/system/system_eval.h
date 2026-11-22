@@ -17,7 +17,6 @@ struct SystemEval
 {
 	Portal   portal;
 	Buf      portal_buf;
-	Request  request; 
 	Session* session;
 };
 
@@ -28,7 +27,6 @@ system_eval_allocate(void)
 	self->session = NULL;
 	buf_init(&self->portal_buf);
 	portal_init(&self->portal);
-	request_init(&self->request);
 	return self;
 }
 
@@ -69,12 +67,11 @@ system_eval(SystemEval* self, Str* db, Str* command)
 	portal_bind_name(portal, db);
 
 	// set request
-	auto req = &self->request;
-	request_init(req);
+	auto req = &portal->req;
 	request_set_replay(req);
 	str_set_str(&req->content, command);
 
 	// execute
-	session_execute(self->session, portal, req);
+	session_execute(self->session, portal);
 	portal_reset(portal, true);
 }

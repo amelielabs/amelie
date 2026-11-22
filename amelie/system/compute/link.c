@@ -25,7 +25,6 @@ link_init(Link* self, Compute* compute, Client* client)
 	self->compute = compute;
 
 	portal_init(&self->portal);
-	request_init(&self->req);
 	mcp_init(&self->mcp, &self->portal);
 	json_init(&self->json);
 }
@@ -166,9 +165,9 @@ link_main(Link* self)
 		}
 		case LINK_EXECUTE:
 		{
-			auto done = request_empty(&self->req);
+			auto done = request_empty(&portal->req);
 			if (! done)
-				done = ctl->session_execute(session, portal, &self->req);
+				done = ctl->session_execute(session, portal);
 			if (done)
 			{
 				// 204 No Content

@@ -29,4 +29,4 @@ struct Session
 Session*
 session_create(void);
 void session_free(Session*);
-bool session_execute(Session*, Portal*, Request*);
+bool session_execute(Session*, Portal*);

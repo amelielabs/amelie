@@ -23,7 +23,6 @@ enum
 struct Link
 {
 	Portal   portal;
-	Request  req;
 	Mcp      mcp;
 	Json     json;
 	Client*  client;

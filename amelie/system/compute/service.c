@@ -30,7 +30,6 @@ service_execute(Service* self, Write* record)
 
 	auto portal   = &self->portal;
 	auto endpoint = &portal->endpoint;
-	request_reset(&self->req);
 
 	// todo: output to none
 	buf_reset(&self->buf);
@@ -41,13 +40,13 @@ service_execute(Service* self, Write* record)
 	auto on_error = error_catch
 	(
 		// restore request
-		request_read(&self->req, endpoint, record);
+		request_read(&portal->req, endpoint, record);
 
 		// set db (takes shared storage lock)
 		portal_bind(portal, opt_uuid_of(&endpoint->db_id));
 
 		// execute
-		compute->iface->session_execute(self->session, portal, &self->req);
+		compute->iface->session_execute(self->session, portal);
 	);
 
 	portal_reset(portal, true);
@@ -105,7 +104,6 @@ service_init(Service* self, Compute* compute)
 	self->compute   = compute;
 	mailbox_init(&self->mailbox);
 	portal_init(&self->portal);
-	request_init(&self->req);
 	buf_init(&self->buf);
 }
 

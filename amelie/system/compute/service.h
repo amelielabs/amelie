@@ -18,7 +18,6 @@ struct Service
 {
 	Mailbox  mailbox;
 	Portal   portal;
-	Request  req;
 	void*    session;
 	Buf      buf;
 	int64_t  worker_id;

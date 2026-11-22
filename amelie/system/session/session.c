@@ -296,9 +296,10 @@ session_run_utility(Session* self)
 }
 
 hot static void
-session_main(Session* self, Portal* portal, Request* req)
+session_main(Session* self, Portal* portal)
 {
 	// set session local settings
+	auto req = &portal->req;
 	self->portal = portal;
 	self->req    = req;
 
@@ -360,7 +361,7 @@ session_main(Session* self, Portal* portal, Request* req)
 }
 
 hot bool
-session_execute(Session* self, Portal* portal, Request* req)
+session_execute(Session* self, Portal* portal)
 {
 	cancel_pause();
 
@@ -371,7 +372,7 @@ session_execute(Session* self, Portal* portal, Request* req)
 		session_reset(self);
 
 		// parse and execute request
-		session_main(self, portal, req);
+		session_main(self, portal);
 
 		// done
 		unlock_all();

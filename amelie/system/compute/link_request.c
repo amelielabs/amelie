@@ -58,7 +58,7 @@ link_sql(Link* self)
 	output_set(&portal->output, endpoint, output_if, NULL);
 
 	// set request
-	auto req = &self->req;
+	auto req = &portal->req;
 	buf_str(&http->content, &req->content);
 	return LINK_EXECUTE;
 }
@@ -93,7 +93,7 @@ link_mcp(Link* self)
 	// require execution
 	auto mcp = &self->mcp;
 	mcp_reset(mcp);
-	if (! mcp_parse(mcp, &content, &self->req))
+	if (! mcp_parse(mcp, &content, &portal->req))
 		return LINK_ERROR;
 
 	return LINK_EXECUTE;
@@ -202,7 +202,7 @@ link_rel(Link* self)
 	output_set(&portal->output, endpoint, output_if, NULL);
 
 	// set request
-	auto req = &self->req;
+	auto req = &portal->req;
 	req->rel          = endpoint->rel.string;
 	req->content_type = *content_type;
 	req->content      =  content;
@@ -222,7 +222,6 @@ link_request(Link* self)
 	auto on_error = error_catch
 	(
 		// parse request path and arguments
-		request_init(&self->req);
 
 		// /db
 		// /db/rel

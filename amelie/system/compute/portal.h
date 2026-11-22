@@ -17,6 +17,7 @@ struct Portal
 {
 	Db*      db;
 	Lock*    lock;
+	Request  req;
 	Endpoint endpoint;
 	Local    local;
 	Output   output;
@@ -56,6 +57,7 @@ portal_reset(Portal* self, bool with_endpoint)
 	if (with_endpoint)
 		endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
+	request_reset(&self->req);
 	local_reset(&self->local);
 }
 
@@ -72,6 +74,7 @@ portal_init(Portal* self)
 {
 	self->db   = NULL;
 	self->lock = NULL;
+	request_init(&self->req);
 	endpoint_init(&self->endpoint);
 	local_init(&self->local);
 	output_init(&self->output);
