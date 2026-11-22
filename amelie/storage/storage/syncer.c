@@ -11,6 +11,7 @@
 //
 
 #include <amelie_runtime>
+#include <amelie_server>
 #include <amelie_heap>
 #include <amelie_transaction.h>
 #include <amelie_part.h>
