@@ -34,9 +34,12 @@ emit_publish(Compiler* self, Ast* ast)
 		values = (intptr_t)publish->values;
 
 	// rel
-	auto offset = code_data_add_string(self->code_data, &publish->rel);
+	auto data = &self->code_data->data;
+	auto offset = buf_size(data);
+	encode_str(data, &publish->db);
+	encode_str(data, &publish->rel);
 
 	// CPUBLISH
-	op4(self, CPUBLISH, (intptr_t)publish->db, offset, values, refs_count);
+	op3(self, CPUBLISH, offset, values, refs_count);
 	return -1;
 }

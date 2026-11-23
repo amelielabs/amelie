@@ -38,12 +38,11 @@ parse_publish(Stmt* self)
 	if (str_chr(&name, '.'))
 		stmt_error(self, path, "invalid target");
 
-	// find db
-	stmt->db  = catalog_find_db(&share()->storage->catalog, &name_db, false);
-	if (! stmt->db)
-		stmt_error(self, path, "database not found");
+	stmt->db  = name_db;
 	stmt->rel = name;
-	access_add(&self->parser->program->access, &stmt->db->rel, PERM_PUBLISH);
+
+	// mark for rw
+	access_set_publish(&self->parser->program->access);
 
 	// [value, ...]
 	if (stmt_if(self, KEOF) || stmt_if(self, ';'))

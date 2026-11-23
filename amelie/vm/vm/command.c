@@ -218,19 +218,25 @@ cupdate(Vm* self, Op* op)
 hot void
 cpublish(Vm* self, Op* op)
 {
-	// [db*, rel, values, refs]
+	// [offset, values, refs]
 
-	// create write
+	// find database
+	Str name_db;
+	Str name_rel;
+	auto pos = code_data_at(&self->program->code_data, op->a);
+	unpack_str(&pos, &name_db);
+	unpack_str(&pos, &name_rel);
+	auto db = catalog_find_db(&share()->storage->catalog, &name_db, true);
+
+	// create PUBLISH write on behalf of the destination db
 	auto buf = buf_create();
 	errdefer_buf(buf);
-
-	Str rel;
-	code_data_at_string(&self->program->code_data, op->b, &rel);
 
 	Str content_type;
 	str_init(&content_type);
 
-	request_begin(buf, self->gtr->endpoint, &rel, &content_type);
+	request_begin(buf, self->gtr->endpoint, db->rel.id,
+	              &name_rel, &content_type);
 
 	// content (encode values as string)
 	auto offset = buf_size(buf);
@@ -239,10 +245,10 @@ cpublish(Vm* self, Op* op)
 	// [value, ...]
 	encode_array(buf);
 
-	auto refs = stack_at(&self->stack, op->d);
-	if (op->c != -1)
+	auto refs = stack_at(&self->stack, op->c);
+	if (op->b != -1)
 	{
-		auto set = (Set*)op->c;
+		auto set = (Set*)op->b;
 		for (auto order = 0; order < set->count_rows; order++)
 		{
 			auto value = set_row(set, order);
@@ -251,8 +257,8 @@ cpublish(Vm* self, Op* op)
 			value_encode(value, self->gtr->local->timezone, buf);
 		}
 	}
-	if (op->d > 0)
-		stack_popn(&self->stack, op->d);
+	if (op->c > 0)
+		stack_popn(&self->stack, op->c);
 
 	encode_array_end(buf);
 
@@ -265,7 +271,7 @@ cpublish(Vm* self, Op* op)
 
 	// log
 	auto write = write_of(buf);
-	write->arg = (Db*)op->a;
+	write->arg = db;
 	log_publish(&self->gtr->tr.log, &write->msg);
 }
 

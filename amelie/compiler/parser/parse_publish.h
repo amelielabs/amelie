@@ -16,7 +16,7 @@ typedef struct AstPublish AstPublish;
 struct AstPublish
 {
 	Ast  ast;
-	Db*  db;
+	Str  db;
 	Str  rel;
 	Set* values;
 	From from;

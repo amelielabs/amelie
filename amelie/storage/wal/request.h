@@ -55,7 +55,7 @@ request_set_replay(Request* self)
 }
 
 static inline void
-request_begin(Buf* buf, Endpoint* endpoint, Str* rel, Str* content_type)
+request_begin(Buf* buf, Endpoint* endpoint, Uuid* id, Str* rel, Str* content_type)
 {
 	buf_reset(buf);
 	write_init(buf, true);
@@ -65,7 +65,7 @@ request_begin(Buf* buf, Endpoint* endpoint, Str* rel, Str* content_type)
 
 	// uuid
 	encode_int(buf, META_UUID);
-	encode_uuid(buf, opt_uuid_of(&endpoint->db_id));
+	encode_uuid(buf, id);
 
 	// timezone
 	encode_int(buf, META_TIMEZONE);
@@ -110,7 +110,8 @@ request_end(Buf* buf, MsgId id, uint64_t ack, int flags)
 static inline void
 request_write(Request* self, Endpoint* endpoint, Buf* buf, uint64_t ack, int flags)
 {
-	request_begin(buf, endpoint, &self->rel, &self->content_type);
+	request_begin(buf, endpoint, opt_uuid_of(&endpoint->db_id),
+	              &self->rel, &self->content_type);
 
 	// content
 	encode_str(buf, &self->content);

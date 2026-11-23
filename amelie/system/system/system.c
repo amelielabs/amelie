@@ -76,7 +76,7 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 {
 	Program* program = udf->data;
 	assert(program);
-	return access_find(&program->access, name);
+	return access_find(&program->access, name) != NULL;
 }
 
 static void
