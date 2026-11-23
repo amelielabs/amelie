@@ -232,7 +232,9 @@ cpublish(Vm* self, Op* op)
 
 	request_begin(buf, self->gtr->endpoint, &rel, &content_type);
 
-	// content (encode values)
+	// content (encode values as string)
+	auto offset = buf_size(buf);
+	encode_str32(buf, 0);
 
 	// [value, ...]
 	encode_array(buf);
@@ -254,9 +256,14 @@ cpublish(Vm* self, Op* op)
 
 	encode_array_end(buf);
 
-	request_end(buf, MSG_RECORD, 0 /* RECORD_PUBLISH */ );
+	// set size
+	auto start = buf->start + offset;
+	pack_str32(&start, buf_size(buf) - (offset + data_size_str32()));
 
-	// add write to the log
+	auto db_current = db_of(self->gtr->tr.db);
+	request_end(buf, MSG_PUBLISH, db_current->ack, RECORD_PUBLISH);
+
+	// log
 	auto write = write_of(buf);
 	write->arg = (Db*)op->a;
 	log_publish(&self->gtr->tr.log, &write->msg);

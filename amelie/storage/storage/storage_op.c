@@ -87,7 +87,7 @@ storage_checkpoint_db(Storage* self, Db* db)
 	if (checkpoint(&cp))
 		checkpoints_add(&db->checkpoints, cp.lsn);
 
-	db_set_dirty(db, false);
+	db_dirty(db, false);
 }
 
 void

@@ -45,7 +45,7 @@ write_allocate(bool reserve_record)
 }
 
 static inline void
-write_set(Buf* buf, MsgId id)
+write_complete_msg(Buf* buf, MsgId id)
 {
 	auto msg = (Write*)buf->start;
 	msg_init(&msg->msg, id);
@@ -54,18 +54,23 @@ write_set(Buf* buf, MsgId id)
 }
 
 static inline void
-write_set_flags(Write* self, uint8_t flags)
+write_complete(Buf* buf, MsgId id, uint64_t ack, uint8_t flags)
 {
-	self->record[0].flags = flags;
+	write_complete_msg(buf, id);
+
+	auto record = write_of(buf)->record;
+	record->crc   = 0;
+	record->size  = buf_size(buf) - sizeof(Write);
+	record->flags = flags;
+	record->lsn   = 0;
+	record->ack   = ack;
 }
 
 static inline void
 write_seal(Write* self, uint64_t lsn)
 {
 	auto record = &self->record[0];
-	record->crc  = 0;
-	record->lsn  = lsn;
-	record->size = buf_size(self->msg_buf) - sizeof(Write);
+	record->lsn = lsn;
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
@@ -78,6 +83,7 @@ write_copy(MsgId id, Record* record)
 	auto self = write_allocate(false);
 	buf_reserve(self, record->size);
 	buf_write(self, record, record->size);
-	write_set(self, id);
+
+	write_complete_msg(self, id);
 	return write_of(self);
 }

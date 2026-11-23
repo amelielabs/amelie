@@ -95,7 +95,7 @@ request_begin(Buf* buf, Endpoint* endpoint, Str* rel, Str* content_type)
 }
 
 static inline void
-request_end(Buf* buf, MsgId id, int flags)
+request_end(Buf* buf, MsgId id, uint64_t ack, int flags)
 {
 	// request array end
 	encode_array_end(buf);
@@ -103,20 +103,19 @@ request_end(Buf* buf, MsgId id, int flags)
 	// request end
 	encode_array_end(buf);
 
-	// set write
-	write_set(buf, id);
-	write_set_flags(write_of(buf), flags);
+	// write
+	write_complete(buf, id, ack, flags);
 }
 
 static inline void
-request_write(Request* self, Endpoint* endpoint, Buf* buf, int flags)
+request_write(Request* self, Endpoint* endpoint, Buf* buf, uint64_t ack, int flags)
 {
 	request_begin(buf, endpoint, &self->rel, &self->content_type);
 
 	// content
 	encode_str(buf, &self->content);
 
-	request_end(buf, MSG_RECORD, flags);
+	request_end(buf, MSG_RECORD, ack, flags);
 }
 
 static inline void
@@ -165,5 +164,6 @@ request_read(Request* self, Endpoint* endpoint, Write* msg)
 		}
 	}
 
-	request_set_replay(self);
+	if (msg->msg.id == MSG_RECORD)
+		request_set_replay(self);
 }

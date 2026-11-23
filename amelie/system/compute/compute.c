@@ -98,6 +98,7 @@ compute_main(void* arg)
 		}
 		case MSG_RECORD:
 		case MSG_CHECKPOINT:
+		case MSG_PUBLISH:
 		{
 			service_add(&self->service, msg);
 			break;

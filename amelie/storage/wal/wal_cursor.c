@@ -146,7 +146,7 @@ wal_cursor_next_msg(WalCursor* self)
 
 	if (wal_cursor_read(self, write))
 	{
-		write_set(write, MSG_RECORD);
+		write_complete_msg(write, MSG_RECORD);
 		return write_of(write);
 	}
 

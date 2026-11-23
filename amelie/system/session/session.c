@@ -173,14 +173,14 @@ session_run(Session* self)
 	// wal write
 	if (!req->replay && !ro)
 	{
-		request_write(req, &portal->endpoint, &gtr->write, 0);
+		request_write(req, &portal->endpoint, &gtr->write, portal->db->ack, 0);
 
 		commit(share()->commit, gtr);
 	}
 
 	// mark for checkpoint
 	if (! ro)
-		db_set_dirty(portal->db, true);
+		db_dirty(portal->db, true);
 
 	// commit
 	tr_commit(&gtr->tr);
@@ -273,7 +273,7 @@ session_run_utility(Session* self)
 			uuid_init(&portal->endpoint.db_id.uuid);
 		}
 		auto write = &gtr->write;
-		request_write(req, &portal->endpoint, write, flags);
+		request_write(req, &portal->endpoint, write, 0, flags);
 
 		WriteList write_list;
 		write_list_init(&write_list);
@@ -283,7 +283,7 @@ session_run_utility(Session* self)
 
 	// mark for checkpoint
 	if (! is_ro)
-		db_set_dirty(portal->db, true);
+		db_dirty(portal->db, true);
 
 	// commit
 	tr_commit(&gtr->tr);

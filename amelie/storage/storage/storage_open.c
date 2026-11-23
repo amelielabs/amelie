@@ -55,6 +55,9 @@ storage_open_schema(Storage* self, Db* db)
 		eval_execute(&eval, &db->config->name, &command);
 		separator_advance(&sep);
 	}
+
+	// set db ack equal to checkpoint lsn
+	db_ack(db, cp->current->id);
 	return true;
 }
 
@@ -143,6 +146,6 @@ storage_open(Storage* self, Task* compute)
 			continue;
 		if (storage_open_schema(self, db))
 			storage_open_db(db);
-		db_set_dirty(db, false);
+		db_dirty(db, false);
 	}
 }

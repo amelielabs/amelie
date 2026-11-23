@@ -23,10 +23,11 @@ struct Db
 	PageMgr     page_mgr;
 	Checkpoints checkpoints;
 
-	bool        system;
-	uint32_t    inv_seq;
+	uint64_t    ack;
 	uint64_t    inv_revoked;
+	uint32_t    inv_seq;
 	int         commit;
+	bool        system;
 	bool        dirty;
 	Task*       compute;
 
@@ -48,16 +49,27 @@ db_of(Rel* self)
 	return (Db*)self;
 }
 
+static inline bool
+db_ack(Db* self, uint64_t ack)
+{
+	if (self->ack < ack)
+	{
+		self->ack = ack;
+		return true;
+	}
+	return false;
+}
+
+static inline void
+db_dirty(Db* self, bool value)
+{
+	self->dirty = value;
+}
+
 static inline void
 db_invalidate(Db* self)
 {
 	self->inv_seq++;
-}
-
-static inline void
-db_set_dirty(Db* self, bool value)
-{
-	self->dirty = value;
 }
 
 static inline void

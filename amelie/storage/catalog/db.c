@@ -88,10 +88,11 @@ db_allocate(Catalog* databases, DbConfig* config)
 {
 	Db* self = am_malloc(sizeof(Db));
 	self->config      = db_config_copy(config);
-	self->system      = str_is(&config->name, "amelie", 6);
-	self->inv_seq     = 0;
+	self->ack         = 0;
 	self->inv_revoked = 0;
+	self->inv_seq     = 0;
 	self->commit      = 0;
+	self->system      = str_is(&config->name, "amelie", 6);
 	self->dirty       = true;
 	self->compute     = NULL;
 	self->databases   = databases;
