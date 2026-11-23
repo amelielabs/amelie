@@ -18,6 +18,27 @@
 #include <amelie_vm>
 #include <amelie_compute.h>
 
+static inline void
+service_ack(Service* self, uint64_t ack)
+{
+	auto db = self->portal.db;
+	db_ack(db, ack);
+
+	if (! db->publish_count)
+		return;
+
+	list_foreach_safe(&db->publish)
+	{
+		auto write = list_at(Write, msg.link);
+		if (write->record->lsn <= ack)
+		{
+			list_unlink(&write->msg.link);
+			db->publish_count--;
+			buf_free(write->msg_buf);
+		}
+	}
+}
+
 static inline bool
 service_process(Service* self, Write* record)
 {
@@ -52,20 +73,16 @@ service_process(Service* self, Write* record)
 			// add to the queue
 			if (db_ack(db, record->record->lsn))
 			{
-				/* todo:
-				list_append(&self->queue, &record->msg.link);
-				self->queue_count++;
-				*/
+				list_append(&db->publish, &record->msg.link);
+				db->publish_count++;
+
 				free = false;
 			}
 			execute = false;
 		}
 
-		// ACK (gc queue <=ack)
-		if (db_ack(db, record->record->lsn))
-		{
-			// todo:
-		}
+		// ACK (gc queue <= ack)
+		service_ack(self, record->record->ack);
 		break;
 	}
 	default:

@@ -23,7 +23,10 @@ struct Db
 	PageMgr     page_mgr;
 	Checkpoints checkpoints;
 
+	List        publish;
+	int         publish_count;
 	uint64_t    ack;
+
 	uint64_t    inv_revoked;
 	uint32_t    inv_seq;
 	int         commit;

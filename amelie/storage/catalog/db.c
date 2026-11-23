@@ -87,16 +87,18 @@ static inline Db*
 db_allocate(Catalog* databases, DbConfig* config)
 {
 	Db* self = am_malloc(sizeof(Db));
-	self->config      = db_config_copy(config);
-	self->ack         = 0;
-	self->inv_revoked = 0;
-	self->inv_seq     = 0;
-	self->commit      = 0;
-	self->system      = str_is(&config->name, "amelie", 6);
-	self->dirty       = true;
-	self->compute     = NULL;
-	self->databases   = databases;
-	self->next        = NULL;
+	self->config        = db_config_copy(config);
+	self->ack           = 0;
+	self->publish_count = 0;
+	self->inv_revoked   = 0;
+	self->inv_seq       = 0;
+	self->commit        = 0;
+	self->system        = str_is(&config->name, "amelie", 6);
+	self->dirty         = true;
+	self->compute       = NULL;
+	self->databases     = databases;
+	self->next          = NULL;
+	list_init(&self->publish);
 	checkpoints_init(&self->checkpoints, &self->config->id);
 
 	// prepare arena
