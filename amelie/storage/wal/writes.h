@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct WriteList WriteList;
+typedef struct Writes Writes;
 
-struct WriteList
+struct Writes
 {
 	List     list;
 	int      list_count;
@@ -21,7 +21,7 @@ struct WriteList
 };
 
 static inline void
-write_list_init(WriteList* self)
+writes_init(Writes* self)
 {
 	self->list_count = 0;
 	self->lsn        = 0;
@@ -29,13 +29,13 @@ write_list_init(WriteList* self)
 }
 
 static inline void
-write_list_reset(WriteList* self)
+writes_reset(Writes* self)
 {
-	write_list_init(self);
+	writes_init(self);
 }
 
 static inline void
-write_list_add(WriteList* self, Write* write)
+writes_add(Writes* self, Write* write)
 {
 	list_append(&self->list, &write->msg.link);
 	self->list_count++;

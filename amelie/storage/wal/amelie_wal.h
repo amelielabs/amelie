@@ -16,7 +16,7 @@
 
 // wal write
 #include "wal/write.h"
-#include "wal/write_list.h"
+#include "wal/writes.h"
 #include "wal/request.h"
 
 // wal

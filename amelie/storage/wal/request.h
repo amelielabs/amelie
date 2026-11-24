@@ -19,7 +19,9 @@ typedef enum
 	META_TIMEZONE,
 	META_TIME,
 	META_SEED,
-	META_REQUEST
+	META_REL,
+	META_CONTENT_TYPE,
+	META_CONTENT
 } RequestMeta;
 
 struct Request
@@ -79,17 +81,19 @@ request_begin(Buf* buf, Endpoint* endpoint, Uuid* id, Str* rel, Str* content_typ
 	encode_int(buf, META_SEED);
 	encode_int(buf, opt_int_of(&endpoint->seed));
 
-	// request
-	encode_int(buf, META_REQUEST);
-
-	// []
-	encode_array(buf);
-
 	// rel
-	encode_str(buf, rel);
+	if (rel && !str_empty(rel))
+	{
+		encode_int(buf, META_REL);
+		encode_str(buf, rel);
+	}
 
 	// content_type
-	encode_str(buf, content_type);
+	if (! str_empty(content_type))
+	{
+		encode_int(buf, META_CONTENT_TYPE);
+		encode_str(buf, content_type);
+	}
 
 	// (incomplete)
 }
@@ -97,9 +101,6 @@ request_begin(Buf* buf, Endpoint* endpoint, Uuid* id, Str* rel, Str* content_typ
 static inline void
 request_end(Buf* buf, MsgId id, uint64_t ack, int flags)
 {
-	// request array end
-	encode_array_end(buf);
-
 	// request end
 	encode_array_end(buf);
 
@@ -114,7 +115,12 @@ request_write(Request* self, Endpoint* endpoint, Buf* buf, uint64_t ack, int fla
 	              &self->rel, &self->content_type);
 
 	// content
-	encode_str(buf, &self->content);
+	auto content = &self->content;
+	if (! str_empty(content))
+	{
+		encode_int(buf, META_CONTENT);
+		encode_str(buf, content);
+	}
 
 	request_end(buf, MSG_RECORD, ack, flags);
 }
@@ -150,13 +156,19 @@ request_read(Request* self, Endpoint* endpoint, Write* msg)
 			unpack_int(&pos, &integer);
 			opt_int_set(&endpoint->seed, integer);
 			break;
-		case META_REQUEST:
+		case META_REL:
 		{
-			unpack_array(&pos);
 			unpack_str(&pos, &self->rel);
+			break;
+		}
+		case META_CONTENT_TYPE:
+		{
 			unpack_str(&pos, &self->content_type);
+			break;
+		}
+		case META_CONTENT:
+		{
 			unpack_str(&pos, &self->content);
-			unpack_array_end(&pos);
 			break;
 		}
 		default:

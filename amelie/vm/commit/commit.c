@@ -44,8 +44,8 @@ commit_main(void* arg)
 			continue;
 
 		// wal write
-		if (batch.write.list_count)
-			storage_write(storage, &batch.write);
+		if (batch.writes.list_count)
+			storage_write(storage, &batch.writes);
 
 		// wakeup transactions
 		batch_complete(&batch);

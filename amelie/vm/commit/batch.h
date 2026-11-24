@@ -15,11 +15,11 @@ typedef struct Batch Batch;
 
 struct Batch
 {
-	Buf       list;
-	Buf       list_publish;
-	int       count;
-	int       count_publish;
-	WriteList write;
+	Buf    list;
+	Buf    list_publish;
+	int    count;
+	int    count_publish;
+	Writes writes;
 };
 
 static inline Gtr*
@@ -41,7 +41,7 @@ batch_init(Batch* self)
 	self->count_publish = 0;
 	buf_init(&self->list);
 	buf_init(&self->list_publish);
-	write_list_init(&self->write);
+	writes_init(&self->writes);
 }
 
 static inline void
@@ -58,7 +58,7 @@ batch_reset(Batch* self)
 	self->count_publish = 0;
 	buf_reset(&self->list);
 	buf_reset(&self->list_publish);
-	write_list_reset(&self->write);
+	writes_reset(&self->writes);
 }
 
 static inline bool
@@ -77,7 +77,7 @@ batch_add(Batch* self, Gtr* gtr)
 
 	// add write
 	auto write = write_of(&gtr->write);
-	write_list_add(&self->write, write);
+	writes_add(&self->writes, write);
 
 	// prepare publish for write and send
 	auto log = &gtr->tr.log;
@@ -87,7 +87,7 @@ batch_add(Batch* self, Gtr* gtr)
 		if (! msg)
 			break;
 		write = (Write*)msg;
-		write_list_add(&self->write, write);
+		writes_add(&self->writes, write);
 
 		buf_write(&self->list_publish, &write, sizeof(Write**));
 		self->count_publish++;

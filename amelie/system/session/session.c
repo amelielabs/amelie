@@ -275,10 +275,10 @@ session_run_utility(Session* self)
 		auto write = &gtr->write;
 		request_write(req, &portal->endpoint, write, 0, flags);
 
-		WriteList write_list;
-		write_list_init(&write_list);
-		write_list_add(&write_list, write_of(write));
-		storage_write(share()->storage, &write_list);
+		Writes writes;
+		writes_init(&writes);
+		writes_add(&writes, write_of(write));
+		storage_write(share()->storage, &writes);
 	}
 
 	// mark for checkpoint

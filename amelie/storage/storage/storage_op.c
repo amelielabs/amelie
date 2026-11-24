@@ -154,14 +154,14 @@ storage_sync(Storage* self, uint64_t id, bool close)
 }
 
 hot void
-storage_write(Storage* self, WriteList* write_list)
+storage_write(Storage* self, Writes* list)
 {
-	if (! write_list->list_count)
+	if (! list->list_count)
 		return;
 
 	WalContext context =
 	{
-		.list       = write_list,
+		.list       = list,
 		.recover    = NULL,
 		.lsn        = 0,
 		.sync_close = 0,

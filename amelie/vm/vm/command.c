@@ -239,6 +239,7 @@ cpublish(Vm* self, Op* op)
 	              &name_rel, &content_type);
 
 	// content (encode values as string)
+	encode_int(buf, META_CONTENT);
 	auto offset = buf_size(buf);
 	encode_str32(buf, 0);
 
