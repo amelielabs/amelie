@@ -240,7 +240,7 @@ storage_state(Storage* self, Buf* buf)
 
 	// directory
 	encode_raw(buf, "directory", 9);
-	encode_str(buf, &state()->directory.string);
+	encode_str(buf, &state()->directory);
 
 	// uuid
 	encode_raw(buf, "uuid", 4);

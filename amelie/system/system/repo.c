@@ -24,8 +24,8 @@
 static void
 repo_create(Repo* self, char* directory)
 {
-	// set directory
-	opt_string_set_raw(&state()->directory, directory, strlen(directory));
+	// set irectory
+	str_dup_cstr(&state()->directory, directory);
 
 	// create directory if not exists
 	self->bootstrap = !fs_exists("{s}", state_directory());
@@ -115,7 +115,7 @@ repo_bootstrap(void)
 	// generate secret
 	uint8_t secret[32];
 	random_generate_alnum(&am_task->random, secret, sizeof(secret));
-	opt_string_set_raw(&state()->secret, (char*)secret, sizeof(secret));
+	str_dup(&state()->secret, (char*)secret, sizeof(secret));
 
 	// set default timezone using system timezone
 	if (opt_string_empty(&config->timezone))

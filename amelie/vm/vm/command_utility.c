@@ -34,8 +34,7 @@ csystem_set_secret(Vm* self, Op* op)
 	check_permission(&self->gtr->tr, PERM_SYSTEM);
 
 	// create new system secret
-	opt_string_set(&state()->secret, &secret);
-	opt_int_set_next(&state()->secret_seq);
+	state_secret_set(&secret);
 
 	control_state_write();
 }
@@ -70,8 +69,7 @@ ccreate_token(Vm* self, Op* op)
 	timestamp_add(&expire, &iv);
 
 	// generate token
-	auto secret = opt_string_of(&state()->secret);
-	auto jwt = jwt_create(&db->config->name, secret, &expire);
+	auto jwt = jwt_create(&db->config->name, &state()->secret, &expire);
 	defer_buf(jwt);
 	auto buf = buf_create();
 	encode_buf(buf, jwt);

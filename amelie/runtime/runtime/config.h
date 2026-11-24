@@ -47,10 +47,10 @@ struct Config
 	// replication
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;
-	Opts opts;
 	// network
 	Opt  recv;
 	Opt  listen;
+	Opts opts;
 };
 
 void config_init(Config*);

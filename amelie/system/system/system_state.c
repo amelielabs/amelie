@@ -28,7 +28,7 @@ system_describe(System* self, Buf* buf)
 
 	// secret
 	buf_format(buf, "alter system set secret = {qstr};\n",
-	           &state()->secret.string);
+	           &state()->secret);
 }
 
 void

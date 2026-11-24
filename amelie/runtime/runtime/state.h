@@ -23,15 +23,35 @@ enum
 
 struct State
 {
-	Opt  directory;
-	Opt  lsn;
-	Opt  recover;
-	Opt  secret;
-	Opt  secret_seq;
-	Opt  primary;
-	Opts opts;
+	Str        directory;
+	atomic_u64 lsn;
+	atomic_u32 recover;
+	Str        secret;
+	int        secret_seq;
+	Uuid       primary;
+
 };
 
-void state_init(State*);
-void state_free(State*);
-void state_prepare(State*);
+static inline void
+state_init(State* self)
+{
+	self->lsn        = 0;
+	self->recover    = RECOVER_NONE;
+	self->secret_seq = 0;
+	str_init(&self->directory);
+	str_init(&self->secret);
+	uuid_init(&self->primary);
+}
+
+static inline void
+state_free(State* self)
+{
+	str_free(&self->directory);
+	str_free(&self->secret);
+}
+
+static inline  void
+state_prepare(State* self)
+{
+	unused(self);
+}

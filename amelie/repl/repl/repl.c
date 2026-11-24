@@ -75,7 +75,7 @@ repl_follow(Repl* self, Str* primary_id)
 		if (uuid_is(&id, opt_uuid_of(&config()->uuid)))
 			error("replication: primary id cannot match this server id");
 
-		opt_int_set(&state()->recover, RECOVER_REPL);
+		state_recover_set(RECOVER_REPL);
 		self->role = REPL_REPLICA;
 
 		// restart receiver
@@ -83,7 +83,7 @@ repl_follow(Repl* self, Str* primary_id)
 		receiver_start(&self->receiver, &id);
 
 		// set new primary id
-		opt_uuid_set(&state()->primary, &id);
+		state_primary_set(&id);
 
 		info("replication: switch to replica, new primary is '{str}'",
 		     primary_id);
@@ -96,9 +96,9 @@ repl_follow(Repl* self, Str* primary_id)
 	// remove primary id
 	Uuid empty;
 	uuid_init(&empty);
-	opt_uuid_set(&state()->primary, &empty);
+	state_primary_set(&empty);
 
-	opt_int_set(&state()->recover, RECOVER_NONE);
+	state_recover_set(RECOVER_NONE);
 	self->role = REPL_PRIMARY;
 
 	info("replication: switch to primary");
@@ -116,10 +116,10 @@ repl_status(Repl* self, Buf* buf)
 
 	// primary
 	encode_raw(buf, "primary", 7);
-	if (opt_uuid_empty(&state()->primary))
+	if (uuid_empty(&state()->primary))
 		encode_null(buf);
 	else
-		encode_uuid(buf, opt_uuid_of((&state()->primary)));
+		encode_uuid(buf, &state()->primary);
 
 	encode_raw(buf, "replicas", 8);
 	replicas_list(&self->replicas, buf, NULL, 0);
@@ -131,10 +131,10 @@ void
 repl_describe(Repl* self, Buf* buf)
 {
 	// follow "uuid"
-	if (! opt_uuid_empty(&state()->primary))
+	if (! uuid_empty(&state()->primary))
 	{
 		char id[UUID_SZ];
-		uuid_get(&state()->primary.uuid, id, sizeof(id));
+		uuid_get(&state()->primary, id, sizeof(id));
 		buf_format(buf, "follow {qs};\n", id);
 	}
 

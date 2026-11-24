@@ -168,7 +168,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/data/json_export.c
     ${AMELIE_ROOT}/runtime/runtime/opts.c
     ${AMELIE_ROOT}/runtime/runtime/config.c
-    ${AMELIE_ROOT}/runtime/runtime/state.c
     ${AMELIE_ROOT}/runtime/runtime/limit.c
     ${AMELIE_ROOT}/runtime/runtime/runtime.c)
 

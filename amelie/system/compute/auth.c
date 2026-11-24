@@ -92,8 +92,7 @@ auth_jwt(Auth* self, Db* db, Endpoint* endpoint, uint64_t* expire)
 		error("auth: db '{str}' token has been revoked", &sub);
 
 	// validate token using secret
-	auto secret = opt_string_of(&state()->secret);
-	if (! jwt_decode_validate(jwt, secret))
+	if (! jwt_decode_validate(jwt, &state()->secret))
 		error("auth: db '{str}' token is invalid", &sub);
 
 	*expire = exp;
@@ -139,7 +138,7 @@ auth_db(Auth* self, Db* db, Endpoint* endpoint, uint64_t* expire)
 Db*
 auth_run(Auth* self, Endpoint* endpoint, Token* token)
 {
-	uint64_t seq_secret = opt_int_of(&state()->secret_seq);
+	uint64_t seq_secret = state()->secret_seq;
 
 	// find database
 	auto db_name = opt_string_of(&endpoint->db);

@@ -15,6 +15,63 @@
 #define config()  (&runtime()->config)
 #define state()   (&runtime()->state)
 
+// directory
+static inline const char*
+state_directory(void)
+{
+	return str_of(&state()->directory);
+}
+
+// recover
+static inline void
+state_recover_set(int value)
+{
+	atomic_u32_set(&state()->recover, value);
+}
+
+// lsn
+static inline uint64_t
+state_lsn(void)
+{
+	return atomic_u64_of(&state()->lsn);
+}
+
+static inline void
+state_lsn_set(uint64_t value)
+{
+	atomic_u64_set(&state()->lsn, value);
+}
+
+static inline uint64_t
+state_lsn_next(void)
+{
+	return atomic_u64_inc(&state()->lsn) + 1;
+}
+
+// replication
+static inline void
+state_primary_set(Uuid* id)
+{
+	state()->primary = *id;
+}
+
+static inline bool
+state_is_primary(void)
+{
+	return uuid_empty(&state()->primary);
+}
+
+// secret
+static inline void
+state_secret_set(Str* value)
+{
+	str_free(&state()->secret);
+	str_copy(&state()->secret, value);
+
+	// invalidation event
+	state()->secret_seq++;
+}
+
 // control
 static inline void
 control_state_write(void)
@@ -28,53 +85,41 @@ control_state_read(Buf* buf)
 	return runtime()->iface->state_read(runtime()->iface->arg, buf);
 }
 
-// recovery
-static inline bool
-state_is_recovery(void)
+// lock manager
+#define lock(resource, id) \
+	locks_lock(&runtime()->locks, (resource), (id), NULL, source_function)
+
+#define lock_system(resource_id, id) \
+	lock(&runtime()->lockables.list[(resource_id)].res, (id))
+
+#define lock_storage(id) lock_system(RES_STORAGE, id)
+
+#define breakpoint(res_id) \
+({ \
+	auto ref = &runtime()->lockables.list[(res_id)]; \
+	if (unlikely(atomic_u32_of(&ref->bp_refs) > 0)) \
+		unlock(locks_lock(&runtime()->locks, &ref->res, LOCK_SHARED, \
+		       NULL, \
+		       source_function)); \
+})
+
+hot static inline void
+unlock(Lock* self)
 {
-	return opt_int_of(&state()->recover) != RECOVER_NONE;
+	locks_unlock(&runtime()->locks, self);
 }
 
-// replication
-static inline bool
-state_is_primary(void)
+hot static inline void
+unlock_all(void)
 {
-	return opt_uuid_empty(&state()->primary);
+	// unlock all locks taken by the coroutine
+	auto locks = &am_self()->locks;
+	list_foreach_reverse_safe(locks)
+		unlock(list_at(Lock, link));
+	list_init(locks);
 }
 
-// directory
-static inline const char*
-state_directory(void)
-{
-	return str_of(opt_string_of(&state()->directory));
-}
-
-// lsn
-static inline uint64_t
-state_lsn(void)
-{
-	return opt_int_of(&state()->lsn);
-}
-
-static inline void
-state_lsn_set(uint64_t value)
-{
-	return opt_int_set(&state()->lsn, value);
-}
-
-static inline uint64_t
-state_lsn_next(void)
-{
-	return opt_int_set_next(&state()->lsn);
-}
-
-static inline void
-state_lsn_follow(uint64_t value)
-{
-	return opt_int_follow(&state()->lsn, value);
-}
-
-// background function in background
+// execute function in background
 static inline void
 run(WorkerMain main, int argc, ...)
 {
@@ -110,38 +155,4 @@ static inline void
 resolve(char* addr, int port, struct addrinfo** result)
 {
 	run(socket_getaddrinfo_job, 3, addr, port, result);
-}
-
-// lock manager
-#define lock(resource, id) \
-	locks_lock(&runtime()->locks, (resource), (id), NULL, source_function)
-
-#define lock_system(resource_id, id) \
-	lock(&runtime()->lockables.list[(resource_id)].res, (id))
-
-#define lock_storage(id) lock_system(RES_STORAGE, id)
-
-#define breakpoint(res_id) \
-({ \
-	auto ref = &runtime()->lockables.list[(res_id)]; \
-	if (unlikely(atomic_u32_of(&ref->bp_refs) > 0)) \
-		unlock(locks_lock(&runtime()->locks, &ref->res, LOCK_SHARED, \
-		       NULL, \
-		       source_function)); \
-})
-
-hot static inline void
-unlock(Lock* self)
-{
-	locks_unlock(&runtime()->locks, self);
-}
-
-hot static inline void
-unlock_all(void)
-{
-	// unlock all locks taken by the coroutine
-	auto locks = &am_self()->locks;
-	list_foreach_reverse_safe(locks)
-		unlock(list_at(Lock, link));
-	list_init(locks);
 }

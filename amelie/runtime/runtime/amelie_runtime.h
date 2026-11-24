@@ -16,10 +16,8 @@
 #include "runtime/opts.h"
 #include "runtime/config.h"
 
-// runtime state
-#include "runtime/state.h"
-
 // runtime
+#include "runtime/state.h"
 #include "runtime/runtime.h"
 
 // global

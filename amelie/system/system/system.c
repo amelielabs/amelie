@@ -250,12 +250,12 @@ system_recover(System* self, bool bootstrap)
 	info("");
 
 	// set system recover state
-	opt_int_set(&state()->recover, RECOVER_CHECKPOINT);
+	state_recover_set(RECOVER_CHECKPOINT);
 
 	// open databases
 	storage_start(&self->storage, bootstrap);
 
-	opt_int_set(&state()->recover, RECOVER_WAL);
+	state_recover_set(RECOVER_WAL);
 
 	// replay wals
 	Recover recover;
@@ -264,7 +264,7 @@ system_recover(System* self, bool bootstrap)
 	recover_wal(&recover);
 	info("");
 
-	opt_int_set(&state()->recover, RECOVER_NONE);
+	state_recover_set(RECOVER_NONE);
 }
 
 void

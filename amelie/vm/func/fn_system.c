@@ -220,8 +220,6 @@ fn_show(Call* self)
 
 		// config or state
 		auto opt = opts_find(&config()->opts, &section);
-		if (! opt)
-			opt = opts_find(&state()->opts, &section);
 		if (!opt || opt_is(opt, OPT_S))
 			call_error_noargs(self, "option '{str}' is not found", &section);
 
