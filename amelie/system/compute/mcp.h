@@ -36,4 +36,4 @@ struct Mcp
 void mcp_init(Mcp*, Portal*);
 void mcp_free(Mcp*);
 void mcp_reset(Mcp*);
-bool mcp_parse(Mcp*, Str*, Request*);
+bool mcp_parse(Mcp*);

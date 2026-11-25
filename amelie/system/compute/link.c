@@ -165,9 +165,7 @@ link_main(Link* self)
 		}
 		case LINK_EXECUTE:
 		{
-			auto done = request_empty(&portal->req);
-			if (! done)
-				done = ctl->session_execute(session, portal);
+			auto done = ctl->session_execute(session, portal);
 			if (done)
 			{
 				// 204 No Content

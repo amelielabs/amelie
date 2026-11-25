@@ -17,8 +17,8 @@ struct Portal
 {
 	Db*      db;
 	Lock*    lock;
-	Request  req;
 	Endpoint endpoint;
+	bool     replay;
 	Local    local;
 	Output   output;
 };
@@ -53,11 +53,12 @@ static inline void
 portal_reset(Portal* self, bool with_endpoint)
 {
 	portal_unlock(self);
-	self->db = NULL;
+
+	self->db     = NULL;
+	self->replay = false;
 	if (with_endpoint)
 		endpoint_reset(&self->endpoint);
 	output_reset(&self->output);
-	request_reset(&self->req);
 	local_reset(&self->local);
 }
 
@@ -72,9 +73,9 @@ portal_free(Portal* self)
 static inline void
 portal_init(Portal* self)
 {
-	self->db   = NULL;
-	self->lock = NULL;
-	request_init(&self->req);
+	self->db     = NULL;
+	self->lock   = NULL;
+	self->replay = false;
 	endpoint_init(&self->endpoint);
 	local_init(&self->local);
 	output_init(&self->output);

@@ -327,8 +327,8 @@ set(AMELIE_SOURCES_COMPILER
 
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/compute/auth.c
-    ${AMELIE_ROOT}/system/compute/service.c
     ${AMELIE_ROOT}/system/compute/compute.c
+    ${AMELIE_ROOT}/system/compute/service.c
     ${AMELIE_ROOT}/system/compute/mcp.c
     ${AMELIE_ROOT}/system/compute/mcp_execute.c
     ${AMELIE_ROOT}/system/compute/link.c

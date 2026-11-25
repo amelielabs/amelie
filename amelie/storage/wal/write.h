@@ -36,16 +36,8 @@ write_init(Buf* buf, bool reserve_record)
 	buf_emplace(buf, size);
 }
 
-static inline Buf*
-write_allocate(bool reserve_record)
-{
-	auto buf = buf_create();
-	write_init(buf, reserve_record);
-	return buf;
-}
-
 static inline void
-write_complete_msg(Buf* buf, MsgId id)
+write_set(Buf* buf, MsgId id)
 {
 	auto msg = (Write*)buf->start;
 	msg_init(&msg->msg, id);
@@ -53,17 +45,15 @@ write_complete_msg(Buf* buf, MsgId id)
 	msg->arg         = NULL;
 }
 
-static inline void
-write_complete(Buf* buf, MsgId id, uint64_t ack, uint8_t flags)
+static inline Write*
+write_copy(MsgId id, Record* record)
 {
-	write_complete_msg(buf, id);
-
-	auto record = write_of(buf)->record;
-	record->crc   = 0;
-	record->size  = buf_size(buf) - sizeof(Write);
-	record->flags = flags;
-	record->lsn   = 0;
-	record->ack   = ack;
+	auto self = buf_create();
+	write_init(self, false);
+	buf_reserve(self, record->size);
+	buf_write(self, record, record->size);
+	write_set(self, id);
+	return write_of(self);
 }
 
 static inline void
@@ -75,15 +65,4 @@ write_seal(Write* self, uint64_t lsn)
 	// calculate crc
 	if (config()->wal_crc)
 		record->crc = runtime()->crc(0, &record->size, record->size - sizeof(uint32_t));
-}
-
-static inline Write*
-write_copy(MsgId id, Record* record)
-{
-	auto self = write_allocate(false);
-	buf_reserve(self, record->size);
-	buf_write(self, record, record->size);
-
-	write_complete_msg(self, id);
-	return write_of(self);
 }

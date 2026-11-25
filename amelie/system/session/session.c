@@ -26,7 +26,6 @@ session_create(void)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
 	self->portal  = NULL;
-	self->req     = NULL;
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->set_cache);
 	quota_init(&self->quota);
@@ -47,7 +46,6 @@ static inline void
 session_reset(Session* self)
 {
 	self->portal = NULL;
-	self->req    = NULL;
 	quota_reset(&self->quota);
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
@@ -115,11 +113,10 @@ session_run(Session* self)
 	auto access   = &program->access;
 	auto profile  = &self->profile;
 	auto gtr      = &self->gtr;
-	auto req      = self->req;
 
 	// prevent client writes on replica
 	auto ro = access_ro(access);
-	if (!req->replay && !ro && !state_is_primary())
+	if (!portal->replay && !ro && !state_is_primary())
 		error("system is in read-only mode");
 
 	// [PROFILE]
@@ -136,7 +133,8 @@ session_run(Session* self)
 	}
 
 	// begin transaction
-	gtr_begin(gtr, &portal->local, portal->db, access, &portal->endpoint);
+	auto endpoint = &portal->endpoint;
+	gtr_begin(gtr, &portal->local, portal->db, access, endpoint);
 
 	// do retention
 	session_retention(access, portal->db);
@@ -171,9 +169,15 @@ session_run(Session* self)
 		output_value(output, returning, ret.value);
 
 	// wal write
-	if (!req->replay && !ro)
+	if (!portal->replay && !ro)
 	{
-		request_write(req, &portal->endpoint, &gtr->write, portal->db->ack, 0);
+		auto write = &gtr->write;
+		write_begin_at(write, &endpoint->db_id, &endpoint->timezone,
+		               endpoint->time, endpoint->seed);
+		write_rel(write, &endpoint->rel);
+		write_content_type(write, &endpoint->content_type);
+		write_content(write, &endpoint->content);
+		write_end(write, MSG_RECORD, portal->db->ack, 0);
 
 		commit(share()->commit, gtr);
 	}
@@ -203,20 +207,19 @@ session_run_utility(Session* self)
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto gtr      = &self->gtr;
-	auto req      = self->req;
 
 	// prevent client writes on replica
 	auto stmt = compiler_stmt(compiler);
 	auto is_db = stmt_is_utility_db(stmt);
 	auto is_ro = stmt_is_utility_ro(stmt);
-	if (!req->replay && !is_ro && !state_is_primary())
+	if (!portal->replay && !is_ro && !state_is_primary())
 		error("system is in read-only mode");
 
 	// todo: take system lock
 
 	// begin transaction
-	gtr_begin(gtr, &portal->local, portal->db, &program->access,
-	          &portal->endpoint);
+	auto endpoint = &portal->endpoint;
+	gtr_begin(gtr, &portal->local, portal->db, &program->access, endpoint);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -263,17 +266,25 @@ session_run_utility(Session* self)
 	}
 
 	// wal write
-	if (tr_active(&gtr->tr) && !req->replay)
+	if (tr_active(&gtr->tr) && !portal->replay)
 	{
 		// handle db ddl as amelie
 		auto flags = 0;
+		auto uuid = &endpoint->db_id;
+		Uuid uuid_amelie;
+		uuid_init(&uuid_amelie);
 		if (is_db)
 		{
 			flags = RECORD_UTILITY;
-			uuid_init(&portal->endpoint.db_id);
+			uuid  = &uuid_amelie;
 		}
+
 		auto write = &gtr->write;
-		request_write(req, &portal->endpoint, write, 0, flags);
+		write_begin_at(write, uuid, &endpoint->timezone, endpoint->time, endpoint->seed);
+		write_rel(write, &endpoint->rel);
+		write_content_type(write, &endpoint->content_type);
+		write_content(write, &endpoint->content);
+		write_end(write, MSG_RECORD, 0, flags);
 
 		Writes writes;
 		writes_init(&writes);
@@ -300,24 +311,23 @@ hot static void
 session_main(Session* self, Portal* portal)
 {
 	// set session local settings
-	auto req = &portal->req;
 	self->portal = portal;
-	self->req    = req;
 
 	// parse request
 	auto compiler = &self->compiler;
 	compiler_set(compiler, portal->db, &portal->local, self->program);
 
-	if (str_empty(&req->rel))
+	auto endpoint = &portal->endpoint;
+	if (str_empty(&endpoint->rel))
 	{
 		// todo: check permission
 		//	check_permission_on(&portal-grants, PERM_SQL);
 
-		compiler_parse(compiler, &req->content);
+		compiler_parse(compiler, &endpoint->content);
 	} else
 	{
-		compiler_parse_copy(compiler, &req->rel, &req->content_type,
-		                    &req->content);
+		compiler_parse_copy(compiler, &endpoint->rel, &endpoint->content_type,
+		                    &endpoint->content);
 	}
 
 	// generate bytecode (unless EXECUTE)

@@ -219,6 +219,7 @@ hot void
 cpublish(Vm* self, Op* op)
 {
 	// [offset, values, refs]
+	auto endpoint = self->gtr->endpoint;
 
 	// find database
 	Str name_db;
@@ -228,17 +229,15 @@ cpublish(Vm* self, Op* op)
 	unpack_str(&pos, &name_rel);
 	auto db = catalog_find_db(&share()->storage->catalog, &name_db, true);
 
-	// create PUBLISH write on behalf of the destination db
-	auto buf = buf_create();
+	// create write on behalf of the destination db
+	auto buf = write_begin(db->rel.id, &endpoint->timezone, endpoint->time,
+	                       endpoint->seed);
 	errdefer_buf(buf);
 
-	Str content_type;
-	str_init(&content_type);
+	// rel
+	write_rel(buf, &name_rel);
 
-	request_begin(buf, self->gtr->endpoint, db->rel.id,
-	              &name_rel, &content_type);
-
-	// content (encode values as string)
+	// content
 	encode_int(buf, META_CONTENT);
 	auto offset = buf_size(buf);
 	encode_str32(buf, 0);
@@ -263,12 +262,13 @@ cpublish(Vm* self, Op* op)
 
 	encode_array_end(buf);
 
-	// set size
+	// set content size
 	auto start = buf->start + offset;
 	pack_str32(&start, buf_size(buf) - (offset + data_size_str32()));
 
+	// write end
 	auto db_current = db_of(self->gtr->tr.db);
-	request_end(buf, MSG_PUBLISH, db_current->ack, RECORD_PUBLISH);
+	write_end(buf, MSG_PUBLISH, db_current->ack, RECORD_PUBLISH);
 
 	// log
 	auto write = write_of(buf);

@@ -55,6 +55,7 @@ struct Endpoint
 	// endpoint
 	Str      uri;
 	Str      content_type;
+	Str      content;
 	Str      accept;
 
 	// relation
@@ -71,7 +72,6 @@ struct Endpoint
 	// misc
 	Str      jsonrpc;
 	bool     trusted;
-	bool     debug;
 
 	// options
 	Opts     opts;

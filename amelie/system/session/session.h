@@ -21,7 +21,6 @@ struct Session
 	Program* program;
 	Gtr      gtr;
 	Portal*  portal;
-	Request* req;
 	SetCache set_cache;
 	Profile  profile;
 };

@@ -46,7 +46,18 @@ service_process(Service* self, Write* record)
 	auto endpoint = &portal->endpoint;
 
 	// restore request
-	request_read(&portal->req, endpoint, record);
+	write_read(record_data(record->record),
+	           &endpoint->db_id,
+	           &endpoint->timezone,
+	           &endpoint->time,
+	           &endpoint->seed,
+	           &endpoint->rel,
+	           &endpoint->content_type,
+	           &endpoint->content);
+
+	// recover
+	if (record->msg.id == MSG_RECORD)
+		portal->replay = true;
 
 	// set db (takes shared storage lock)
 	portal_bind(portal, &endpoint->db_id);

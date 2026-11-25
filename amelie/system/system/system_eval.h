@@ -67,9 +67,8 @@ system_eval(SystemEval* self, Str* db, Str* command)
 	portal_bind_name(portal, db);
 
 	// set request
-	auto req = &portal->req;
-	request_set_replay(req);
-	str_set_str(&req->content, command);
+	str_set_str(&portal->endpoint.content, command);
+	portal->replay = true;
 
 	// execute
 	session_execute(self->session, portal);

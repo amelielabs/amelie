@@ -16,8 +16,8 @@
 
 // wal write
 #include "wal/write.h"
+#include "wal/write_data.h"
 #include "wal/writes.h"
-#include "wal/request.h"
 
 // wal
 #include "wal/wal_file.h"

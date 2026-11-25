@@ -168,9 +168,10 @@ mcp_parse_resources_read(Mcp* self)
 }
 
 static void
-mcp_parse_content(Mcp* self, Str* content)
+mcp_parse_content(Mcp* self)
 {
 	auto jsonrpc = &self->jsonrpc;
+	auto content = &self->portal->endpoint.content;
 
 	// parse jsonrpc request
 	jsonrpc_parse(jsonrpc, content);
@@ -207,12 +208,11 @@ mcp_parse_content(Mcp* self, Str* content)
 }
 
 bool
-mcp_parse(Mcp* self, Str* content, Request* req)
+mcp_parse(Mcp* self)
 {
 	// parser jsonrpc request
-	auto on_error = error_catch
-	(
-		mcp_parse_content(self, content);
+	auto on_error = error_catch (
+		mcp_parse_content(self)
 	);
 	if (on_error)
 	{
@@ -221,6 +221,6 @@ mcp_parse(Mcp* self, Str* content, Request* req)
 	}
 
 	// execute or prepare mcp request
-	mcp_execute(self, req);
+	mcp_execute(self);
 	return true;
 }

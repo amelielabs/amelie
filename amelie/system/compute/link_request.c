@@ -40,6 +40,9 @@ link_sql(Link* self)
 	// reset to default
 	str_init(content_type);
 
+	// set content
+	buf_str(&http->content, &endpoint->content);
+
 	// accept
 	OutputIf* output_if;
 	auto accept = &endpoint->accept;
@@ -56,10 +59,6 @@ link_sql(Link* self)
 		error("unsupported operation accept: {str}", accept);
 	}
 	output_set(&portal->output, endpoint, output_if, NULL);
-
-	// set request
-	auto req = &portal->req;
-	buf_str(&http->content, &req->content);
 	return LINK_EXECUTE;
 }
 
@@ -86,14 +85,14 @@ link_mcp(Link* self)
 	str_set(accept, "application/json", 16);
 	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
 
-	Str content;
-	buf_str(&http->content, &content);
+	// set content
+	buf_str(&http->content, &endpoint->content);
 
 	// parse mcp request and run commands which not
 	// require execution
 	auto mcp = &self->mcp;
 	mcp_reset(mcp);
-	if (! mcp_parse(mcp, &content, &portal->req))
+	if (! mcp_parse(mcp))
 		return LINK_ERROR;
 
 	return LINK_EXECUTE;
@@ -159,10 +158,9 @@ link_rel(Link* self)
 	if (unlikely(! str_is_case(method, "POST", 4)))
 		error("unsupported operation method: {str}", method);
 
-	Str content;
-	buf_str(&http->content, &content);
+	buf_str(&http->content, &endpoint->content);
 
-	// content type (json)
+	// set content type and content
 	auto content_type = &endpoint->content_type;
 	if (str_empty(content_type) ||
 	    str_is(content_type, "application/json", 16) ||
@@ -174,8 +172,10 @@ link_rel(Link* self)
 		// parse json body
 		auto json = &self->json;
 		json_reset(json);
-		json_parse(json, &content, NULL);
-		buf_str(json->buf, &content);
+		json_parse(json, &endpoint->content, NULL);
+
+		// set content
+		buf_str(json->buf, &endpoint->content);
 	} else
 	if (str_is(content_type, "text/csv", 8))
 	{
@@ -200,12 +200,6 @@ link_rel(Link* self)
 		error("unsupported operation accept: {str}", accept);
 	}
 	output_set(&portal->output, endpoint, output_if, NULL);
-
-	// set request
-	auto req = &portal->req;
-	req->rel          = endpoint->rel;
-	req->content_type = *content_type;
-	req->content      =  content;
 	return LINK_EXECUTE;
 }
 

@@ -287,9 +287,13 @@ OutputIf output_mcp =
 };
 
 void
-mcp_execute(Mcp* self, Request* req)
+mcp_execute(Mcp* self)
 {
 	// process request
+	auto endpoint = &self->portal->endpoint;
+
+	str_init(&endpoint->rel);
+	str_init(&endpoint->content);
 	switch (self->type) {
 	case MCP_INITIALIZE:
 	{
@@ -304,8 +308,8 @@ mcp_execute(Mcp* self, Request* req)
 	case MCP_TOOLS_CALL:
 	{
 		// execute UDF call
-		req->rel = self->rel;
-		str_set_u8(&req->content, self->args, self->args_size);
+		str_set_str(&endpoint->rel, &self->rel);
+		str_set_u8(&endpoint->content, self->args, self->args_size);
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;
@@ -320,7 +324,7 @@ mcp_execute(Mcp* self, Request* req)
 	case MCP_RESOURCES_READ:
 	{
 		// execute UDF call
-		req->rel = self->rel;
+		str_set_str(&endpoint->rel, &self->rel);
 
 		auto output = &self->portal->output;
 		output->iface_arg = self;

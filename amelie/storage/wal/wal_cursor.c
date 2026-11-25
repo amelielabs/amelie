@@ -141,12 +141,13 @@ wal_cursor_read(WalCursor* self, Buf* buf)
 Write*
 wal_cursor_next_msg(WalCursor* self)
 {
-	auto write = write_allocate(false);
+	auto write = buf_create();
+	write_init(write, false);
 	errdefer_buf(write);
 
 	if (wal_cursor_read(self, write))
 	{
-		write_complete_msg(write, MSG_RECORD);
+		write_set(write, MSG_RECORD);
 		return write_of(write);
 	}
 

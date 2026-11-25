@@ -37,7 +37,6 @@ main_init(Main* self, int argc, char** argv)
 	self->argv = argv;
 	console_init(&self->console);
 	endpoint_init(&self->endpoint);
-	self->endpoint.debug = true;
 }
 
 void

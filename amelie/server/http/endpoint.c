@@ -40,6 +40,7 @@ endpoint_init(Endpoint* self)
 		// endpoint
 		{ "uri",          OPT_STRING,  OPT_E,              &self->uri,          NULL, 0          },
 		{ "content_type", OPT_STRING,  OPT_C|OPT_A,        &self->content_type, NULL, 0          },
+		{ "content",      OPT_STRING,  OPT_E,              &self->content,      NULL, 0          },
 		{ "accept",       OPT_STRING,  OPT_C|OPT_A,        &self->accept,       NULL, 0          },
 		// relation
 		{ "db",           OPT_STRING,  OPT_C,              &self->db,           NULL, 0          },
@@ -53,7 +54,6 @@ endpoint_init(Endpoint* self)
 		// misc
 		{ "jsonrpc",      OPT_JSON,    OPT_E,              &self->jsonrpc,      NULL, 0          },
 		{ "trusted",      OPT_BOOL,    OPT_E,              &self->trusted,      NULL, false      },
-		{ "debug",        OPT_BOOL,    OPT_C,              &self->debug,        NULL, false      },
 	};
 	opts_define(&self->opts, defs, 25);
 }
