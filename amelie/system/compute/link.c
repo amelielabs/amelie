@@ -24,8 +24,8 @@ link_init(Link* self, Compute* compute, Client* client)
 	self->client  = client;
 	self->compute = compute;
 
-	portal_init(&self->portal);
-	mcp_init(&self->mcp, &self->portal);
+	request_init(&self->req);
+	mcp_init(&self->mcp, &self->req);
 	json_init(&self->json);
 }
 
@@ -34,21 +34,21 @@ link_free(Link* self)
 {
 	mcp_free(&self->mcp);
 	json_free(&self->json);
-	portal_free(&self->portal);
+	request_free(&self->req);
 }
 
 static void
 link_reset(Link* self)
 {
-	// release catalog lock
-	portal_reset(&self->portal, true);
+	// release lock
+	request_reset(&self->req, true);
 }
 
 hot static inline bool
 link_endpoint(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 	auto http     = &self->client->request;
 
 	// content type
@@ -70,7 +70,7 @@ link_endpoint(Link* self)
 	endpoint->trusted = self->client->trusted;
 
 	// update time and random seed
-	portal_prepare(portal);
+	request_prepare(req);
 
 	// parse path and arguments
 	return !error_catch
@@ -89,7 +89,7 @@ link_auth(Link* self)
 	// authenticate token (and take users lock)
 	return !error_catch
 	(
-		portal_auth(&self->portal, &self->compute->auth, &self->client->token)
+		request_auth(&self->req, &self->compute->auth, &self->client->token)
 	);
 }
 
@@ -99,8 +99,8 @@ link_main(Link* self)
 	auto client    = self->client;
 	auto readahead = &client->readahead;
 	auto http      = &client->request;
-	auto portal    = &self->portal;
-	client_set_endpoint(client, &portal->endpoint);
+	auto req       = &self->req;
+	client_set_endpoint(client, &req->endpoint);
 
 	// create sesssion
 	auto ctl = self->compute->iface;
@@ -132,7 +132,7 @@ link_main(Link* self)
 		if (! link_endpoint(self))
 		{
 			// 400 Bad Request
-			client_400(client, portal->output.buf);
+			client_400(client, req->output.buf);
 
 			link_reset(self);
 			http_reset(http);
@@ -148,7 +148,7 @@ link_main(Link* self)
 		}
 
 		// migrate client to other compute
-		auto task = portal->db->compute;
+		auto task = req->db->compute;
 		if (unlikely(task != am_task))
 		{
 			token_reset(&client->token);
@@ -160,25 +160,25 @@ link_main(Link* self)
 		case LINK_ERROR:
 		{
 			// 400 Bad Request
-			client_400(client, portal->output.buf);
+			client_400(client, req->output.buf);
 			break;
 		}
 		case LINK_EXECUTE:
 		{
-			auto done = ctl->session_execute(session, portal);
+			auto done = ctl->session_execute(session, req);
 			if (done)
 			{
 				// 204 No Content
 				// 200 OK
-				if (buf_empty(portal->output.buf))
+				if (buf_empty(req->output.buf))
 					client_204(client);
 				else
-					client_200(client, portal->output.buf);
+					client_200(client, req->output.buf);
 				break;
 			}
 
 			// 400 Bad Request
-			client_400(client, portal->output.buf);
+			client_400(client, req->output.buf);
 			break;
 		}
 		case LINK_STREAM:

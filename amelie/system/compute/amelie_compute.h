@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-// portal
+// request
 #include "compute/auth.h"
-#include "compute/portal.h"
+#include "compute/request.h"
 
 // service
 #include "compute/service.h"

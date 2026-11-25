@@ -213,7 +213,7 @@ show
   "resource": "storage",
   "lock": "shared",
   "waiting": false,
-  "function": "portal_lock"
+  "function": "request_lock"
 }]
 disconnect S0;
 close E0;

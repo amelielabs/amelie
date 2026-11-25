@@ -29,11 +29,11 @@ struct Mcp
 	Str      rel;
 	uint8_t* args;
 	int      args_size;
-	Portal*  portal;
+	Request* req;
 	Jsonrpc  jsonrpc;
 };
 
-void mcp_init(Mcp*, Portal*);
+void mcp_init(Mcp*, Request*);
 void mcp_free(Mcp*);
 void mcp_reset(Mcp*);
 bool mcp_parse(Mcp*);

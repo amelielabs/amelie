@@ -25,7 +25,7 @@ session_create(void)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
-	self->portal  = NULL;
+	self->req     = NULL;
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->set_cache);
 	quota_init(&self->quota);
@@ -45,7 +45,7 @@ session_reset_compiler(Session* self)
 static inline void
 session_reset(Session* self)
 {
-	self->portal = NULL;
+	self->req = NULL;
 	quota_reset(&self->quota);
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
@@ -107,7 +107,7 @@ session_streaming_resume(Access* access)
 hot static inline void
 session_run(Session* self)
 {
-	auto portal   = self->portal;
+	auto req      = self->req;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto access   = &program->access;
@@ -116,7 +116,7 @@ session_run(Session* self)
 
 	// prevent client writes on replica
 	auto ro = access_ro(access);
-	if (!portal->replay && !ro && !state_is_primary())
+	if (!req->replay && !ro && !state_is_primary())
 		error("system is in read-only mode");
 
 	// [PROFILE]
@@ -124,7 +124,7 @@ session_run(Session* self)
 		profile_start(&profile->time_run_us);
 
 	// set compute limit
-	auto limits = portal->local.limits;
+	auto limits = req->local.limits;
 	if (limits)
 	{
 		auto quota = &self->quota;
@@ -133,11 +133,11 @@ session_run(Session* self)
 	}
 
 	// begin transaction
-	auto endpoint = &portal->endpoint;
-	gtr_begin(gtr, &portal->local, portal->db, access, endpoint);
+	auto endpoint = &req->endpoint;
+	gtr_begin(gtr, &req->local, req->db, access, endpoint);
 
 	// do retention
-	session_retention(access, portal->db);
+	session_retention(access, req->db);
 
 	// execute
 	Return ret;
@@ -164,12 +164,12 @@ session_run(Session* self)
 
 	// create reply
 	auto returning = compiler->program_returning;
-	auto output = &portal->output;
+	auto output = &req->output;
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
 	// wal write
-	if (!portal->replay && !ro)
+	if (!req->replay && !ro)
 	{
 		auto write = &gtr->write;
 		write_begin_at(write, &endpoint->db_id, &endpoint->timezone,
@@ -177,14 +177,14 @@ session_run(Session* self)
 		write_rel(write, &endpoint->rel);
 		write_content_type(write, &endpoint->content_type);
 		write_content(write, &endpoint->content);
-		write_end(write, MSG_RECORD, portal->db->ack, 0);
+		write_end(write, MSG_RECORD, req->db->ack, 0);
 
 		commit(share()->commit, gtr);
 	}
 
 	// mark for checkpoint
 	if (! ro)
-		db_dirty(portal->db, true);
+		db_dirty(req->db, true);
 
 	// commit
 	tr_commit(&gtr->tr);
@@ -203,7 +203,7 @@ session_run(Session* self)
 hot static inline void
 session_run_utility(Session* self)
 {
-	auto portal   = self->portal;
+	auto req      = self->req;
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	auto gtr      = &self->gtr;
@@ -212,14 +212,14 @@ session_run_utility(Session* self)
 	auto stmt = compiler_stmt(compiler);
 	auto is_db = stmt_is_utility_db(stmt);
 	auto is_ro = stmt_is_utility_ro(stmt);
-	if (!portal->replay && !is_ro && !state_is_primary())
+	if (!req->replay && !is_ro && !state_is_primary())
 		error("system is in read-only mode");
 
 	// todo: take system lock
 
 	// begin transaction
-	auto endpoint = &portal->endpoint;
-	gtr_begin(gtr, &portal->local, portal->db, &program->access, endpoint);
+	auto endpoint = &req->endpoint;
+	gtr_begin(gtr, &req->local, req->db, &program->access, endpoint);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -244,7 +244,7 @@ session_run_utility(Session* self)
 		rethrow();
 	}
 
-	auto output = &portal->output;
+	auto output = &req->output;
 	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_run_us);
@@ -266,7 +266,7 @@ session_run_utility(Session* self)
 	}
 
 	// wal write
-	if (tr_active(&gtr->tr) && !portal->replay)
+	if (tr_active(&gtr->tr) && !req->replay)
 	{
 		// handle db ddl as amelie
 		auto flags = 0;
@@ -294,7 +294,7 @@ session_run_utility(Session* self)
 
 	// mark for checkpoint
 	if (! is_ro)
-		db_dirty(portal->db, true);
+		db_dirty(req->db, true);
 
 	// commit
 	tr_commit(&gtr->tr);
@@ -308,20 +308,20 @@ session_run_utility(Session* self)
 }
 
 hot static void
-session_main(Session* self, Portal* portal)
+session_main(Session* self, Request* req)
 {
 	// set session local settings
-	self->portal = portal;
+	self->req = req;
 
 	// parse request
 	auto compiler = &self->compiler;
-	compiler_set(compiler, portal->db, &portal->local, self->program);
+	compiler_set(compiler, req->db, &req->local, self->program);
 
-	auto endpoint = &portal->endpoint;
+	auto endpoint = &req->endpoint;
 	if (str_empty(&endpoint->rel))
 	{
 		// todo: check permission
-		//	check_permission_on(&portal-grants, PERM_SQL);
+		//	check_permission_on(&req-grants, PERM_SQL);
 
 		compiler_parse(compiler, &endpoint->content);
 	} else
@@ -350,18 +350,18 @@ session_main(Session* self, Portal* portal)
 		str_set(&column, "explain", 7);
 		Str str;
 		buf_str(&compiler->explain, &str);
-		output_str(&portal->output, &column, &str);
+		output_str(&req->output, &column, &str);
 		return;
 	}
 
 #if 0
 	// permission to EXECUTE
 	if (stmt->id == STMT_EXECUTE)
-		db_check_permission(portal->db, &compiler->program_udf->rel,
+		db_check_permission(req->db, &compiler->program_udf->rel,
 		                    PERM_EXECUTE);
 
 	// validate permissions
-	db_check_access(portal->grants, &program->access);
+	db_check_access(req->grants, &program->access);
 #endif
 
 	// execute utility, DDL, DML or Query
@@ -372,7 +372,7 @@ session_main(Session* self, Portal* portal)
 }
 
 hot bool
-session_execute(Session* self, Portal* portal)
+session_execute(Session* self, Request* req)
 {
 	cancel_pause();
 
@@ -383,7 +383,7 @@ session_execute(Session* self, Portal* portal)
 		session_reset(self);
 
 		// parse and execute request
-		session_main(self, portal);
+		session_main(self, req);
 
 		// done
 		unlock_all();
@@ -391,8 +391,8 @@ session_execute(Session* self, Portal* portal)
 
 	if (on_error)
 	{
-		buf_reset(portal->output.buf);
-		output_error(&portal->output, &am_self()->error);
+		buf_reset(req->output.buf);
+		output_error(&req->output, &am_self()->error);
 		unlock_all();
 	}
 

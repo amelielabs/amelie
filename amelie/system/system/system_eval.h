@@ -15,8 +15,8 @@ typedef struct SystemEval SystemEval;
 
 struct SystemEval
 {
-	Portal   portal;
-	Buf      portal_buf;
+	Request  req;
+	Buf      req_buf;
 	Session* session;
 };
 
@@ -25,8 +25,8 @@ system_eval_allocate(void)
 {
 	auto self = (SystemEval*)am_malloc(sizeof(SystemEval));
 	self->session = NULL;
-	buf_init(&self->portal_buf);
-	portal_init(&self->portal);
+	buf_init(&self->req_buf);
+	request_init(&self->req);
 	return self;
 }
 
@@ -38,8 +38,8 @@ system_eval_free(SystemEval* self)
 		session_free(self->session);
 		self->session = NULL;
 	}
-	buf_free(&self->portal_buf);
-	portal_free(&self->portal);
+	buf_free(&self->req_buf);
+	request_free(&self->req);
 	am_free(self);
 }
 
@@ -53,24 +53,24 @@ system_eval_create(SystemEval* self)
 static inline void
 system_eval(SystemEval* self, Str* db, Str* command)
 {
-	buf_reset(&self->portal_buf);
+	buf_reset(&self->req_buf);
 
 	// todo: output to none
-	auto portal = &self->portal;
-	output_set_buf(&portal->output, &self->portal_buf);
-	output_set(&portal->output, &portal->endpoint, &output_json, NULL);
+	auto req = &self->req;
+	output_set_buf(&req->output, &self->req_buf);
+	output_set(&req->output, &req->endpoint, &output_json, NULL);
 
 	// update time and random seed
-	portal_prepare(portal);
+	request_prepare(req);
 
-	// auth portal
-	portal_bind_name(portal, db);
+	// auth request
+	request_bind_name(req, db);
 
 	// set request
-	str_set_str(&portal->endpoint.content, command);
-	portal->replay = true;
+	str_set_str(&req->endpoint.content, command);
+	req->replay = true;
 
 	// execute
-	session_execute(self->session, portal);
-	portal_reset(portal, true);
+	session_execute(self->session, req);
+	request_reset(req, true);
 }

@@ -20,7 +20,7 @@ struct Session
 	Quota    quota;
 	Program* program;
 	Gtr      gtr;
-	Portal*  portal;
+	Request* req;
 	SetCache set_cache;
 	Profile  profile;
 };
@@ -28,4 +28,4 @@ struct Session
 Session*
 session_create(void);
 void session_free(Session*);
-bool session_execute(Session*, Portal*);
+bool session_execute(Session*, Request*);

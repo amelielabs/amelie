@@ -21,7 +21,7 @@
 static void
 mcp_initialize(Mcp* self)
 {
-	auto portal = self->portal;
+	auto req = self->req;
 
 	// {}
 	auto buf = buf_create();
@@ -34,7 +34,7 @@ mcp_initialize(Mcp* self)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &portal->endpoint.jsonrpc;
+	auto id = &req->endpoint.jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else
@@ -80,13 +80,13 @@ mcp_initialize(Mcp* self)
 	encode_obj_end(buf);
 
 	auto pos = buf->start;
-	json_export_as(portal->output.buf, portal->output.timezone, true, 0, &pos);
+	json_export_as(req->output.buf, req->output.timezone, true, 0, &pos);
 }
 
 static void
 mcp_tools_list(Mcp* self)
 {
-	auto portal = self->portal;
+	auto req = self->req;
 
 	// {}
 	auto buf = buf_create();
@@ -99,7 +99,7 @@ mcp_tools_list(Mcp* self)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &portal->endpoint.jsonrpc;
+	auto id = &req->endpoint.jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else
@@ -111,19 +111,19 @@ mcp_tools_list(Mcp* self)
 
 	// tools []
 	encode_raw(buf, "tools", 5);
-	catalog_mcp_tools(&portal->db->catalog, buf);
+	catalog_mcp_tools(&req->db->catalog, buf);
 
 	encode_obj_end(buf);
 	encode_obj_end(buf);
 
 	auto pos = buf->start;
-	json_export_as(portal->output.buf, portal->output.timezone, true, 0, &pos);
+	json_export_as(req->output.buf, req->output.timezone, true, 0, &pos);
 }
 
 static void
 mcp_resources_list(Mcp* self)
 {
-	auto portal = self->portal;
+	auto req = self->req;
 
 	// {}
 	auto buf = buf_create();
@@ -136,7 +136,7 @@ mcp_resources_list(Mcp* self)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &portal->endpoint.jsonrpc;
+	auto id = &req->endpoint.jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else
@@ -148,13 +148,13 @@ mcp_resources_list(Mcp* self)
 
 	// resources []
 	encode_raw(buf, "resources", 9);
-	catalog_mcp_resources(&portal->db->catalog, buf);
+	catalog_mcp_resources(&req->db->catalog, buf);
 
 	encode_obj_end(buf);
 	encode_obj_end(buf);
 
 	auto pos = buf->start;
-	json_export_as(portal->output.buf, portal->output.timezone, true, 0, &pos);
+	json_export_as(req->output.buf, req->output.timezone, true, 0, &pos);
 }
 
 static void
@@ -290,7 +290,7 @@ void
 mcp_execute(Mcp* self)
 {
 	// process request
-	auto endpoint = &self->portal->endpoint;
+	auto endpoint = &self->req->endpoint;
 
 	str_init(&endpoint->rel);
 	str_init(&endpoint->content);
@@ -311,7 +311,7 @@ mcp_execute(Mcp* self)
 		str_set_str(&endpoint->rel, &self->rel);
 		str_set_u8(&endpoint->content, self->args, self->args_size);
 
-		auto output = &self->portal->output;
+		auto output = &self->req->output;
 		output->iface_arg = self;
 		output->iface     = &output_mcp;
 		break;
@@ -326,7 +326,7 @@ mcp_execute(Mcp* self)
 		// execute UDF call
 		str_set_str(&endpoint->rel, &self->rel);
 
-		auto output = &self->portal->output;
+		auto output = &self->req->output;
 		output->iface_arg = self;
 		output->iface     = &output_mcp;
 		break;

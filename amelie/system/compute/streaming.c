@@ -33,11 +33,11 @@ streaming_start(Link* self)
 static Table*
 streaming_prepare(Link* self, StreamPos* pos)
 {
-	auto portal = &self->portal;
+	auto req = &self->req;
 
 	// find relation
-	auto rel_name = &portal->endpoint.rel;
-	auto rel = catalog_find(&portal->db->catalog, REL_UNDEF, rel_name, false);
+	auto rel_name = &req->endpoint.rel;
+	auto rel = catalog_find(&req->db->catalog, REL_UNDEF, rel_name, false);
 	if (! rel)
 		error("stream: relation {str} not found", rel_name);
 	if (rel->type != REL_TABLE)
@@ -45,7 +45,7 @@ streaming_prepare(Link* self, StreamPos* pos)
 		      rel_name);
 
 	// prepare streams (one per partition)
-	auto id = &portal->endpoint.id;
+	auto id = &req->endpoint.id;
 	if (! str_empty(id))
 		if (stream_pos_read(pos, id) == -1)
 			error("stream: invalid id");
@@ -75,7 +75,7 @@ streaming_main(Link* self, StreamPos* pos, Part* part)
 	event_set_parent(&eof, &event);
 
 	// main
-	auto portal = &self->portal;
+	auto req = &self->req;
 	for (;;)
 	{
 		// collect events
@@ -91,7 +91,7 @@ streaming_main(Link* self, StreamPos* pos, Part* part)
 		// attach and wait (resume, eof or cancel)
 		stream_attach(&stream);
 
-		portal_unlock(portal);
+		request_unlock(req);
 
 		// wait
 		auto on_cancel = error_catch
@@ -100,7 +100,7 @@ streaming_main(Link* self, StreamPos* pos, Part* part)
 			event_wait(&event, -1)
 		);
 
-		portal_lock(portal, LOCK_SHARED); // todo: cancellation point
+		request_lock(req, LOCK_SHARED); // todo: cancellation point
 
 		if (stream_detach(&stream))
 			break;
@@ -123,13 +123,13 @@ streaming(Link* self)
 		table = streaming_prepare(self, &pos);
 	);
 
-	auto portal = &self->portal;
+	auto req = &self->req;
 	if (on_error)
 	{
 		// 400 Bad Request
-		buf_reset(portal->output.buf);
-		output_error(&portal->output, &am_self()->error);
-		client_400(self->client, portal->output.buf);
+		buf_reset(req->output.buf);
+		output_error(&req->output, &am_self()->error);
+		client_400(self->client, req->output.buf);
 		return;
 	}
 

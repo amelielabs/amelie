@@ -125,9 +125,9 @@ compute_if_session_free(void* ptr)
 }
 
 static bool
-compute_if_session_execute(void* ptr, Portal* portal)
+compute_if_session_execute(void* ptr, Request* request)
 {
-	return session_execute(ptr, portal);
+	return session_execute(ptr, request);
 }
 
 static ComputeIf compute_if =

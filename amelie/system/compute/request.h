@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Portal Portal;
+typedef struct Request Request;
 
-struct Portal
+struct Request
 {
 	Db*      db;
 	Lock*    lock;
@@ -24,7 +24,7 @@ struct Portal
 };
 
 static inline void
-portal_lock(Portal* self, LockId id)
+request_lock(Request* self, LockId id)
 {
 	// take storage lock
 	if (self->lock)
@@ -40,7 +40,7 @@ portal_lock(Portal* self, LockId id)
 }
 
 static inline void
-portal_unlock(Portal* self)
+request_unlock(Request* self)
 {
 	if (self->lock)
 	{
@@ -50,9 +50,9 @@ portal_unlock(Portal* self)
 }
 
 static inline void
-portal_reset(Portal* self, bool with_endpoint)
+request_reset(Request* self, bool with_endpoint)
 {
-	portal_unlock(self);
+	request_unlock(self);
 
 	self->db     = NULL;
 	self->replay = false;
@@ -63,15 +63,15 @@ portal_reset(Portal* self, bool with_endpoint)
 }
 
 static inline void
-portal_free(Portal* self)
+request_free(Request* self)
 {
-	portal_reset(self, true);
+	request_reset(self, true);
 	endpoint_free(&self->endpoint);
 	output_free(&self->output);
 }
 
 static inline void
-portal_init(Portal* self)
+request_init(Request* self)
 {
 	self->db     = NULL;
 	self->lock   = NULL;
@@ -82,7 +82,7 @@ portal_init(Portal* self)
 }
 
 static inline void
-portal_prepare(Portal* self)
+request_prepare(Request* self)
 {
 	// timestamp
 	auto endpoint = &self->endpoint;
@@ -97,10 +97,10 @@ portal_prepare(Portal* self)
 }
 
 hot static inline void
-portal_auth(Portal* self, Auth* auth, Token* token)
+request_auth(Request* self, Auth* auth, Token* token)
 {
 	// take storage lock
-	portal_lock(self, LOCK_SHARED);
+	request_lock(self, LOCK_SHARED);
 
 	// authenticate token
 	auto endpoint = &self->endpoint;
@@ -111,7 +111,7 @@ portal_auth(Portal* self, Auth* auth, Token* token)
 }
 
 hot static inline void
-portal_set_local(Portal* self, bool with_limits)
+request_set_local(Request* self, bool with_limits)
 {
 	// set limits
 	auto local = &self->local;
@@ -133,7 +133,7 @@ portal_set_local(Portal* self, bool with_limits)
 }
 
 hot static inline void
-portal_set(Portal* self, Db* db, bool with_limits)
+request_set(Request* self, Db* db, bool with_limits)
 {
 	// set db
 	self->db = db;
@@ -143,28 +143,28 @@ portal_set(Portal* self, Db* db, bool with_limits)
 	self->endpoint.db_id = self->db->config->id;
 
 	// configure local
-	portal_set_local(self, with_limits);
+	request_set_local(self, with_limits);
 
 	// set output local (enforce send limit)
 	output_set_local(&self->output, &self->local);
 }
 
 hot static inline void
-portal_bind(Portal* self, Uuid* id)
+request_bind(Request* self, Uuid* id)
 {
 	// take storage lock
-	portal_lock(self, LOCK_SHARED);
+	request_lock(self, LOCK_SHARED);
 
 	auto rel = catalog_find_by(&share()->storage->catalog, REL_DB, id, true);
-	portal_set(self, db_of(rel), false);
+	request_set(self, db_of(rel), false);
 }
 
 hot static inline void
-portal_bind_name(Portal* self, Str* name)
+request_bind_name(Request* self, Str* name)
 {
 	// take storage lock
-	portal_lock(self, LOCK_SHARED);
+	request_lock(self, LOCK_SHARED);
 
 	auto db = catalog_find_db(&share()->storage->catalog, name, true);
-	portal_set(self, db, false);
+	request_set(self, db, false);
 }

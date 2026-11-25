@@ -21,7 +21,7 @@
 static inline void
 service_ack(Service* self, uint64_t ack)
 {
-	auto db = self->portal.db;
+	auto db = self->req.db;
 	db_ack(db, ack);
 
 	if (! db->publish_count)
@@ -42,8 +42,8 @@ service_ack(Service* self, uint64_t ack)
 static inline bool
 service_process(Service* self, Write* record)
 {
-	auto portal = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 
 	// restore request
 	write_read(record_data(record->record),
@@ -57,11 +57,11 @@ service_process(Service* self, Write* record)
 
 	// recover
 	if (record->msg.id == MSG_RECORD)
-		portal->replay = true;
+		req->replay = true;
 
 	// set db (takes shared storage lock)
-	portal_bind(portal, &endpoint->db_id);
-	auto db = portal->db;
+	request_bind(req, &endpoint->db_id);
+	auto db = req->db;
 
 	// process
 	bool free    = true;
@@ -104,7 +104,7 @@ service_process(Service* self, Write* record)
 	if (execute)
 	{
 		auto compute = self->compute;
-		compute->iface->session_execute(self->session, portal);
+		compute->iface->session_execute(self->session, req);
 	}
 
 	return free;
@@ -118,13 +118,13 @@ service_execute(Service* self, Write* record)
 	if (! self->session)
 		self->session = iface->session_create(compute, compute->iface_arg);
 
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 
 	// todo: output to none
 	buf_reset(&self->buf);
-	output_set_buf(&portal->output, &self->buf);
-	output_set(&portal->output, endpoint, &output_json, NULL);
+	output_set_buf(&req->output, &self->buf);
+	output_set(&req->output, endpoint, &output_json, NULL);
 
 	// process request
 	bool free;
@@ -133,8 +133,7 @@ service_execute(Service* self, Write* record)
 		free = service_process(self, record)
 	);
 
-	portal_reset(portal, true);
-
+	request_reset(req, true);
 	if (free)
 		buf_free(record->msg_buf);
 
@@ -193,7 +192,7 @@ service_init(Service* self, Compute* compute)
 	self->session   = NULL;
 	self->compute   = compute;
 	mailbox_init(&self->mailbox);
-	portal_init(&self->portal);
+	request_init(&self->req);
 	buf_init(&self->buf);
 }
 
@@ -206,7 +205,7 @@ service_free(Service* self)
 		self->compute->iface->session_free(self->session);
 		self->session = NULL;
 	}
-	portal_free(&self->portal);
+	request_free(&self->req);
 	buf_free(&self->buf);
 }
 

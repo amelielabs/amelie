@@ -18,7 +18,7 @@ struct ComputeIf
 {
 	void* (*session_create)(Compute*, void*);
 	void  (*session_free)(void*);
-	bool  (*session_execute)(void*, Portal*);
+	bool  (*session_execute)(void*, Request*);
 };
 
 struct Compute

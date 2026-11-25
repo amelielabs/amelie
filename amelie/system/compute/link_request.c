@@ -21,14 +21,14 @@
 hot static inline int
 link_sql(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 	auto http     = &self->client->request;
 
 	// POST /db (text/plain)
 
 	// todo: check permission
-	//	check_permission_on(&portal->grants, PERM_SQL);
+	//	check_permission_on(&request->grants, PERM_SQL);
 
 	// content type
 	auto content_type = &endpoint->content_type;
@@ -58,15 +58,15 @@ link_sql(Link* self)
 	} else {
 		error("unsupported operation accept: {str}", accept);
 	}
-	output_set(&portal->output, endpoint, output_if, NULL);
+	output_set(&req->output, endpoint, output_if, NULL);
 	return LINK_EXECUTE;
 }
 
 hot static inline int
 link_mcp(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 	auto http     = &self->client->request;
 
 	// POST /db (application/json)
@@ -83,7 +83,7 @@ link_mcp(Link* self)
 		error("unsupported operation accept: {str}", accept);
 
 	str_set(accept, "application/json", 16);
-	output_set(&portal->output, endpoint, &output_jsonrpc, NULL);
+	output_set(&req->output, endpoint, &output_jsonrpc, NULL);
 
 	// set content
 	buf_str(&http->content, &endpoint->content);
@@ -101,8 +101,8 @@ link_mcp(Link* self)
 hot static inline int
 link_db(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 
 	// POST /db
 	auto http   = &self->client->request;
@@ -122,8 +122,8 @@ link_db(Link* self)
 hot static inline int
 link_rel_get(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 
 	// GET (text/event-stream) SSE
 	auto content_type = &endpoint->content_type;
@@ -137,7 +137,7 @@ link_rel_get(Link* self)
 		error("unsupported operation accept: {str}", accept);
 
 	str_set(accept, "application/json", 16);
-	output_set(&portal->output, endpoint, &output_json, NULL);
+	output_set(&req->output, endpoint, &output_json, NULL);
 
 	return LINK_STREAM;
 }
@@ -145,8 +145,8 @@ link_rel_get(Link* self)
 hot static inline int
 link_rel(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
 	auto http     = &self->client->request;
 
 	// GET /db/rel (feed)
@@ -199,16 +199,16 @@ link_rel(Link* self)
 	} else {
 		error("unsupported operation accept: {str}", accept);
 	}
-	output_set(&portal->output, endpoint, output_if, NULL);
+	output_set(&req->output, endpoint, output_if, NULL);
 	return LINK_EXECUTE;
 }
 
 hot int
 link_request(Link* self)
 {
-	auto portal   = &self->portal;
-	auto endpoint = &portal->endpoint;
-	auto output   = &portal->output;
+	auto req      = &self->req;
+	auto endpoint = &req->endpoint;
+	auto output   = &req->output;
 	output_set_buf(output, &self->client->reply.content);
 
 	// read endpoint and prepare request
@@ -231,8 +231,8 @@ link_request(Link* self)
 			output_error(output, &am_self()->error);
 	}
 
-	// configure portal local
-	portal_set_local(portal, true);
-	output_set_local(output, &portal->local);
+	// set local
+	request_set_local(req, true);
+	output_set_local(output, &req->local);
 	return rc;
 }
