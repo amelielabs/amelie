@@ -151,7 +151,7 @@ run(WorkerMain main, int argc, ...)
 }
 
 static inline void
-resolve(char* addr, int port, struct addrinfo** result)
+resolve(Str* addr, int port, struct addrinfo** result)
 {
 	run(socket_getaddrinfo_job, 3, addr, port, result);
 }

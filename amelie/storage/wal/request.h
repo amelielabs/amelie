@@ -148,11 +148,19 @@ request_read(Request* self, Endpoint* endpoint, Write* msg)
 			unpack_str(&pos, &endpoint->timezone);
 			break;
 		case META_TIME:
-			unpack_int(&pos, &endpoint->time);
+		{
+			int64_t i64;
+			unpack_int(&pos, &i64);
+			endpoint->time = (uint64_t)i64;
 			break;
+		}
 		case META_SEED:
-			unpack_int(&pos, &endpoint->seed);
+		{
+			int64_t i64;
+			unpack_int(&pos, &i64);
+			endpoint->seed = (uint64_t)i64;
 			break;
+		}
 		case META_REL:
 		{
 			unpack_str(&pos, &self->rel);

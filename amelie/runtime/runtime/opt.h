@@ -35,7 +35,8 @@ enum
 typedef enum
 {
 	OPT_BOOL,
-	OPT_INT,
+	OPT_U32,
+	OPT_U64,
 	OPT_STRING,
 	OPT_JSON,
 	OPT_UUID
@@ -48,11 +49,12 @@ struct Opt
 	int     flags;
 	union
 	{
-		int64_t* integer;
-		bool*    boolean;
-		Str*     string;
-		Uuid*    uuid;
-		void*    pointer;
+		uint32_t* u32;
+		uint64_t* u64;
+		bool*     boolean;
+		Str*      string;
+		Uuid*     uuid;
+		void*     pointer;
 	};
 };
 
@@ -90,7 +92,8 @@ opt_set_json(Opt* self, uint8_t** pos)
 		unpack_bool(pos, self->boolean);
 		break;
 	}
-	case OPT_INT:
+	case OPT_U32:
+	case OPT_U64:
 	{
 		if (unlikely(! data_is_int(*pos)))
 			error("option '{str}': integer value expected", name);
@@ -100,7 +103,10 @@ opt_set_json(Opt* self, uint8_t** pos)
 		if (unlikely(value <= 0 && opt_is(self, OPT_Z)))
 			error("option '{str}': cannot be set to zero", name);
 
-		*self->integer = value;
+		if (self->type == OPT_U32)
+			*self->u32 = value;
+		else
+			*self->u64 = value;
 		break;
 	}
 	case OPT_STRING:
@@ -154,16 +160,28 @@ opt_set(Opt* self, Str* value)
 		*self->boolean = result;
 		break;
 	}
-	case OPT_INT:
+	case OPT_U32:
 	{
 		if (str_empty(value))
 			error("option '{str}': value is not defined", name);
-		int64_t result = 0;
-		if (str_i64(value, &result) == -1)
+		uint32_t result = 0;
+		if (str_u32(value, &result) == -1)
 			error("option '{str}': integer value expected", name);
 		if (unlikely(result <= 0 && opt_is(self, OPT_Z)))
 			error("option '{str}': cannot be set to zero", name);
-		*self->integer = result;
+		*self->u32 = result;
+		break;
+	}
+	case OPT_U64:
+	{
+		if (str_empty(value))
+			error("option '{str}': value is not defined", name);
+		uint64_t result = 0;
+		if (str_u64(value, &result) == -1)
+			error("option '{str}': integer value expected", name);
+		if (unlikely(result <= 0 && opt_is(self, OPT_Z)))
+			error("option '{str}': cannot be set to zero", name);
+		*self->u64 = result;
 		break;
 	}
 	case OPT_STRING:
@@ -209,8 +227,11 @@ opt_encode(Opt* self, Buf* buf)
 	case OPT_BOOL:
 		encode_bool(buf, *self->boolean);
 		break;
-	case OPT_INT:
-		encode_int(buf, *self->integer);
+	case OPT_U32:
+		encode_int(buf, *self->u32);
+		break;
+	case OPT_U64:
+		encode_int(buf, *self->u64);
 		break;
 	case OPT_UUID:
 		encode_uuid(buf, self->uuid);
@@ -226,9 +247,13 @@ opt_print(Opt* self)
 		info("{-24s}{s}", str_of(&self->name),
 		     *self->boolean ? "true" : "false");
 		break;
-	case OPT_INT:
-		info("{-24s}{i64}", str_of(&self->name),
-		     *self->integer);
+	case OPT_U32:
+		info("{-24s}{u32}", str_of(&self->name),
+		     *self->u32);
+		break;
+	case OPT_U64:
+		info("{-24s}{u64}", str_of(&self->name),
+		     *self->u64);
 		break;
 	case OPT_STRING:
 		info("{-24s}{str}", str_of(&self->name),

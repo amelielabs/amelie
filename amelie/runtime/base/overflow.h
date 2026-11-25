@@ -19,6 +19,13 @@ int32_add_overflow(int32_t* result, int32_t a, int32_t b)
 }
 
 always_inline static inline bool
+uint32_add_overflow(uint32_t* result, uint32_t a, uint32_t b)
+{
+	auto result_ptr = result;
+	return __builtin_uadd_overflow(a, b, result_ptr);
+}
+
+always_inline static inline bool
 int32_sub_overflow(int32_t* result, int32_t a, int32_t b)
 {
 	auto result_ptr = result;
@@ -30,6 +37,29 @@ int32_mul_overflow(int32_t* result, int32_t a, int32_t b)
 {
 	auto result_ptr = result;
 	return __builtin_smul_overflow(a, b, result_ptr);
+}
+
+always_inline static inline bool
+uint32_mul_overflow(uint32_t* result, uint32_t a, uint32_t b)
+{
+	auto result_ptr = result;
+	return __builtin_umul_overflow(a, b, result_ptr);
+}
+
+always_inline static inline bool
+int32_mul_add_overflow(int32_t* result, int32_t a, int32_t mul, int32_t add)
+{
+	if (unlikely(int32_mul_overflow(result, a, mul)))
+		return true;
+	return int32_add_overflow(result, *result, add);
+}
+
+always_inline static inline bool
+uint32_mul_add_overflow(uint32_t* result, uint32_t a, uint32_t mul, uint32_t add)
+{
+	if (unlikely(uint32_mul_overflow(result, a, mul)))
+		return true;
+	return uint32_add_overflow(result, *result, add);
 }
 
 always_inline static inline bool
@@ -51,14 +81,6 @@ int64_mul_overflow(int64_t* result, int64_t a, int64_t b)
 {
 	auto result_ptr = (long long*)result;
 	return __builtin_smulll_overflow(a, b, result_ptr);
-}
-
-always_inline static inline bool
-int32_mul_add_overflow(int32_t* result, int32_t a, int32_t mul, int32_t add)
-{
-	if (unlikely(int32_mul_overflow(result, a, mul)))
-		return true;
-	return int32_add_overflow(result, *result, add);
 }
 
 always_inline static inline bool

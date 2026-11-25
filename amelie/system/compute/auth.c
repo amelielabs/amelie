@@ -53,7 +53,7 @@ auth_basic(Auth* self, Endpoint* endpoint)
 	defer_buf(buf);
 
 	// set user
-	str_assign(&endpoint->user, &name);
+	str_set_str(&endpoint->user, &name);
 }
 
 hot static inline void

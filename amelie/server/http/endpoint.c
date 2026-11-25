@@ -21,14 +21,14 @@ endpoint_init(Endpoint* self)
 	OptsDef defs[25] =
 	{
 		// protocol
-		{ "proto",        OPT_INT,     OPT_C,              &self->proto,        NULL, PROTO_HTTP },
+		{ "proto",        OPT_U32,     OPT_C,              &self->proto,        NULL, PROTO_HTTP },
 		// auth
 		{ "user",         OPT_STRING,  OPT_C,              &self->user,         NULL, 0          },
 		{ "token",        OPT_STRING,  OPT_C|OPT_A,        &self->token,        NULL, 0          },
-		{ "token_type",   OPT_INT,     OPT_C,              &self->token_type,   NULL, TOKEN_NONE },
+		{ "token_type",   OPT_U32,     OPT_C,              &self->token_type,   NULL, TOKEN_NONE },
 		// host
 		{ "host",         OPT_STRING,  OPT_C,              &self->host,         NULL, 0          },
-		{ "port",         OPT_INT,     OPT_C,              &self->port,         NULL, 8080       },
+		{ "port",         OPT_U32,     OPT_C,              &self->port,         NULL, 8080       },
 		// repository
 		{ "path",         OPT_STRING,  OPT_C,              &self->path,         NULL, 0          },
 		// tls
@@ -47,8 +47,8 @@ endpoint_init(Endpoint* self)
 		{ "rel",          OPT_STRING,  OPT_C,              &self->rel,          NULL, 0          },
 		// context
 		{ "timezone",     OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->timezone,     NULL, 0          },
-		{ "time",         OPT_INT,     OPT_E,              &self->time,         NULL, 0          },
-		{ "seed",         OPT_INT,     OPT_E,              &self->seed,         NULL, 0          },
+		{ "time",         OPT_U64,     OPT_E,              &self->time,         NULL, 0          },
+		{ "seed",         OPT_U64,     OPT_E,              &self->seed,         NULL, 0          },
 		{ "id",           OPT_STRING,  OPT_C|OPT_A|OPT_AE, &self->id,           NULL, 0          },
 		// misc
 		{ "jsonrpc",      OPT_JSON,    OPT_E,              &self->jsonrpc,      NULL, 0          },

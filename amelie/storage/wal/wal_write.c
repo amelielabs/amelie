@@ -74,7 +74,7 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 	}
 
 	// schedule checkpoint on reaching files threshold
-	if (count >= config()->wal_checkpoint)
+	if (count >= (int)config()->wal_checkpoint)
 		context->checkpoint = true;
 }
 

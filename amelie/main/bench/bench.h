@@ -38,10 +38,10 @@ struct Bench
 	Histogram    histogram;
 	BenchIf*     iface;
 	Str          opt_type;
-	int64_t      opt_databases;
-	int64_t      opt_clients;
-	int64_t      opt_duration;
-	int64_t      opt_batch;
+	uint32_t     opt_databases;
+	uint32_t     opt_clients;
+	uint32_t     opt_duration;
+	uint32_t     opt_batch;
 	bool         opt_histogram;
 	Opts         opts;
 	Main*        main;

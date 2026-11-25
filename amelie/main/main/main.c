@@ -86,9 +86,7 @@ main_configure(Main* self)
 	if (!strncmp(argv[0], ".", 1) || !strncmp(argv[0], "/", 1))
 	{
 		// path
-		Str path;
-		str_set_cstr(&path, argv[0]);
-		str_assign(&endpoint->path, &path);
+		str_set_cstr(&endpoint->path, argv[0]);
 		arg = 1;
 	} else
 	if (strncmp(argv[0], "--", 2) != 0)

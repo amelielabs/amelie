@@ -136,7 +136,7 @@ portal_set(Portal* self, Db* db, bool with_limits)
 {
 	// set db
 	self->db = db;
-	str_assign(&self->endpoint.db, &self->db->config->name);
+	str_set_str(&self->endpoint.db, &self->db->config->name);
 
 	// set db id
 	self->endpoint.db_id = self->db->config->id;

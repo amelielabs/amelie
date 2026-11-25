@@ -58,8 +58,8 @@ dst_db_connect(DstDb* self)
 	auto endpoint = &self->endpoint;
 	str_assign_cstr(&endpoint->path, path);
 	str_assign_cstr(&endpoint->db, name);
-	str_assign_raw(&endpoint->content_type, "text/plain", 10);
-	str_assign_raw(&endpoint->accept, "application/json", 16);
+	str_set(&endpoint->content_type, "text/plain", 10);
+	str_set(&endpoint->accept, "application/json", 16);
 	endpoint_auth(endpoint);
 
 	self->client = client_allocate();

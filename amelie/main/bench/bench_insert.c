@@ -22,7 +22,7 @@ bench_insert_deploy(BenchClient* self)
 	str_set_cstr(&str, "create table test (id int) retention 1gb");
 	client_execute(self->client, &str, NULL);
 
-	auto batch = self->bench->opt_batch;
+	auto batch = (int)self->bench->opt_batch;
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);

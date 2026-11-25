@@ -140,7 +140,7 @@ client_connect_to(Client* self, Str* host, int port)
 {
 	// resolve host address
 	struct addrinfo* addr = NULL;
-	resolve(str_of(host), port, &addr);
+	resolve(host, port, &addr);
 	defer(freeaddrinfo, addr);
 
 	// prepare for https connection
@@ -209,7 +209,7 @@ client_close(Client* self)
 		}
 		else {
 			auto endpoint = self->endpoint;
-			info("disconnected from {s}:{i64}", &endpoint->host,
+			info("disconnected from {str}:{i64}", &endpoint->host,
 			     endpoint->port);
 		}
 	}

@@ -40,21 +40,21 @@ dst_init(Dst* self)
 
 	OptsDef defs[] =
 	{
-		{ "dir",        OPT_STRING, OPT_C,       &self->opt_dir,        "_output", 0     },
-		{ "seed",       OPT_INT,    OPT_C,       &self->opt_seed,       NULL,      0     },
-		{ "databases",  OPT_INT,    OPT_C|OPT_Z, &self->opt_dbs,        NULL,      3     },
-		{ "steps",      OPT_INT,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000 },
-		{ "keys",       OPT_INT,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000  },
-		{ "payload",    OPT_INT,    OPT_C|OPT_Z, &self->opt_payload,    NULL,      512   },
-		{ "rels",       OPT_INT,    OPT_C|OPT_Z, &self->opt_rels,       NULL,      10    },
-		{ "sync",       OPT_INT,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000  },
-		{ "restart",    OPT_INT,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000  },
-		{ "checkpoint", OPT_INT,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000  },
-		{ "backup",     OPT_INT,    OPT_C|OPT_Z, &self->opt_backup,     NULL,      30000 },
-		{ "ddl",        OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000  },
-		{ "ddl_db",     OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_db,     NULL,      25000 },
-		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
-		{ "track_key",  OPT_INT,    OPT_C,       &self->opt_track_key,  NULL,      -1    },
+		{ "dir",        OPT_STRING, OPT_C,       &self->opt_dir,        "_output", 0          },
+		{ "seed",       OPT_U64,    OPT_C,       &self->opt_seed,       NULL,      0          },
+		{ "databases",  OPT_U32,    OPT_C|OPT_Z, &self->opt_dbs,        NULL,      3          },
+		{ "steps",      OPT_U32,    OPT_C|OPT_Z, &self->opt_steps,      NULL,      10000      },
+		{ "keys",       OPT_U32,    OPT_C|OPT_Z, &self->opt_keys,       NULL,      1000       },
+		{ "payload",    OPT_U32,    OPT_C|OPT_Z, &self->opt_payload,    NULL,      512        },
+		{ "rels",       OPT_U32,    OPT_C|OPT_Z, &self->opt_rels,       NULL,      10         },
+		{ "sync",       OPT_U32,    OPT_C|OPT_Z, &self->opt_sync,       NULL,      1000       },
+		{ "restart",    OPT_U32,    OPT_C|OPT_Z, &self->opt_restart,    NULL,      3000       },
+		{ "checkpoint", OPT_U32,    OPT_C|OPT_Z, &self->opt_checkpoint, NULL,      9000       },
+		{ "backup",     OPT_U32,    OPT_C|OPT_Z, &self->opt_backup,     NULL,      30000      },
+		{ "ddl",        OPT_U32,    OPT_C|OPT_Z, &self->opt_ddl,        NULL,      6000       },
+		{ "ddl_db",     OPT_U32,    OPT_C|OPT_Z, &self->opt_ddl_db,     NULL,      25000      },
+		{ "bp",         OPT_U32,    OPT_C,       &self->opt_bp,         NULL,      UINT32_MAX },
+		{ "track_key",  OPT_U32,    OPT_C,       &self->opt_track_key,  NULL,      UINT32_MAX },
 	};
 	opts_define(&self->opts, defs, 15);
 }
@@ -222,7 +222,7 @@ dst_execute_log(DstDb* self)
 	auto print = false;
 	auto dst = self->dst;
 	auto track_key = dst->opt_track_key;
-	if (track_key != -1)
+	if (track_key != UINT32_MAX)
 		print = dst_log_include(&self->log, track_key);
 
 	Str cmd;
@@ -348,7 +348,7 @@ dst_run(Dst* self)
 
 	// set seed
 	auto random = &am_task->random;
-	auto seed = (uint64_t)self->opt_seed;
+	auto seed = self->opt_seed;
 	if (! seed)
 		seed = random->seed[0];
 	random->seed[0] = seed;

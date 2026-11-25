@@ -28,8 +28,8 @@ copy_init(Copy* self, Main* main)
 	opts_init(&self->opts);
 	OptsDef defs[2] =
 	{
-		{ "batch",   OPT_INT, OPT_C|OPT_Z, &self->batch,   NULL,  128 * 1024 },
-		{ "clients", OPT_INT, OPT_C|OPT_Z, &self->clients, NULL,  16         },
+		{ "batch",   OPT_U32, OPT_C|OPT_Z, &self->batch,   NULL,  128 * 1024 },
+		{ "clients", OPT_U32, OPT_C|OPT_Z, &self->clients, NULL,  16         },
 	};
 	opts_define(&self->opts, defs, 2);
 }
@@ -55,7 +55,7 @@ copy_connect(Copy* self)
 		auto endpoint = &self->main->endpoint;
 		auto content_type = &endpoint->content_type;
 		if (str_empty(content_type))
-			str_assign_raw(&endpoint->content_type, "text/csv", 8);
+			str_set(&endpoint->content_type, "text/csv", 8);
 
 		// create client and connect
 		client_set_endpoint(client, endpoint);

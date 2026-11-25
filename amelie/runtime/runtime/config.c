@@ -53,21 +53,21 @@ config_prepare(Config* self)
 		{ "wal_sync_write",          OPT_BOOL,   OPT_C,                   &self->wal_sync_write,          NULL,             false               },
 		{ "wal_sync_interval",       OPT_STRING, OPT_C,                   &self->wal_sync_interval,       "1 sec",          0                   },
 		{ "wal_service",             OPT_BOOL,   OPT_C,                   &self->wal_service,             NULL,             true                },
-		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
-		{ "wal_checkpoint",          OPT_INT,    OPT_C,                   &self->wal_checkpoint,          NULL,             100                 },
+		{ "wal_size",                OPT_U32,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
+		{ "wal_checkpoint",          OPT_U32,    OPT_C,                   &self->wal_checkpoint,          NULL,             100                 },
 		{ "wal_rewind",              OPT_BOOL,   OPT_C|OPT_E,             &self->wal_rewind,              NULL,             false               },
-		{ "wal_rewind_pos",          OPT_INT,    OPT_C|OPT_E,             &self->wal_rewind_pos,          NULL,             0                   },
+		{ "wal_rewind_pos",          OPT_U64,    OPT_C|OPT_E,             &self->wal_rewind_pos,          NULL,             0                   },
 		// storage
 		{ "storage_crc",             OPT_BOOL,   OPT_C,                   &self->storage_crc,             NULL,             true                },
 		{ "storage_compression",     OPT_STRING, OPT_C,                   &self->storage_compression,     "zstd",           0                   },
 		{ "storage_sync",            OPT_BOOL,   OPT_C,                   &self->storage_sync,            NULL,             true                },
 		// compute
-		{ "compute",                 OPT_INT,    OPT_C|OPT_Z,             &self->compute,                 NULL,             1                   },
+		{ "compute",                 OPT_U32,    OPT_C|OPT_Z,             &self->compute,                 NULL,             1                   },
 		// replication
-		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
-		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },
+		{ "repl_readahead",          OPT_U32,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
+		{ "repl_reconnect_ms",       OPT_U32,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },
 		// network
-		{ "recv",                    OPT_INT,    OPT_C,                   &self->recv,                    NULL,             1 * 1024 * 1024     },
+		{ "recv",                    OPT_U32,    OPT_C,                   &self->recv,                    NULL,             1 * 1024 * 1024     },
 		{ "listen",                  OPT_JSON,   OPT_C|OPT_H,             &self->listen,                  NULL,             0                   },
 	};
 	opts_define(&self->opts, defs, 28);

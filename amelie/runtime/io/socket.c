@@ -265,9 +265,17 @@ socket_getaddrinfo(const char*       node,
 void
 socket_getaddrinfo_job(intptr_t* argv)
 {
-	auto addr   = (char*)argv[0];
+	auto addr   = (Str*)argv[0];
 	auto port   = (int)argv[1];
 	auto result = (struct addrinfo**)argv[2];
+
+	char* host_ptr = NULL;
+	char  host[256];
+	if (addr)
+	{
+		format(host, sizeof(host), "{str}", addr);
+		host_ptr = host;
+	}
 
 	char service[16];
 	format(service, sizeof(service), "{d}", port);
@@ -279,9 +287,14 @@ socket_getaddrinfo_job(intptr_t* argv)
 	hints.ai_flags    = AI_PASSIVE;
 	hints.ai_protocol = IPPROTO_TCP;
 
-	auto rc = socket_getaddrinfo(addr, service, &hints, result);
+	auto rc = socket_getaddrinfo(host_ptr, service, &hints, result);
 	if (rc == -1 || *result == NULL)
-		error("failed to resolve {s}:{d}", addr, port);
+	{
+		if (host_ptr)
+			error("failed to resolve {s}:{d}", host, port);
+		else
+			error("failed to resolve *:{d}", port);
+	}
 }
 
 bool

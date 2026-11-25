@@ -23,10 +23,10 @@ bench_init(Bench* self, Main* main)
 	OptsDef defs[6] =
 	{
 		{ "type",      OPT_STRING, OPT_C,       &self->opt_type,     "tpcb", 0     },
-		{ "databases", OPT_INT,    OPT_C|OPT_Z, &self->opt_databases, NULL,  1     },
-		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->opt_clients,   NULL,  32    },
-		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->opt_duration,  NULL,  10    },
-		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->opt_batch,     NULL,  64    },
+		{ "databases", OPT_U32,    OPT_C|OPT_Z, &self->opt_databases, NULL,  1     },
+		{ "clients",   OPT_U32,    OPT_C|OPT_Z, &self->opt_clients,   NULL,  32    },
+		{ "duration",  OPT_U32,    OPT_C|OPT_Z, &self->opt_duration,  NULL,  10    },
+		{ "batch",     OPT_U32,    OPT_C|OPT_Z, &self->opt_batch,     NULL,  64    },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->opt_histogram, NULL,  false },
 	};
 	opts_define(&self->opts, defs, 6);
@@ -59,9 +59,9 @@ bench_deploy_client(BenchClient* self, int db_id, bool deploy)
 	auto path = &endpoint_main->path;
 	auto host = &endpoint_main->host;
 	if (! str_empty(path))
-		str_assign(&endpoint->path, path);
+		str_set_str(&endpoint->path, path);
 	if (! str_empty(host))
-		str_assign(&endpoint->host, host);
+		str_set_str(&endpoint->host, host);
 	endpoint->port = endpoint_main->port;
 
 	// set db
@@ -86,7 +86,7 @@ static void
 bench_create(Bench* self)
 {
 	// create databases
-	auto databases = self->opt_databases;
+	auto databases = (int)self->opt_databases;
 	auto client = client_allocate();
 	defer(client_free, client);
 	client_set_endpoint(client, &self->main->endpoint);

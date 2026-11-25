@@ -269,6 +269,23 @@ str_chomp(Str* self)
 }
 
 static inline int
+str_u32(Str* self, uint32_t* value)
+{
+	char* pos = self->pos;
+	char* end = self->end;
+	*value = 0;
+	while (pos < end)
+	{
+		if (unlikely(! isdigit(*pos)))
+			return -1;
+		if (unlikely(uint32_mul_add_overflow(value, *value, 10, *pos - '0')))
+			return -1;
+		pos++;
+	}
+	return 0;
+}
+
+static inline int
 str_i64(Str* self, int64_t* value)
 {
 	char* pos = self->pos;

@@ -79,7 +79,7 @@ link_endpoint(Link* self)
 
 		// set default db
 		if (str_empty(&endpoint->db))
-			str_assign_raw(&endpoint->db, "amelie", 6);
+			str_set(&endpoint->db, "amelie", 6);
 	);
 }
 

@@ -36,8 +36,8 @@ servers_create(Servers* self, ServerConfig* config)
 		error("server: 'host' is not set"); 
 
 	// listen '*'
-	auto host = str_of(&config->host);
-	if (str_size(&config->host) == 1 && *str_of(&config->host) == '*')
+	auto host = &config->host;
+	if (str_size(host) == 1 && *str_of(host) == '*')
 		host = NULL;
 
 	// resolve

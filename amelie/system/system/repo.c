@@ -115,7 +115,7 @@ repo_bootstrap(void)
 
 	// set default timezone using system timezone
 	if (str_empty(&config->timezone))
-		str_assign(&config->timezone, &runtime()->timezones.system->name);
+		str_set_str(&config->timezone, &runtime()->timezones.system->name);
 
 	// set default listen
 	if (str_empty(&config()->listen))

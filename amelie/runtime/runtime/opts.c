@@ -59,8 +59,11 @@ opts_define(Opts* self, OptsDef* defs, int count)
 		case OPT_BOOL:
 			*opt->boolean = def->default_int;
 			break;
-		case OPT_INT:
-			*opt->integer = def->default_int;
+		case OPT_U32:
+			*opt->u32 = def->default_int;
+			break;
+		case OPT_U64:
+			*opt->u64 = def->default_int;
 			break;
 		case OPT_STRING:
 			str_init(opt->string);
