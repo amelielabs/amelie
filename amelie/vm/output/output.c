@@ -71,7 +71,7 @@ output_set(Output* self, Endpoint* endpoint, OutputIf* iface, void* iface_arg)
 	self->timezone  = runtime()->timezone;
 
 	// set endpoint timezone
-	auto timezone = &endpoint->timezone.string;
+	auto timezone = &endpoint->timezone;
 	if (! str_empty(timezone))
 	{
 		auto tz = timezones_find(&runtime()->timezones, timezone);

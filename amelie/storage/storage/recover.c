@@ -128,7 +128,7 @@ static void
 recover_wal_main(Recover* self)
 {
 	auto wal = &self->storage->wal;
-	auto wal_crc = opt_int_of(&config()->wal_crc);
+	auto wal_crc = config()->wal_crc;
 
 	uint64_t id = 0;
 	for (;;)

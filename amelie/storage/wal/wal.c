@@ -49,7 +49,7 @@ void
 wal_close(Wal* self)
 {
 	// close all files
-	auto sync_on_close = opt_int_of(&config()->wal_sync_close);
+	auto sync_on_close = config()->wal_sync_close;
 	auto file = self->files;
 	while (file)
 	{

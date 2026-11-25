@@ -113,14 +113,14 @@ storage_checkpoint_catalog(Storage* self)
 	file_open_as(&file, path, O_CREAT|O_WRONLY, 0644);
 	if (! buf_empty(schema))
 		file_write_buf(&file, schema);
-	if (opt_int_of(&config()->storage_sync))
+	if (config()->storage_sync)
 		file_sync(&file);
 
 	// rename as completed
 	fs_rename(path, "{s}/storage/{u64}", state_directory(), lsn);
 
 	// sync storage directory
-	if (opt_int_of(&config()->storage_sync))
+	if (config()->storage_sync)
 		fs_syncdir("{s}/storage", state_directory());
 
 	auto catalog_lsn_prev = self->catalog_lsn;

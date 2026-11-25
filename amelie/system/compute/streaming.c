@@ -36,7 +36,7 @@ streaming_prepare(Link* self, StreamPos* pos)
 	auto portal = &self->portal;
 
 	// find relation
-	auto rel_name = opt_string_of(&portal->endpoint.rel);
+	auto rel_name = &portal->endpoint.rel;
 	auto rel = catalog_find(&portal->db->catalog, REL_UNDEF, rel_name, false);
 	if (! rel)
 		error("stream: relation {str} not found", rel_name);
@@ -45,7 +45,7 @@ streaming_prepare(Link* self, StreamPos* pos)
 		      rel_name);
 
 	// prepare streams (one per partition)
-	auto id = &portal->endpoint.id.string;
+	auto id = &portal->endpoint.id;
 	if (! str_empty(id))
 		if (stream_pos_read(pos, id) == -1)
 			error("stream: invalid id");

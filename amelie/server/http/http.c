@@ -265,13 +265,13 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 
 	// /db/rel
 	buf_write(buf, "/", 1);
-	if (! opt_string_empty(&endpoint->db))
+	if (! str_empty(&endpoint->db))
 	{
-		buf_write_str(buf, opt_string_of(&endpoint->db));
-		if (! opt_string_empty(&endpoint->rel))
+		buf_write_str(buf, &endpoint->db);
+		if (! str_empty(&endpoint->rel))
 		{
 			buf_write(buf, "/", 1);
-			buf_write_str(buf, opt_string_of(&endpoint->rel));
+			buf_write_str(buf, &endpoint->rel);
 		}
 	}
 
@@ -279,15 +279,19 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	bool first = true;
 
 	// timezone
-	uri_export_arg(&endpoint->timezone, buf, &first);
+	if (! str_empty(&endpoint->timezone))
+	{
+		buf_format(buf, "{c}timezone={str}", first? '?': '&',
+		           &endpoint->timezone);
+	}
 
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 
 	// token
-	auto token = opt_string_of(&endpoint->token);
+	auto token = &endpoint->token;
 	if (! str_empty(token))
 	{
-		auto type = opt_int_of(&endpoint->token_type);
+		auto type = endpoint->token_type;
 		if (type == TOKEN_BASIC)
 			buf_write(buf, "Authorization: Basic ", 21);
 		else
@@ -297,7 +301,7 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	}
 
 	// content-type
-	auto content_type = opt_string_of(&endpoint->content_type);
+	auto content_type = &endpoint->content_type;
 	if (! str_empty(content_type))
 	{
 		buf_write(buf, "Content-Type: ", 14);
@@ -314,7 +318,7 @@ http_begin_request(Http* self, HttpMethod method, Endpoint* endpoint, uint64_t s
 	}
 
 	// accept
-	auto accept = opt_string_of(&endpoint->accept);
+	auto accept = &endpoint->accept;
 	if (! str_empty(accept))
 	{
 		buf_write(buf, "Accept: ", 8);
@@ -343,7 +347,7 @@ http_begin_reply(Http*    self, Endpoint* endpoint,
 	if (endpoint)
 	{
 		// accept
-		auto accept = opt_string_of(&endpoint->accept);
+		auto accept = &endpoint->accept;
 		if (! str_empty(accept))
 		{
 			buf_write(buf, "Content-Type: ", 14);

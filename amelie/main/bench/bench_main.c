@@ -18,7 +18,7 @@ void
 cmd_bench(Main* self)
 {
 	// amelie bench name [options]
-	opt_int_set(&config()->log_connections, false);
+	config()->log_connections = false;
 
 	Bench bench;
 	bench_init(&bench, self);

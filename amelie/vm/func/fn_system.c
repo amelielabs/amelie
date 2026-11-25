@@ -223,7 +223,12 @@ fn_show(Call* self)
 		if (!opt || opt_is(opt, OPT_S))
 			call_error_noargs(self, "option '{str}' is not found", &section);
 
-		local_encode_opt(self->local, buf, opt);
+		// replace timezone
+		if (opt->pointer == &config()->timezone)
+			encode_str(buf, &self->local->timezone->name);
+		else
+			opt_encode(opt, buf);
+
 		value_set_json_buf(self->result, buf);
 		return;
 	}
@@ -356,13 +361,19 @@ fn_show(Call* self)
 	case SHOW_CONFIG:
 	{
 		encode_obj(buf);
-		list_foreach(&config()->opts.list)
+		auto opts = &config()->opts;
+		for (auto i = 0; i < opts->count; i++)
 		{
-			auto opt = list_at(Opt, link);
-			if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
+			auto pos = &opts->opts[i];
+			if (opt_is(pos, OPT_H) || opt_is(pos, OPT_S))
 				continue;
-			encode_str(buf, &opt->name);
-			local_encode_opt(self->local, buf, opt);
+			encode_str(buf, &pos->name);
+
+			// replace timezone
+			if (pos->pointer == &config()->timezone)
+				encode_str(buf, &self->local->timezone->name);
+			else
+				opt_encode(pos, buf);
 		}
 		encode_obj_end(buf);
 		break;

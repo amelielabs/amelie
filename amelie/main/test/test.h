@@ -26,7 +26,7 @@ static inline Test*
 test_create(Str* name, TestGroup* group)
 {
 	Test* self = am_malloc(sizeof(*self));
-	str_copy(&self->name, name);
+	str_set_copy(&self->name, name);
 	self->group = group;
 	list_init(&self->link_group);
 	list_init(&self->link);

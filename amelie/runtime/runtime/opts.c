@@ -20,90 +20,69 @@
 void
 opts_init(Opts* self)
 {
-	self->list_count++;
-	list_init(&self->list);
+	self->count = 0;
+	self->opts  = NULL;
 }
 
 void
 opts_free(Opts* self)
 {
-	list_foreach_safe(&self->list)
+	opts_reset(self);
+	if (self->opts)
 	{
-		auto opt = list_at(Opt, link);
-		opt_free(opt);
+		am_free(self->opts);
+		self->count = 0;
+		self->opts  = NULL;
 	}
 }
 
-static inline void
-opts_add(Opts* self, Opt* opt)
+void
+opts_reset(Opts* self)
 {
-	list_append(&self->list, &opt->link);
-	self->list_count++;
+	for (auto i = 0; i < self->count; i++)
+		opt_free(&self->opts[i]);
 }
 
 void
-opts_define(Opts* self, OptsDef* defs)
+opts_define(Opts* self, OptsDef* defs, int count)
 {
-	for (int i = 0; defs[i].name != NULL; i++)
+	assert(! self->opts);
+
+	self->count = count;
+	self->opts  = am_malloc(sizeof(Opt) * count);
+	for (auto i = 0; i < count; i++)
 	{
 		auto def = &defs[i];
-		auto opt = def->opt;
-		opt_init(opt, def->name, def->type, def->flags);
-		opts_add(self, opt);
+		auto opt = &self->opts[i];
+		opt_init(opt, def->name, def->type, def->flags, def->value);
 		switch (def->type) {
 		case OPT_BOOL:
+			*opt->boolean = def->default_int;
+			break;
 		case OPT_INT:
-			opt_int_set(opt, def->default_int);
+			*opt->integer = def->default_int;
 			break;
 		case OPT_STRING:
+			str_init(opt->string);
 			if (def->default_string)
-				opt_string_set_raw(opt, def->default_string, strlen(def->default_string));
+				str_set_copy_cstr(opt->string, def->default_string);
 			break;
 		case OPT_JSON:
+			str_init(opt->string);
 			break;
 		case OPT_UUID:
+			uuid_init(opt->uuid);
 			break;
 		}
-	}
-}
-
-void
-opts_copy(Opts* self, Opts* from)
-{
-	// copy values only, opts must be identical
-	auto from_it = from->list.next;
-	list_foreach(&self->list)
-	{
-		auto opt = list_at(Opt, link);
-		auto opt_from = container_of(from_it, Opt, link);
-		switch (opt->type) {
-		case OPT_BOOL:
-		case OPT_INT:
-			opt_int_set(opt, opt_from->integer);
-			break;
-		case OPT_STRING:
-			opt_string_set(opt, &opt_from->string);
-			break;
-		case OPT_JSON:
-			opt_json_set_str(opt, &opt_from->string);
-			break;
-		case OPT_UUID:
-			opt_uuid_set(opt, &opt_from->uuid);
-			break;
-		}
-		from_it = from_it->next;
 	}
 }
 
 Opt*
 opts_find(Opts* self, Str* name)
 {
-	list_foreach(&self->list)
-	{
-		auto opt = list_at(Opt, link);
-		if (str_compare(&opt->name, name))
-			return opt;
-	}
+	for (auto i = 0; i < self->count; i++)
+		if (str_compare(&self->opts[i].name, name))
+			return &self->opts[i];
 	return NULL;
 }
 
@@ -192,13 +171,13 @@ opts_list_persistent(Opts* self)
 {
 	auto buf = buf_create();
 	encode_obj(buf);
-	list_foreach(&self->list)
+	for (auto i = 0; i < self->count; i++)
 	{
-		auto opt = list_at(Opt, link);
-		if (opt_is(opt, OPT_E))
+		auto pos = &self->opts[i];
+		if (opt_is(pos, OPT_E))
 			continue;
-		encode_str(buf, &opt->name);
-		opt_encode(opt, buf);
+		encode_str(buf, &pos->name);
+		opt_encode(pos, buf);
 	}
 	encode_obj_end(buf);
 	return buf;
@@ -209,13 +188,13 @@ opts_list(Opts* self)
 {
 	auto buf = buf_create();
 	encode_obj(buf);
-	list_foreach(&self->list)
+	for (auto i = 0; i < self->count; i++)
 	{
-		auto opt = list_at(Opt, link);
-		if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
+		auto pos = &self->opts[i];
+		if (opt_is(pos, OPT_H) || opt_is(pos, OPT_S))
 			continue;
-		encode_str(buf, &opt->name);
-		opt_encode(opt, buf);
+		encode_str(buf, &pos->name);
+		opt_encode(pos, buf);
 	}
 	encode_obj_end(buf);
 	return buf;
@@ -224,11 +203,11 @@ opts_list(Opts* self)
 void
 opts_print(Opts* self)
 {
-	list_foreach(&self->list)
+	for (auto i = 0; i < self->count; i++)
 	{
-		auto opt = list_at(Opt, link);
-		if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
+		auto pos = &self->opts[i];
+		if (opt_is(pos, OPT_H) || opt_is(pos, OPT_S))
 			continue;
-		opt_print(opt);
+		opt_print(pos);
 	}
 }

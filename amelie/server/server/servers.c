@@ -61,7 +61,7 @@ void
 servers_open(Servers* self)
 {
 	// read servers configurations
-	auto pos = opt_json_of(&config()->listen);
+	auto pos = str_u8(&config()->listen);
 	if (pos)
 	{
 		if (! data_is_array(pos))

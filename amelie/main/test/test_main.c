@@ -51,7 +51,7 @@ cmd_test(Main* self)
 		}
 	}
 
-	opt_int_set(&config()->log_connections, false);
+	config()->log_connections = false;
 	error_catch (
 		test_suite_run(&suite);
 	);

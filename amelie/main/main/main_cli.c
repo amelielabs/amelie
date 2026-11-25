@@ -52,7 +52,7 @@ main_console(Main* self, Client* client)
 	separator_init(&sep);
 	defer(separator_free, &sep);
 
-	auto db = opt_string_of(&self->endpoint.db);
+	auto db = &self->endpoint.db;
 	Str prompt_db = *db;
 	if (str_empty(&prompt_db))
 		str_set(&prompt_db, "amelie", 6);
@@ -106,7 +106,7 @@ main_console(Main* self, Client* client)
 void
 main_cli(Main* self)
 {
-	opt_int_set(&config()->log_connections, false);
+	config()->log_connections = false;
 
 	// create client and connect
 	auto client = client_allocate();

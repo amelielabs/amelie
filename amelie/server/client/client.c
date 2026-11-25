@@ -99,7 +99,7 @@ client_accept(Client* self)
 	self->accepted = true;
 
 	// hello
-	bool log_connections = opt_int_of(&config()->log_connections);
+	bool log_connections = config()->log_connections;
 	if (log_connections)
 	{
 		char addr[128];
@@ -130,7 +130,7 @@ client_connect_to_path(Client* self, Str* path)
 	self->accepted = false;
 
 	// connected
-	bool log_connections = opt_int_of(&config()->log_connections);
+	bool log_connections = config()->log_connections;
 	if (log_connections)
 		info("connected to {str}/amelie.socket", path);
 }
@@ -145,16 +145,17 @@ client_connect_to(Client* self, Str* host, int port)
 
 	// prepare for https connection
 	auto endpoint = self->endpoint;
-	if (endpoint->proto.integer == PROTO_HTTPS || endpoint->proto.integer == PROTO_AMELIES)
+	if (endpoint->proto == PROTO_HTTPS ||
+	    endpoint->proto == PROTO_AMELIES)
 	{
 		if (! tls_context_created(&self->tls_context))
 		{
 			tls_context_set(&self->tls_context, true,
-			                opt_string_of(&endpoint->tls_cert),
-			                opt_string_of(&endpoint->tls_key),
-			                opt_string_of(&endpoint->tls_ca),
-			                opt_string_of(&endpoint->tls_capath),
-			                opt_string_of(&endpoint->tls_server));
+			                &endpoint->tls_cert,
+			                &endpoint->tls_key,
+			                &endpoint->tls_ca,
+			                &endpoint->tls_capath,
+			                &endpoint->tls_server);
 			tls_context_create(&self->tls_context);
 			tcp_set_tls(&self->tcp, &self->tls_context);
 		}
@@ -164,7 +165,7 @@ client_connect_to(Client* self, Str* host, int port)
 	tcp_connect(&self->tcp, addr->ai_addr);
 
 	// connected
-	bool log_connections = opt_int_of(&config()->log_connections);
+	bool log_connections = config()->log_connections;
 	if (log_connections)
 		info("connected to {str}:{d}", host, port);
 }
@@ -175,19 +176,19 @@ client_connect(Client* self)
 	// unix socket
 	auto endpoint = self->endpoint;
 	auto path = &endpoint->path;
-	if (! opt_string_empty(path))
+	if (! str_empty(path))
 	{
-		client_connect_to_path(self, &path->string);
+		client_connect_to_path(self, path);
 		return;
 	}
 
 	// tcp connection
 	auto host = &endpoint->host;
-	if (opt_string_empty(host))
+	if (str_empty(host))
 		error("client: host or unix path is not set");
 
-	auto port = endpoint->port.integer;
-	if (error_catch( client_connect_to(self, &host->string, port) ))
+	auto port = endpoint->port;
+	if (error_catch( client_connect_to(self, host, port) ))
 	{
 		client_close(self);
 		rethrow();
@@ -197,7 +198,7 @@ client_connect(Client* self)
 void
 client_close(Client* self)
 {
-	bool log_connections = opt_int_of(&config()->log_connections);
+	bool log_connections = config()->log_connections;
 	if (log_connections && tcp_connected(&self->tcp))
 	{
 		if (self->accepted)
@@ -208,9 +209,8 @@ client_close(Client* self)
 		}
 		else {
 			auto endpoint = self->endpoint;
-			info("disconnected from {s}:{d}",
-			     str_of(opt_string_of(&endpoint->host)),
-			     (int)endpoint->port.integer);
+			info("disconnected from {s}:{i64}", &endpoint->host,
+			     endpoint->port);
 		}
 	}
 	tcp_close(&self->tcp);

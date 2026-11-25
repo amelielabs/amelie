@@ -55,9 +55,8 @@ dst_init(Dst* self)
 		{ "ddl_db",     OPT_INT,    OPT_C|OPT_Z, &self->opt_ddl_db,     NULL,      25000 },
 		{ "bp",         OPT_INT,    OPT_C,       &self->opt_bp,         NULL,      -1    },
 		{ "track_key",  OPT_INT,    OPT_C,       &self->opt_track_key,  NULL,      -1    },
-		{  NULL,        0,          0,            NULL,                 NULL,      0     }
 	};
-	opts_define(&self->opts, defs);
+	opts_define(&self->opts, defs, 15);
 }
 
 void
@@ -76,7 +75,7 @@ dst_free(Dst* self)
 static void
 dst_cleanup(Dst* self)
 {
-	auto dir = opt_string_of(&self->opt_dir);
+	auto dir = &self->opt_dir;
 	if (fs_exists("{str}", dir))
 		dst_sh("rm -rf '{str}'", dir);
 }
@@ -85,7 +84,7 @@ static void
 dst_configure(Dst* self)
 {
 	// create directory
-	auto dir = opt_string_of(&self->opt_dir);
+	auto dir = &self->opt_dir;
 	dst_sh("mkdir {str}", dir);
 
 	// set logger
@@ -99,7 +98,7 @@ dst_configure(Dst* self)
 
 	// prepare payload
 	auto payload = &self->payload;
-	auto payload_size = opt_int_of(&self->opt_payload);
+	auto payload_size = self->opt_payload;
 	buf_reserve(payload, payload_size);
 	memset(payload->start, 'x', payload_size);
 
@@ -117,7 +116,7 @@ dst_open(Dst* self)
 {
 	// start instance
 	char path[PATH_MAX];
-	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
+	format(path, sizeof(path), "./{str}/env", &self->opt_dir);
 
 	int   argc = 12;
 	char* argv[18] =
@@ -174,12 +173,12 @@ static bool
 dst_execute_cmd(Dst* self, Client* client, bool print, bool can_fail, Str* cmd)
 {
 	if (print)
-		info("[{u64}] ({str}) {str}", self->step, &client->endpoint->db.string, cmd);
+		info("[{u64}] ({str}) {str}", self->step, &client->endpoint->db, cmd);
 
 	dst_stat(&self->stats, DST_STAT_SQL);
 
 	// breakpoint
-	if (self->step == (int)self->opt_bp.integer)
+	if (self->step == (int)self->opt_bp)
 		raise(SIGTRAP);
 
 	auto code = client_execute(client, cmd, NULL);
@@ -190,15 +189,15 @@ dst_execute_cmd(Dst* self, Client* client, bool print, bool can_fail, Str* cmd)
 	if (can_fail)
 		return false;
 
-	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->db.string, cmd);
+	info("[{u64}] ({str}) {str}", self->step, &client->endpoint->db, cmd);
 
 	auto reply = &client->reply;
 	if (buf_empty(&reply->content))
 		error("[{u64}] ({str}) {str}", self->step,
-		      &client->endpoint->db.string, &reply->options[HTTP_MSG]);
+		      &client->endpoint->db, &reply->options[HTTP_MSG]);
 
 	error("[{u64}] ({str}) {buf}", self->step,
-	      &client->endpoint->db.string, &reply->content);
+	      &client->endpoint->db, &reply->content);
 
 	return false;
 }
@@ -222,8 +221,8 @@ dst_execute_log(DstDb* self)
 {
 	auto print = false;
 	auto dst = self->dst;
-	auto track_key = opt_int_of(&dst->opt_track_key);
-	if (track_key != (uint64_t)-1)
+	auto track_key = dst->opt_track_key;
+	if (track_key != -1)
 		print = dst_log_include(&self->log, track_key);
 
 	Str cmd;
@@ -235,13 +234,13 @@ static void
 dst_bootstrap(Dst* self)
 {
 	char path[PATH_MAX];
-	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
+	format(path, sizeof(path), "./{str}/env", &self->opt_dir);
 
 	// connect (system)
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
-	opt_string_set_cstr(&endpoint.path, path);
+	str_assign_cstr(&endpoint.path, path);
 
 	auto client = client_allocate();
 	defer(client_free, client);
@@ -271,13 +270,13 @@ dst_checkpoint(Dst* self)
 	dst_stat(&self->stats, DST_STAT_CHECKPOINT);
 
 	char path[PATH_MAX];
-	format(path, sizeof(path), "./{str}/env", opt_string_of(&self->opt_dir));
+	format(path, sizeof(path), "./{str}/env", &self->opt_dir);
 
 	// connect (system)
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
-	opt_string_set_cstr(&endpoint.path, path);
+	str_assign_cstr(&endpoint.path, path);
 
 	auto client = client_allocate();
 	defer(client_free, client);
@@ -293,7 +292,7 @@ dst_backup(Dst* self)
 	info("[{u64}] BACKUP", self->step);
 	dst_stat(&self->stats, DST_STAT_BACKUP);
 
-	auto dir = opt_string_of(&self->opt_dir);
+	auto dir = &self->opt_dir;
 	char path[PATH_MAX];
 	format(path, sizeof(path), "./{str}/env", dir);
 
@@ -301,7 +300,7 @@ dst_backup(Dst* self)
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
-	opt_string_set_cstr(&endpoint.path, path);
+	str_assign_cstr(&endpoint.path, path);
 
 	auto client = client_allocate();
 	defer(client_free, client);
@@ -349,7 +348,7 @@ dst_run(Dst* self)
 
 	// set seed
 	auto random = &am_task->random;
-	auto seed = (uint64_t)opt_int_of(&self->opt_seed);
+	auto seed = (uint64_t)self->opt_seed;
 	if (! seed)
 		seed = random->seed[0];
 	random->seed[0] = seed;
@@ -365,13 +364,13 @@ dst_run(Dst* self)
 	dst_bootstrap(self);
 
 	// main loop
-	auto sync       = (int)opt_int_of(&self->opt_sync);
-	auto restart    = (int)opt_int_of(&self->opt_restart);
-	auto checkpoint = (int)opt_int_of(&self->opt_checkpoint);
-	auto backup     = (int)opt_int_of(&self->opt_backup);
-	auto ddl        = (int)opt_int_of(&self->opt_ddl);
-	auto ddl_db     = (int)opt_int_of(&self->opt_ddl_db);
-	auto steps      = (int)opt_int_of(&self->opt_steps);
+	auto sync       = (int)self->opt_sync;
+	auto restart    = (int)self->opt_restart;
+	auto checkpoint = (int)self->opt_checkpoint;
+	auto backup     = (int)self->opt_backup;
+	auto ddl        = (int)self->opt_ddl;
+	auto ddl_db     = (int)self->opt_ddl_db;
+	auto steps      = (int)self->opt_steps;
 	while (self->step < steps)
 	{
 		auto db_order = random_generate(&am_task->random) % self->dbs_count;

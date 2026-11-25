@@ -20,7 +20,7 @@ bench_init(Bench* self, Main* main)
 	memset(self, 0, sizeof(*self));
 	self->main = main;
 	opts_init(&self->opts);
-	OptsDef defs[] =
+	OptsDef defs[6] =
 	{
 		{ "type",      OPT_STRING, OPT_C,       &self->opt_type,     "tpcb", 0     },
 		{ "databases", OPT_INT,    OPT_C|OPT_Z, &self->opt_databases, NULL,  1     },
@@ -28,9 +28,8 @@ bench_init(Bench* self, Main* main)
 		{ "duration",  OPT_INT,    OPT_C|OPT_Z, &self->opt_duration,  NULL,  10    },
 		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->opt_batch,     NULL,  64    },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->opt_histogram, NULL,  false },
-		{  NULL,       0,          0,            NULL,                NULL,  0     }
 	};
-	opts_define(&self->opts, defs);
+	opts_define(&self->opts, defs, 6);
 }
 
 void
@@ -59,25 +58,22 @@ bench_deploy_client(BenchClient* self, int db_id, bool deploy)
 	// set host/path
 	auto path = &endpoint_main->path;
 	auto host = &endpoint_main->host;
-	auto port = &endpoint_main->port;
-	if (! opt_string_empty(path))
-		opt_string_set(&endpoint->path, &path->string);
-	if (! opt_string_empty(host))
-		opt_string_set(&endpoint->host, &host->string);
-	opt_int_set(&endpoint->port, port->integer);
+	if (! str_empty(path))
+		str_assign(&endpoint->path, path);
+	if (! str_empty(host))
+		str_assign(&endpoint->host, host);
+	endpoint->port = endpoint_main->port;
 
 	// set db
 	char name[16];
 	format(name, sizeof(name), "db_{d}", db_id);
-	Str str;
-	str_set_cstr(&str, name);
-	opt_string_set(&endpoint->db, &str);
+	str_assign_cstr(&endpoint->db, name);
 	endpoint_auth(endpoint);
 
 	// connnect
 	self->client = client_allocate();
 	client_set_endpoint(self->client, endpoint);
-	if (opt_int_of(&self->bench->opt_histogram))
+	if (self->bench->opt_histogram)
 		client_set_histogram(self->client, &self->bench->histogram);
 	client_connect(self->client);
 
@@ -90,7 +86,7 @@ static void
 bench_create(Bench* self)
 {
 	// create databases
-	auto databases = (int)self->opt_databases.integer;
+	auto databases = self->opt_databases;
 	auto client = client_allocate();
 	defer(client_free, client);
 	client_set_endpoint(client, &self->main->endpoint);
@@ -115,8 +111,8 @@ static void
 bench_deploy(Bench* self)
 {
 	// prepare clients
-	auto databases = (int)self->opt_databases.integer;
-	auto clients   = (int)self->opt_clients.integer;
+	auto databases = (int)self->opt_databases;
+	auto clients   = (int)self->opt_clients;
 	auto size      = sizeof(BenchClient) * databases * clients;
 
 	// create databases
@@ -168,7 +164,7 @@ bench_main(Bench* self)
 	}
 
 	// report
-	auto duration = opt_int_of(&self->opt_duration);
+	auto duration = self->opt_duration;
 	uint64_t prev_tx = 0;
 	uint64_t prev_wr = 0;
 	for (; duration > 0; duration--)
@@ -199,7 +195,7 @@ bench_main(Bench* self)
 	     self->writes / 1000000.0,
 	     self->writes);
 	info("");
-	auto histogram = opt_int_of(&self->opt_histogram);
+	auto histogram = self->opt_histogram;
 	if (histogram)
 		histogram_print(&self->histogram);
 }
@@ -210,15 +206,15 @@ bench_run(Bench* self)
 	info("");
 	info("amelie benchmark.");
 	info("");
-	info("type:      {str}",     opt_string_of(&self->opt_type));
-	info("duration:  {u64} sec", opt_int_of(&self->opt_duration));
-	info("databases: {u64} ",    opt_int_of(&self->opt_databases));
-	info("clients:   {u64} ",    opt_int_of(&self->opt_clients));
-	info("batch:     {u64}",     opt_int_of(&self->opt_batch));
+	info("type:      {str}",     &self->opt_type);
+	info("duration:  {i64} sec", self->opt_duration);
+	info("databases: {i64} ",    self->opt_databases);
+	info("clients:   {i64} ",    self->opt_clients);
+	info("batch:     {i64}",     self->opt_batch);
 	info("");
 
 	// set benchmark
-	auto type = opt_string_of(&self->opt_type);
+	auto type = &self->opt_type;
 	if (str_is_cstr(type, "insert"))
 		self->iface = &bench_insert;
 	else

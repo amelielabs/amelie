@@ -31,39 +31,50 @@ enum
 struct Endpoint
 {
 	// protocol
-	Opt  proto;
+	int64_t proto;
+
 	// auth
-	Opt  user;
-	Opt  token;
-	Opt  token_type;
+	Str     user;
+	Str     token;
+	int64_t token_type;
+
 	// host
-	Opt  host;
-	Opt  port;
+	Str     host;
+	int64_t port;
+
 	// repository
-	Opt  path;
+	Str     path;
+
 	// tls
-	Opt  tls_capath;
-	Opt  tls_ca;
-	Opt  tls_cert;
-	Opt  tls_key;
-	Opt  tls_server;
+	Str     tls_capath;
+	Str     tls_ca;
+	Str     tls_cert;
+	Str     tls_key;
+	Str     tls_server;
+
 	// endpoint
-	Opt  uri;
-	Opt  content_type;
-	Opt  accept;
-	Opt  db;
-	Opt  db_id;
-	Opt  rel;
+	Str     uri;
+	Str     content_type;
+	Str     accept;
+
+	// relation
+	Str     db;
+	Uuid    db_id;
+	Str     rel;
+
 	// context
-	Opt  timezone;
-	Opt  time;
-	Opt  seed;
-	Opt  id;
+	Str     timezone;
+	int64_t time;
+	int64_t seed;
+	Str     id;
+
 	// misc
-	Opt  jsonrpc;
-	Opt  trusted;
-	Opt  debug;
-	Opts opts;
+	Str     jsonrpc;
+	bool    trusted;
+	bool    debug;
+
+	// options
+	Opts    opts;
 };
 
 void endpoint_init(Endpoint*);

@@ -49,23 +49,21 @@ udf_config_free(UdfConfig* self)
 }
 
 static inline void
-udf_config_set_name(UdfConfig* self, Str* name)
+udf_config_set_name(UdfConfig* self, Str* value)
 {
-	str_free(&self->name);
-	str_copy(&self->name, name);
+	str_assign(&self->name, value);
 }
 
 static inline void
 udf_config_set_description(UdfConfig* self, Str* value)
 {
-	str_free(&self->description);
-	str_copy(&self->description, value);
+	str_assign(&self->description, value);
 }
 
 static inline void
-udf_config_set_text(UdfConfig* self, Str* text)
+udf_config_set_text(UdfConfig* self, Str* value)
 {
-	str_copy(&self->text, text);
+	str_assign(&self->text, value);
 }
 
 static inline void

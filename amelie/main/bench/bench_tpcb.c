@@ -232,7 +232,7 @@ bench_tpcb_deploy(BenchClient* self)
 	buf_emplace(filler, 100);
 	memset(filler->start, ' ', 100);
 
-	auto batch = (int)opt_int_of(&self->bench->opt_batch);
+	auto batch = (int)self->bench->opt_batch;
 	auto scale = 1;
 	auto buf = buf_create();
 	defer_buf(buf);
@@ -256,7 +256,7 @@ bench_tpcb_deploy(BenchClient* self)
 		client_execute(client, &str, NULL);
 	}
 
-	auto clients = opt_int_of(&self->bench->opt_clients);
+	auto clients = self->bench->opt_clients;
 	bench_tpcb_load(self, scale, batch, clients);
 
 	// add 100 to account 1 by teller 1 at branch 1
@@ -270,7 +270,7 @@ hot static void
 bench_tpcb_main(BenchClient* self)
 {
 	auto bench  = self->bench;
-	auto batch  = opt_int_of(&bench->opt_batch);
+	auto batch  = bench->opt_batch;
 	auto scale  = 1;
 	auto client = self->client;
 

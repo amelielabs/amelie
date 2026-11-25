@@ -46,8 +46,8 @@ parse_replica_create(Stmt* self)
 	if (error_catch ( uri_parse(&endpoint, &uri->string) ))
 		stmt_error(self, uri, "failed to read uri");
 
-	if (endpoint.proto.integer != PROTO_AMELIE &&
-	    endpoint.proto.integer != PROTO_AMELIES)
+	if (endpoint.proto != PROTO_AMELIE &&
+	    endpoint.proto != PROTO_AMELIES)
 		stmt_error(self, uri, "amelie protocol expected");
 
 	replica_config_set_uri(stmt->config, &uri->string);

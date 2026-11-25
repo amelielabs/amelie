@@ -58,15 +58,13 @@ table_config_free(TableConfig* self)
 static inline void
 table_config_set_name(TableConfig* self, Str* value)
 {
-	str_free(&self->name);
-	str_copy(&self->name, value);
+	str_assign(&self->name, value);
 }
 
 static inline void
 table_config_set_description(TableConfig* self, Str* value)
 {
-	str_free(&self->description);
-	str_copy(&self->description, value);
+	str_assign(&self->description, value);
 }
 
 static inline void

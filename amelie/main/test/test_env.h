@@ -25,7 +25,7 @@ static inline TestEnv*
 test_env_create(Str* name)
 {
 	TestEnv* self = am_malloc(sizeof(*self));
-	str_copy(&self->name, name);
+	str_set_copy(&self->name, name);
 	self->sessions = 0;
 	runtime_init(&self->runtime);
 	list_init(&self->link);

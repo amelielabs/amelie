@@ -65,8 +65,7 @@ state_is_primary(void)
 static inline void
 state_secret_set(Str* value)
 {
-	str_free(&state()->secret);
-	str_copy(&state()->secret, value);
+	str_assign(&state()->secret, value);
 
 	// invalidation event
 	state()->secret_seq++;

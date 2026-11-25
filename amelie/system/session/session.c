@@ -270,7 +270,7 @@ session_run_utility(Session* self)
 		if (is_db)
 		{
 			flags = RECORD_UTILITY;
-			uuid_init(&portal->endpoint.db_id.uuid);
+			uuid_init(&portal->endpoint.db_id);
 		}
 		auto write = &gtr->write;
 		request_write(req, &portal->endpoint, write, 0, flags);

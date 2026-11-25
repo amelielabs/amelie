@@ -210,7 +210,7 @@ unpack_str_copy(uint8_t** pos, Str* str)
 	char* value;
 	int   value_size;
 	unpack_raw(pos, &value, &value_size);
-	str_dup(str, value, value_size);
+	str_set_copy_raw(str, value, value_size);
 }
 
 // bool

@@ -24,8 +24,8 @@ struct Copy
 	List     clients_list;
 	Client*  forward;
 	// options
-	Opt      batch;
-	Opt      clients;
+	int64_t  batch;
+	int64_t  clients;
 	Opts     opts;
 	Main*    main;
 };

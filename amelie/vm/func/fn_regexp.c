@@ -38,7 +38,7 @@ regexp_allocate(Str* pattern, pcre2_code* code)
 	auto self = (Regexp*)am_malloc(sizeof(Regexp));
 	self->code = code;
 	str_init(&self->pattern);
-	str_copy(&self->pattern, pattern);
+	str_set_copy(&self->pattern, pattern);
 	return self;
 }
 

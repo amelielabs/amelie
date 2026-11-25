@@ -71,15 +71,15 @@ request_begin(Buf* buf, Endpoint* endpoint, Uuid* id, Str* rel, Str* content_typ
 
 	// timezone
 	encode_int(buf, META_TIMEZONE);
-	encode_str(buf, opt_string_of(&endpoint->timezone));
+	encode_str(buf, &endpoint->timezone);
 
 	// time
 	encode_int(buf, META_TIME);
-	encode_int(buf, opt_int_of(&endpoint->time));
+	encode_int(buf, endpoint->time);
 
 	// seed
 	encode_int(buf, META_SEED);
-	encode_int(buf, opt_int_of(&endpoint->seed));
+	encode_int(buf, endpoint->seed);
 
 	// rel
 	if (rel && !str_empty(rel))
@@ -111,8 +111,8 @@ request_end(Buf* buf, MsgId id, uint64_t ack, int flags)
 static inline void
 request_write(Request* self, Endpoint* endpoint, Buf* buf, uint64_t ack, int flags)
 {
-	request_begin(buf, endpoint, opt_uuid_of(&endpoint->db_id),
-	              &self->rel, &self->content_type);
+	request_begin(buf, endpoint, &endpoint->db_id, &self->rel,
+	              &self->content_type);
 
 	// content
 	auto content = &self->content;
@@ -136,25 +136,22 @@ request_read(Request* self, Endpoint* endpoint, Write* msg)
 		int64_t field;
 		unpack_int(&pos, &field);
 
-		int64_t integer;
 		switch (field) {
 		case META_UUID:
 		{
 			Str uuid;
 			unpack_str(&pos, &uuid);
-			uuid_set(&endpoint->db_id.uuid, &uuid);
+			uuid_set(&endpoint->db_id, &uuid);
 			break;
 		}
 		case META_TIMEZONE:
-			unpack_str(&pos, &endpoint->timezone.string);
+			unpack_str(&pos, &endpoint->timezone);
 			break;
 		case META_TIME:
-			unpack_int(&pos, &integer);
-			opt_int_set(&endpoint->time, integer);
+			unpack_int(&pos, &endpoint->time);
 			break;
 		case META_SEED:
-			unpack_int(&pos, &integer);
-			opt_int_set(&endpoint->seed, integer);
+			unpack_int(&pos, &endpoint->seed);
 			break;
 		case META_REL:
 		{

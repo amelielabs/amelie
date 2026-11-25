@@ -25,7 +25,7 @@ static void
 repo_create(Repo* self, char* directory)
 {
 	// set irectory
-	str_dup_cstr(&state()->directory, directory);
+	str_assign_cstr(&state()->directory, directory);
 
 	// create directory if not exists
 	self->bootstrap = !fs_exists("{s}", state_directory());
@@ -105,28 +105,24 @@ repo_bootstrap(void)
 	auto config = config();
 
 	// generate uuid, unless it is set
-	if (opt_uuid_empty(&config->uuid))
-	{
-		Uuid uuid;
-		uuid_generate(&uuid, &am_task->random, time_ms());
-		opt_uuid_set(&config->uuid, &uuid);
-	}
+	if (uuid_empty(&config->uuid))
+		uuid_generate(&config->uuid, &am_task->random, time_ms());
 
 	// generate secret
 	uint8_t secret[32];
 	random_generate_alnum(&am_task->random, secret, sizeof(secret));
-	str_dup(&state()->secret, (char*)secret, sizeof(secret));
+	str_assign_raw(&state()->secret, (char*)secret, sizeof(secret));
 
 	// set default timezone using system timezone
-	if (opt_string_empty(&config->timezone))
-		opt_string_set(&config->timezone, &runtime()->timezones.system->name);
+	if (str_empty(&config->timezone))
+		str_assign(&config->timezone, &runtime()->timezones.system->name);
 
 	// set default listen
-	if (opt_json_empty(&config()->listen))
+	if (str_empty(&config()->listen))
 	{
 		auto buf = repo_listen_create();
 		defer_buf(buf);
-		opt_json_set_buf(&config()->listen, buf);
+		str_assign_raw(&config()->listen, buf->start, buf_size(buf));
 	}
 }
 
@@ -175,26 +171,26 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 		config_open(config, path);
 
 		// validate version
-		if (! str_is_cstr(&config()->version.string, AMELIE_VERSION))
+		if (! str_is_cstr(&config()->version, AMELIE_VERSION))
 			error("repository version {str} does not match the server version {s}",
-			      &config()->version.string, AMELIE_VERSION);
+			      &config()->version, AMELIE_VERSION);
 
 		// redefine options and update config if necessary
 		opts_set_argv(&config->opts, argc, argv);
 	}
 
 	// set system timezone
-	auto name = &config()->timezone.string;
+	auto name = &config()->timezone;
 	runtime->timezone = timezones_find(&runtime->timezones, name);
 	if (! runtime->timezone)
 		error("failed to find timezone {str}", name);
 
 	// reconfigure logger
-	logger_set_enable(logger, opt_int_of(&config->log_enable));
+	logger_set_enable(logger, config->log_enable);
 	logger_set_timezone(logger, runtime->timezone);
-	logger_set_stdout(logger, opt_int_of(&config->log_stdout));
-	logger_set_stdout_time(logger, opt_int_of(&config->log_stdout_time));
-	if (! opt_int_of(&config->log_file))
+	logger_set_stdout(logger, config->log_stdout);
+	logger_set_stdout_time(logger, config->log_stdout_time);
+	if (! config->log_file)
 		logger_close(logger);
 }
 

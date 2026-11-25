@@ -72,7 +72,7 @@ repl_follow(Repl* self, Str* primary_id)
 			error("replication: invalid primary uuid");
 
 		// validate id
-		if (uuid_is(&id, opt_uuid_of(&config()->uuid)))
+		if (uuid_is(&id, &config()->uuid))
 			error("replication: primary id cannot match this server id");
 
 		state_recover_set(RECOVER_REPL);

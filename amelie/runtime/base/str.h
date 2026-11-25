@@ -311,7 +311,7 @@ str_nullif(Str* self)
 }
 
 static inline void
-str_dup(Str* self, const void* string, int size)
+str_set_copy_raw(Str* self, const void* string, int size)
 {
 	char* pos = am_malloc(size + 1);
 	memcpy(pos, string, size);
@@ -323,15 +323,15 @@ str_dup(Str* self, const void* string, int size)
 }
 
 static inline void
-str_dup_cstr(Str* self, const char* string)
+str_set_copy_cstr(Str* self, const char* string)
 {
-	str_dup(self, string, strlen(string));
+	str_set_copy_raw(self, string, strlen(string));
 }
 
 static inline void
-str_copy(Str* self, Str* src)
+str_set_copy(Str* self, Str* src)
 {
-	str_dup(self, str_of(src), str_size(src));
+	str_set_copy_raw(self, str_of(src), str_size(src));
 }
 
 static inline void
@@ -340,4 +340,28 @@ str_free(Str* self)
 	if (self->allocated)
 		am_free(self->pos);
 	str_init(self);
+}
+
+static inline void
+str_assign(Str* self, Str* src)
+{
+	str_free(self);
+	if (! str_empty(src))
+		str_set_copy(self, src);
+}
+
+static inline void
+str_assign_cstr(Str* self, const char* src)
+{
+	str_free(self);
+	if (src)
+		str_set_copy_cstr(self, src);
+}
+
+static inline void
+str_assign_raw(Str* self, void* src, int size)
+{
+	str_free(self);
+	if (src)
+		str_set_copy_raw(self, src, size);
 }

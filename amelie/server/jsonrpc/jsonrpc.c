@@ -44,8 +44,10 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 {
 	// create new request
 	auto req = (JsonrpcReq*)buf_emplace(&self->reqs, sizeof(JsonrpcReq));
-	req->id     = NULL;
-	req->params = NULL;
+	req->id          = NULL;
+	req->id_size     = 0;
+	req->params      = NULL;
+	req->params_size = 0;
 	str_init(&req->method);
 
 	// parse object
@@ -73,6 +75,7 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 		{
 			req->params = *pos;
 			data_skip(pos);
+			req->params_size = *pos - req->params;
 		} else
 		if (str_is(&name, "id", 2))
 		{
@@ -81,6 +84,7 @@ jsonrpc_parse_obj(Jsonrpc* self, uint8_t** pos)
 				return false;
 			req->id = *pos;
 			data_skip(pos);
+			req->id_size = *pos - req->id;
 		} else {
 			return false;
 		}

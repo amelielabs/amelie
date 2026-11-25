@@ -81,7 +81,7 @@ bench_decre_main(BenchClient* self)
 {
 	auto bench  = self->bench;
 	auto total  = 100000;
-	auto batch  = (int)opt_int_of(&bench->opt_batch);
+	auto batch  = (int)bench->opt_batch;
 	auto client = self->client;
 
 	Buf buf;

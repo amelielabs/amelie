@@ -21,7 +21,7 @@ page_save(Page* self, File* file, uint64_t offset)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, opt_string_of(&config()->storage_compression));
+	encoder_open(&ec, &config()->storage_compression);
 
 	Page header;
 	memcpy(&header, self, sizeof(Page));
@@ -47,7 +47,7 @@ page_save(Page* self, File* file, uint64_t offset)
 	// update header
 	header.compression     = encoder_compression(&ec);
 	header.size_compressed = iov->iov_len;
-	if (opt_int_of(&config()->storage_crc))
+	if (config()->storage_crc)
 		header.crc_data = encoder_iov_crc(&ec);
 	header.crc = runtime()->crc(0, &header.crc_data, sizeof(header) - sizeof(uint32_t));
 	file_pwrite(file, &header, sizeof(header), start);
@@ -74,7 +74,7 @@ page_load(Page* self, File* file, uint64_t offset)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, opt_string_of(&config()->storage_compression));
+	encoder_open(&ec, &config()->storage_compression);
 	encoder_set_compression(&ec, header.compression);
 
 	// decode page or read page as is
@@ -87,7 +87,7 @@ page_load(Page* self, File* file, uint64_t offset)
 		offset += header.size_compressed;
 
 		// validate crc
-		if (opt_int_of(&config()->storage_crc))
+		if (config()->storage_crc)
 		{
 			crc = runtime()->crc(0, buf->start, buf_size(buf));
 			if (crc != header.crc_data)
@@ -107,7 +107,7 @@ page_load(Page* self, File* file, uint64_t offset)
 		offset += page_size;
 
 		// validate crc
-		if (opt_int_of(&config()->storage_crc))
+		if (config()->storage_crc)
 		{
 			crc = runtime()->crc(0, page_data, page_size);
 			if (crc != header.crc_data)

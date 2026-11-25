@@ -45,8 +45,7 @@ replica_config_set_id(ReplicaConfig* self, Uuid* id)
 static inline void
 replica_config_set_uri(ReplicaConfig* self, Str* value)
 {
-	str_free(&self->uri);
-	str_copy(&self->uri, value);
+	str_assign(&self->uri, value);
 }
 
 static inline ReplicaConfig*

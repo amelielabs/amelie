@@ -22,7 +22,7 @@ bench_insert_deploy(BenchClient* self)
 	str_set_cstr(&str, "create table test (id int) retention 1gb");
 	client_execute(self->client, &str, NULL);
 
-	auto batch = opt_int_of(&self->bench->opt_batch);
+	auto batch = self->bench->opt_batch;
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
@@ -30,7 +30,7 @@ bench_insert_deploy(BenchClient* self)
 	           "create function insert_func() "
 	           "begin "
 	           "  insert into test () values ");
-	for (uint64_t i = 0; i < batch; i++)
+	for (int i = 0; i < batch; i++)
 	{
 		buf_write(&buf, "()", 2);
 		if ((i + 1) != batch)
@@ -48,7 +48,7 @@ hot static void
 bench_insert_main(BenchClient* self)
 {
 	auto bench  = self->bench;
-	auto batch  = opt_int_of(&bench->opt_batch);
+	auto batch  = bench->opt_batch;
 	auto client = self->client;
 
 	Str cmd;

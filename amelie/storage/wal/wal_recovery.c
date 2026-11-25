@@ -103,7 +103,7 @@ wal_rewind(Wal* self, uint64_t lsn)
 	defer_buf(&buf);
 
 	// rewind to the lsn
-	auto crc = opt_int_of(&config()->wal_crc);
+	auto crc = config()->wal_crc;
 	uint64_t offset = 0;
 	for (;;)
 	{
@@ -172,11 +172,11 @@ wal_recovery(Wal* self)
 	}
 
 	// truncate wals to the specified lsn, if set
-	if (opt_int_of(&config()->wal_rewind))
+	if (config()->wal_rewind)
 	{
-		uint64_t lsn = opt_int_of(&config()->wal_rewind_pos);
+		uint64_t lsn = config()->wal_rewind_pos;
 		wal_rewind(self, lsn);
-		opt_int_set(&config()->wal_rewind, false);
+		config()->wal_rewind = false;
 	}
 
 	// set and open current

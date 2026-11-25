@@ -26,7 +26,7 @@ output_jsonrpc_begin(Output* self)
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
 
-	auto id  = &self->endpoint->jsonrpc.string;
+	auto id  = &self->endpoint->jsonrpc;
 	auto pos = str_u8(id);
 	if (str_empty(id))
 		buf_write(buf, "null", 4);
@@ -76,7 +76,7 @@ output_jsonrpc_write_error(Output* self, Error* error)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &self->endpoint->jsonrpc.string;
+	auto id = &self->endpoint->jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else

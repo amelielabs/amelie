@@ -271,14 +271,14 @@ void
 system_start(System* self, bool bootstrap)
 {
 	// hello
-	auto version = &config()->version.string;
+	auto version = &config()->version;
 	info("amelie {str}", version);
 
 	// save system state on bootstrap
 	if (bootstrap)
 		control_state_write();
 
-	if (bootstrap || opt_int_of(&config()->log_options))
+	if (bootstrap || config()->log_options)
 	{
 		info("");
 		opts_print(&config()->opts);
@@ -291,10 +291,8 @@ system_start(System* self, bool bootstrap)
 	fn_register(&self->functions);
 
 	// start computes
-	auto workers = opt_int_of(&config()->compute);
-	computes_start(&self->computes, &compute_if,
-	                self,
-	                workers);
+	computes_start(&self->computes, &compute_if, self,
+	                config()->compute);
 
 	// start commit worker
 	commit_start(&self->commit);

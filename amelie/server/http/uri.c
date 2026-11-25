@@ -30,29 +30,30 @@ uri_error(void)
 static inline void
 uri_parse_protocol(Uri* self)
 {
+	auto endpoint = self->endpoint;
 	if (! strncmp(self->pos, "http://", 7))
 	{
-		opt_int_set(&self->endpoint->proto, PROTO_HTTP);
+		endpoint->proto = PROTO_HTTP;
 		self->pos += 7;
 	} else
 	if (! strncmp(self->pos, "https://", 8))
 	{
-		opt_int_set(&self->endpoint->proto, PROTO_HTTPS);
+		endpoint->proto = PROTO_HTTPS;
 		self->pos += 8;
 	} else
 	if (! strncmp(self->pos, "amelie://", 9))
 	{
-		opt_int_set(&self->endpoint->proto, PROTO_AMELIE);
+		endpoint->proto = PROTO_AMELIE;
 		self->pos += 9;
 	} else
 	if (! strncmp(self->pos, "amelies://", 10))
 	{
-		opt_int_set(&self->endpoint->proto, PROTO_AMELIES);
+		endpoint->proto = PROTO_AMELIES;
 		self->pos += 10;
 	} else
 	{
 		// unsupported protocol
-		char *protocol = strstr(self->pos, "://");
+		auto protocol = strstr(self->pos, "://");
 		if (protocol)
 			uri_error();
 	}
@@ -75,7 +76,7 @@ uri_parse_user(Uri* self)
 
 	// user
 	auto endpoint = self->endpoint;
-	opt_string_set_raw(&endpoint->user, self->pos, at - self->pos);
+	str_assign_raw(&endpoint->user, self->pos, at - self->pos);
 	self->pos = at + 1;
 }
 
@@ -114,7 +115,7 @@ uri_parse_host(Uri* self)
 		uri_error();
 
 	// set host
-	opt_string_set_raw(&self->endpoint->host, name, name_size);
+	str_assign_raw(&self->endpoint->host, name, name_size);
 
 	// [:port]
 	if (*self->pos == ':')
@@ -132,7 +133,7 @@ uri_parse_host(Uri* self)
 			uri_error();
 
 		// set port
-		opt_int_set(&self->endpoint->port, port);
+		self->endpoint->port = port;
 	}
 
 	// ?
@@ -281,7 +282,7 @@ uri_parse_endpoint(Uri* self)
 	auto start = self->pos;
 	while (*self->pos && *self->pos != '/' && *self->pos != '?')
 		self->pos++;
-	opt_string_set_raw(&self->endpoint->db, start, self->pos - start);
+	str_assign_raw(&self->endpoint->db, start, self->pos - start);
 	if (!*self->pos || *self->pos == '?')
 		return;
 
@@ -292,7 +293,7 @@ uri_parse_endpoint(Uri* self)
 	// rel
 	while (*self->pos && *self->pos != '/' && *self->pos != '?')
 		self->pos++;
-	opt_string_set_raw(&self->endpoint->rel, start, self->pos - start);
+	str_assign_raw(&self->endpoint->rel, start, self->pos - start);
 
 	if (*self->pos == '/')
 		self->pos++;
@@ -302,9 +303,9 @@ void
 uri_parse(Endpoint* endpoint, Str* spec)
 {
 	// set uri
-	opt_string_set(&endpoint->uri, spec);
+	str_assign(&endpoint->uri, spec);
 	Uri self = {
-		.pos      = opt_string_of(&endpoint->uri)->pos,
+		.pos      = endpoint->uri.pos,
 		.endpoint = endpoint
 	};
 
@@ -332,9 +333,9 @@ uri_parse_request(Endpoint* endpoint, Str* spec)
 		error("invalid endpoint");
 
 	// set uri
-	opt_string_set(&endpoint->uri, spec);
+	str_assign(&endpoint->uri, spec);
 	Uri self = {
-		.pos      = opt_string_of(&endpoint->uri)->pos,
+		.pos      = endpoint->uri.pos,
 		.endpoint = endpoint
 	};
 
@@ -343,32 +344,4 @@ uri_parse_request(Endpoint* endpoint, Str* spec)
 
 	// ?name=value[& ...]
 	uri_parse_args(&self, OPT_AE);
-}
-
-void
-uri_export_arg(Opt* opt, Buf* buf, bool* first)
-{
-	// [?|&]name=value
-	switch (opt->type) {
-	case OPT_BOOL:
-		if (! opt_int_of(opt))
-			return;
-		buf_format(buf, "{c}{str}", *first? '?': '&',
-		           &opt->name);
-		break;
-	case OPT_INT:
-		buf_format(buf, "{c}{str}={u64}", *first? '?': '&',
-		           &opt->name, opt->integer);
-		break;
-	case OPT_STRING:
-		if (opt_string_empty(opt))
-			return;
-		buf_format(buf, "{c}{str}={str}", *first? '?': '&',
-		           &opt->name, &opt->string);
-		break;
-	case OPT_JSON:
-	case OPT_UUID:
-		break;
-	}
-	*first = false;
 }

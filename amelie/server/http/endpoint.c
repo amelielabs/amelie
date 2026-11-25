@@ -18,7 +18,7 @@ void
 endpoint_init(Endpoint* self)
 {
 	opts_init(&self->opts);
-	OptsDef defs[] =
+	OptsDef defs[25] =
 	{
 		// protocol
 		{ "proto",        OPT_INT,     OPT_C,              &self->proto,        NULL, PROTO_HTTP },
@@ -54,9 +54,8 @@ endpoint_init(Endpoint* self)
 		{ "jsonrpc",      OPT_JSON,    OPT_E,              &self->jsonrpc,      NULL, 0          },
 		{ "trusted",      OPT_BOOL,    OPT_E,              &self->trusted,      NULL, false      },
 		{ "debug",        OPT_BOOL,    OPT_C,              &self->debug,        NULL, false      },
-		{  NULL,          0,           0,                   NULL,               NULL, 0          },
 	};
-	opts_define(&self->opts, defs);
+	opts_define(&self->opts, defs, 25);
 }
 
 void
@@ -68,22 +67,15 @@ endpoint_free(Endpoint* self)
 void
 endpoint_reset(Endpoint* self)
 {
-	list_foreach(&self->opts.list)
-	{
-		auto opt = list_at(Opt, link);
-		if (opt->type == OPT_STRING || opt->type == OPT_JSON)
-			str_free(&opt->string);
-		else
-			opt->integer = 0;
-	}
-	self->port.integer = 8080;
+	self->port = 8080;
+	opts_reset(&self->opts);
 }
 
 void
 endpoint_auth(Endpoint* self)
 {
-	auto token = opt_string_of(&self->token);
-	auto db    = opt_string_of(&self->db);
+	auto token = &self->token;
+	auto db    = &self->db;
 
 	// no token
 	if (str_empty(token))
@@ -91,7 +83,7 @@ endpoint_auth(Endpoint* self)
 		// no db
 		if (str_empty(db))
 		{
-			opt_int_set(&self->token_type, TOKEN_NONE);
+			self->token_type = TOKEN_NONE;
 			return;
 		}
 
@@ -101,8 +93,8 @@ endpoint_auth(Endpoint* self)
 		auto buf = basic_encode(db, &password);
 		defer_buf(buf);
 
-		opt_string_set_buf(&self->token, buf);
-		opt_int_set(&self->token_type, TOKEN_BASIC);
+		self->token_type = TOKEN_BASIC;
+		str_assign_raw(&self->token, buf->start, buf_size(buf));
 		return;
 	}
 
@@ -121,8 +113,8 @@ endpoint_auth(Endpoint* self)
 		str_init(&sub);
 		jwt_decode_data(&jwt, &sub, &iat, &exp);
 
-		opt_string_set(&self->db, &sub);
-		opt_int_set(&self->token_type, TOKEN_JWT);
+		self->token_type = TOKEN_JWT;
+		str_assign(&self->db, &sub);
 		return;
 	}
 
@@ -132,6 +124,6 @@ endpoint_auth(Endpoint* self)
 	auto buf = basic_decode(token, &basic_db, &basic_password);
 	defer_buf(buf);
 
-	opt_string_set(&self->db, &basic_db);
-	opt_int_set(&self->token_type, TOKEN_BASIC);
+	self->token_type = TOKEN_BASIC;
+	str_assign(&self->db, &basic_db);
 }

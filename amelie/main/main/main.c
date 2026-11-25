@@ -37,7 +37,7 @@ main_init(Main* self, int argc, char** argv)
 	self->argv = argv;
 	console_init(&self->console);
 	endpoint_init(&self->endpoint);
-	opt_int_set(&self->endpoint.debug, true);
+	self->endpoint.debug = true;
 }
 
 void
@@ -88,7 +88,7 @@ main_configure(Main* self)
 		// path
 		Str path;
 		str_set_cstr(&path, argv[0]);
-		opt_string_set(&endpoint->path, &path);
+		str_assign(&endpoint->path, &path);
 		arg = 1;
 	} else
 	if (strncmp(argv[0], "--", 2) != 0)
@@ -139,8 +139,8 @@ main_configure(Main* self)
 	endpoint_auth(endpoint);
 
 	// validate connection string
-	auto uri  = opt_string_of(&endpoint->uri);
-	auto path = opt_string_of(&endpoint->path);
+	auto uri  = &endpoint->uri;
+	auto path = &endpoint->path;
 	if (str_empty(uri) && str_empty(path))
 		error("uri or path is not defined");
 

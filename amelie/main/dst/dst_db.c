@@ -49,17 +49,17 @@ void
 dst_db_connect(DstDb* self)
 {
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", opt_string_of(&self->dst->opt_dir));
+	format(path, sizeof(path), "{str}/env", &self->dst->opt_dir);
 
 	char name[32];
 	format(name, sizeof(name), "db_{d}", self->id);
 
 	// connect 
 	auto endpoint = &self->endpoint;
-	opt_string_set_cstr(&endpoint->path, path);
-	opt_string_set_cstr(&endpoint->db, name);
-	opt_string_set_raw(&endpoint->content_type, "text/plain", 10);
-	opt_string_set_raw(&endpoint->accept, "application/json", 16);
+	str_assign_cstr(&endpoint->path, path);
+	str_assign_cstr(&endpoint->db, name);
+	str_assign_raw(&endpoint->content_type, "text/plain", 10);
+	str_assign_raw(&endpoint->accept, "application/json", 16);
 	endpoint_auth(endpoint);
 
 	self->client = client_allocate();
@@ -83,7 +83,7 @@ dst_db_create(DstDb* self, int type)
 	auto id = self->rels_seq++;
 
 	// create object
-	auto rel = dst_rel_allocate(NULL, id, type, self->dst->opt_keys.integer);
+	auto rel = dst_rel_allocate(NULL, id, type, self->dst->opt_keys);
 	list_append(&self->rels, &rel->link);
 	self->rels_count++;
 
@@ -131,7 +131,7 @@ dst_db_create_for(DstDb* self, DstRel* parent, int type)
 	auto id = self->rels_seq++;
 
 	// create object
-	auto rel = dst_rel_allocate(parent, id, type, self->dst->opt_keys.integer);
+	auto rel = dst_rel_allocate(parent, id, type, self->dst->opt_keys);
 	list_append(&self->rels, &rel->link);
 	self->rels_count++;
 

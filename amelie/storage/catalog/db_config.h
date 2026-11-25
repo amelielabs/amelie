@@ -50,15 +50,13 @@ db_config_free(DbConfig* self)
 static inline void
 db_config_set_name(DbConfig* self, Str* value)
 {
-	str_free(&self->name);
-	str_copy(&self->name, value);
+	str_assign(&self->name, value);
 }
 
 static inline void
 db_config_set_description(DbConfig* self, Str* value)
 {
-	str_free(&self->description);
-	str_copy(&self->description, value);
+	str_assign(&self->description, value);
 }
 
 static inline void
@@ -70,15 +68,13 @@ db_config_set_id(DbConfig* self, Uuid* id)
 static inline void
 db_config_set_created_at(DbConfig* self, Str* value)
 {
-	str_free(&self->created_at);
-	str_copy(&self->created_at, value);
+	str_assign(&self->created_at, value);
 }
 
 static inline void
 db_config_set_revoked_at(DbConfig* self, Str* value)
 {
-	str_free(&self->revoked_at);
-	str_copy(&self->revoked_at, value);
+	str_assign(&self->revoked_at, value);
 }
 
 static inline DbConfig*

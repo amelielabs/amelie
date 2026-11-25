@@ -159,6 +159,6 @@ checkpoints_cleanup(Uuid* id)
 	fs_rmdir("{s}", path_drop);
 
 	// sync
-	if (opt_int_of(&config()->storage_sync))
+	if (config()->storage_sync)
 		fs_syncdir("{s}/storage", state_directory());
 }

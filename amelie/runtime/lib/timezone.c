@@ -21,9 +21,8 @@ timezone_create(Str* name, char* path)
 	Timezone* self = am_malloc(sizeof(Timezone));
 	errdefer(timezone_free, self);
 	memset(self, 0, sizeof(Timezone));
+	str_set_copy(&self->name, name);
 
-	str_init(&self->name);
-	str_copy(&self->name, name);
 	hashnode_init(&self->node);
 
 	// Based on RFC 8536: The Time Zone Information Format (TZif)

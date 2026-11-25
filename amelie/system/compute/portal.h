@@ -85,14 +85,13 @@ portal_prepare(Portal* self)
 {
 	// timestamp
 	auto endpoint = &self->endpoint;
-	opt_int_set(&endpoint->time, time_us());
+	endpoint->time = time_us();
 
 	// random seed
-	int64_t seed = random_generate(&am_task->random);
-	opt_int_set(&endpoint->seed, seed);
+	endpoint->seed = random_generate(&am_task->random);
 
 	// set timezone
-	auto timezone = &endpoint->timezone.string;
+	auto timezone = &endpoint->timezone;
 	str_set_str(timezone, &runtime()->timezone->name);
 }
 
@@ -107,7 +106,7 @@ portal_auth(Portal* self, Auth* auth, Token* token)
 	self->db = auth_run(auth, endpoint, token);
 
 	// set db id
-	opt_uuid_set(&endpoint->db_id, &self->db->config->id);
+	endpoint->db_id = *self->db->rel.id;
 }
 
 hot static inline void
@@ -123,12 +122,12 @@ portal_set_local(Portal* self, bool with_limits)
 	str_set_str(&local->db, &self->db->config->name);
 
 	// set time
-	local->time_us = opt_int_of(&self->endpoint.time);
+	local->time_us = self->endpoint.time;
 	local->time_ms = local->time_us / 1000;
 
 	// set random seed
 	auto random = &local->random;
-	random->seed[0] = opt_int_of(&self->endpoint.seed);
+	random->seed[0] = self->endpoint.seed;
 	random->seed[1] = random->seed[0] ^ local->time_us;
 }
 
@@ -137,10 +136,10 @@ portal_set(Portal* self, Db* db, bool with_limits)
 {
 	// set db
 	self->db = db;
-	opt_string_set(&self->endpoint.db, &self->db->config->name);
+	str_assign(&self->endpoint.db, &self->db->config->name);
 
 	// set db id
-	opt_uuid_set(&self->endpoint.db_id, &self->db->config->id);
+	self->endpoint.db_id = self->db->config->id;
 
 	// configure local
 	portal_set_local(self, with_limits);

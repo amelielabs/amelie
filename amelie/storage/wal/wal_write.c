@@ -47,9 +47,9 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 	defer(wal_file_unpin_defer, prev);
 
 	// sync and close previous file
-	auto service = opt_int_of(&config()->wal_service);
+	auto service = config()->wal_service;
 	auto close = true;
-	if (opt_int_of(&config()->wal_sync_close))
+	if (config()->wal_sync_close)
 	{
 		if (service) {
 			context->sync_close = prev->id;
@@ -62,7 +62,7 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 		wal_file_close(prev);
 
 	// sync new file
-	if (opt_int_of(&config()->wal_sync_create))
+	if (config()->wal_sync_create)
 	{
 		if (service) {
 			context->sync = id;
@@ -74,7 +74,7 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 	}
 
 	// schedule checkpoint on reaching files threshold
-	if (count >= (int)opt_int_of(&config()->wal_checkpoint))
+	if (count >= config()->wal_checkpoint)
 		context->checkpoint = true;
 }
 
@@ -90,7 +90,7 @@ wal_write_recover(Wal* self, WalFile* current, WalContext* context)
 	wal_file_write(current, iov);
 
 	// sync after write
-	if (opt_int_of(&config()->wal_sync_write))
+	if (config()->wal_sync_write)
 		wal_file_sync(current);
 }
 
@@ -119,7 +119,7 @@ wal_write_list(Wal* self, WalFile* current, WalContext* context)
 	wal_file_write(current, iov);
 
 	// sync after write
-	if (opt_int_of(&config()->wal_sync_write))
+	if (config()->wal_sync_write)
 		wal_file_sync(current);
 
 	context->list->lsn = context->lsn;
@@ -131,7 +131,7 @@ wal_write(Wal* self, WalContext* context)
 	// get or create a new wal file
 	spinlock_lock(&self->lock);
 	auto current = self->current;
-	if (current->file.size >= opt_int_of(&config()->wal_size))
+	if (current->file.size >= (uint64_t)config()->wal_size)
 	{
 		spinlock_unlock(&self->lock);
 

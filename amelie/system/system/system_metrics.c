@@ -95,15 +95,15 @@ system_metrics(System* self, Buf* buf)
 
 	// uuid
 	encode_raw(buf, "uuid", 4);
-	encode_uuid(buf, opt_uuid_of(&config()->uuid));
+	encode_uuid(buf, &config()->uuid);
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_str(buf, &config()->version.string);
+	encode_str(buf, &config()->version);
 
 	// compute
 	encode_raw(buf, "compute", 7);
-	encode_int(buf, opt_int_of(&config()->compute));
+	encode_int(buf, config()->compute);
 
 	// process
 	encode_raw(buf, "process", 7);

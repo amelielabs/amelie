@@ -32,7 +32,7 @@ dst_stmt(DstDb* self)
 	op->rel = rel;
 
 	// generate key
-	uint64_t key_id = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_keys);
+	uint64_t key_id = random_generate(&am_task->random) % self->dst->opt_keys;
 
 	// INSERT
 	auto key = dst_rel_get(rel, key_id);
@@ -47,7 +47,7 @@ dst_stmt(DstDb* self)
 		if (rel->type == DST_REL_TABLE)
 		{
 			key->value = random_generate(&am_task->random);
-			auto payload_size = random_generate(&am_task->random) % opt_int_of(&self->dst->opt_payload);
+			auto payload_size = random_generate(&am_task->random) % self->dst->opt_payload;
 			buf_format(&self->log.sql,
 			           "INSERT INTO table_{u64} VALUES ({u64}, {i64}, '{.*s}');",
 			           rel->id, key->key, key->value,
@@ -243,7 +243,7 @@ dst_step_ddl(DstDb* self)
 	if (self->rels_count == 0)
 		create = 1;
 	else
-	if (self->rels_count == (int)self->dst->opt_rels.integer)
+	if (self->rels_count == (int)self->dst->opt_rels)
 		create = 0;
 	else
 		create = random_generate(&am_task->random) % 2;
@@ -289,12 +289,12 @@ dst_step_ddl_db(DstDb* self)
 
 	// connect (system)
 	char path[PATH_MAX];
-	format(path, sizeof(path), "{str}/env", opt_string_of(&dst->opt_dir));
+	format(path, sizeof(path), "{str}/env", &dst->opt_dir);
 
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
-	opt_string_set_cstr(&endpoint.path, path);
+	str_assign_cstr(&endpoint.path, path);
 
 	auto client = client_allocate();
 	defer(client_free, client);
@@ -306,7 +306,7 @@ dst_step_ddl_db(DstDb* self)
 	if (dst->dbs_count == 1)
 		create = 1;
 	else
-	if (dst->dbs_count == (int)dst->opt_dbs.integer)
+	if (dst->dbs_count == (int)dst->opt_dbs)
 		create = 0;
 	else
 		create = random_generate(&am_task->random) % 2;

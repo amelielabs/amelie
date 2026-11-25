@@ -153,8 +153,8 @@ bench_vector_deploy(BenchClient* self)
 
 	info("preparing data.");
 	auto bench   = self->bench;
-	auto batch   = (int)opt_int_of(&bench->opt_batch);
-	auto clients = (int)opt_int_of(&bench->opt_clients);
+	auto batch   = (int)bench->opt_batch;
+	auto clients = (int)bench->opt_clients;
 	bench_vector_load(self, batch, clients);
 
 	info("done.");

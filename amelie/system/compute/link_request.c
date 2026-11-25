@@ -31,7 +31,7 @@ link_sql(Link* self)
 	//	check_permission_on(&portal->grants, PERM_SQL);
 
 	// content type
-	auto content_type = &endpoint->content_type.string;
+	auto content_type = &endpoint->content_type;
 	if (!str_empty(content_type) &&
 	    !str_is(content_type, "text/plain", 10) &&
 	    !str_is(content_type, "application/x-www-form-urlencoded", 33))
@@ -42,7 +42,7 @@ link_sql(Link* self)
 
 	// accept
 	OutputIf* output_if;
-	auto accept = &endpoint->accept.string;
+	auto accept = &endpoint->accept;
 	if (str_empty(accept) ||
 	    str_is(accept, "*/*", 3) ||
 	    str_is(accept, "text/plain", 10))
@@ -73,11 +73,11 @@ link_mcp(Link* self)
 	// POST /db (application/json)
 
 	// reset to default
-	auto content_type = &endpoint->content_type.string;
+	auto content_type = &endpoint->content_type;
 	str_init(content_type);
 
 	// accept (jsonrpc)
-	auto accept = &endpoint->accept.string;
+	auto accept = &endpoint->accept;
 	if (!str_empty(accept) &&
 	    !str_is(accept, "application/json", 16) &&
 	    !str_is(accept, "*/*", 3))
@@ -112,7 +112,7 @@ link_db(Link* self)
 		error("unsupported operation method: {str}", method);
 
 	// mcp (application/json)
-	auto content_type = &endpoint->content_type.string;
+	auto content_type = &endpoint->content_type;
 	if (str_is(content_type, "application/json", 16))
 		return link_mcp(self);
 
@@ -127,11 +127,11 @@ link_rel_get(Link* self)
 	auto endpoint = &portal->endpoint;
 
 	// GET (text/event-stream) SSE
-	auto content_type = &endpoint->content_type.string;
+	auto content_type = &endpoint->content_type;
 	str_set(content_type, "application/json", 16);
 
 	// accept (text/event-stream)
-	auto accept = &endpoint->accept.string;
+	auto accept = &endpoint->accept;
 	if (!str_empty(accept) &&
 	    !str_is(accept, "text/event-stream", 17) &&
 	    !str_is(accept, "*/*", 3))
@@ -163,7 +163,7 @@ link_rel(Link* self)
 	buf_str(&http->content, &content);
 
 	// content type (json)
-	auto content_type = &endpoint->content_type.string;
+	auto content_type = &endpoint->content_type;
 	if (str_empty(content_type) ||
 	    str_is(content_type, "application/json", 16) ||
 	    str_is(content_type, "application/x-www-form-urlencoded", 33))
@@ -186,7 +186,7 @@ link_rel(Link* self)
 
 	// accept (json, text)
 	OutputIf* output_if;
-	auto accept = &endpoint->accept.string;
+	auto accept = &endpoint->accept;
 	if (str_empty(accept) ||
 	    str_is(accept, "*/*", 3) ||
 	    str_is(accept, "application/json", 16))
@@ -203,7 +203,7 @@ link_rel(Link* self)
 
 	// set request
 	auto req = &portal->req;
-	req->rel          = endpoint->rel.string;
+	req->rel          = endpoint->rel;
 	req->content_type = *content_type;
 	req->content      =  content;
 	return LINK_EXECUTE;
@@ -225,7 +225,7 @@ link_request(Link* self)
 
 		// /db
 		// /db/rel
-		if (opt_string_empty(&endpoint->rel))
+		if (str_empty(&endpoint->rel))
 			rc = link_db(self);
 		else
 			rc = link_rel(self);

@@ -34,7 +34,7 @@ mcp_initialize(Mcp* self)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &portal->endpoint.jsonrpc.string;
+	auto id = &portal->endpoint.jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else
@@ -73,7 +73,7 @@ mcp_initialize(Mcp* self)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_str(buf, &config()->version.string);
+	encode_str(buf, &config()->version);
 	encode_obj_end(buf);
 
 	encode_obj_end(buf);
@@ -99,7 +99,7 @@ mcp_tools_list(Mcp* self)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &portal->endpoint.jsonrpc.string;
+	auto id = &portal->endpoint.jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else
@@ -136,7 +136,7 @@ mcp_resources_list(Mcp* self)
 
 	// id
 	encode_raw(buf, "id", 2);
-	auto id = &portal->endpoint.jsonrpc.string;
+	auto id = &portal->endpoint.jsonrpc;
 	if (str_empty(id))
 		encode_null(buf);
 	else
@@ -166,7 +166,7 @@ output_mcp_write(Output* self, Columns* columns, Value* value)
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
 
-	auto id  = &self->endpoint->jsonrpc.string;
+	auto id  = &self->endpoint->jsonrpc;
 	auto pos = str_u8(id);
 	if (str_empty(id))
 		buf_write(buf, "null", 4);
@@ -228,7 +228,7 @@ output_mcp_write_error(Output* self, Error* error)
 	auto buf = self->buf;
 	buf_write(buf, header, sizeof(header) - 1);
 
-	auto id  = &self->endpoint->jsonrpc.string;
+	auto id  = &self->endpoint->jsonrpc;
 	auto pos = str_u8(id);
 	if (str_empty(id))
 		buf_write(buf, "null", 4);

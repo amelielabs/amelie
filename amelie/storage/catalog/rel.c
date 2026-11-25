@@ -152,8 +152,7 @@ describe_if_abort(Log* self, LogOp* op)
 	uint8_t* pos = log_data_of(self, op);
 	Str description;
 	unpack_str(&pos, &description);
-	str_free(op->rel->description);
-	str_copy(op->rel->description, &description);
+	str_assign(op->rel->description, &description);
 }
 
 static LogIf describe_if =
@@ -179,8 +178,7 @@ catalog_describe_of(Catalog* self,
 	encode_str(&tr->log.data, rel->description);
 
 	// set new description
-	str_free(rel->description);
-	str_copy(rel->description, description);
+	str_assign(rel->description, description);
 }
 
 bool

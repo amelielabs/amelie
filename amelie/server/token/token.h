@@ -64,8 +64,6 @@ token_set(Token*   self, Str* token, Str* db,
 	self->expire     = expire;
 	self->seq_db     = seq_db;
 	self->seq_secret = seq_secret;
-	str_free(&self->db);
-	str_free(&self->token);
-	str_copy(&self->token, token);
-	str_copy(&self->db, db);
+	str_assign(&self->db, db);
+	str_assign(&self->token, token);
 }

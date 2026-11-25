@@ -31,7 +31,7 @@ test_session_create(Str* name, TestEnv* env, bool async)
 	self->async  = async;
 	self->env    = env;
 	endpoint_init(&self->endpoint);
-	str_copy(&self->name, name);
+	str_set_copy(&self->name, name);
 	list_init(&self->link);
 	return self;
 }
@@ -58,7 +58,7 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 	uri_parse(endpoint, uri);
 	endpoint_auth(endpoint);
 	if (cafile && !str_empty(cafile))
-		opt_string_set(&endpoint->tls_ca, cafile);
+		str_assign(&endpoint->tls_ca, cafile);
 
 	self->client = client_allocate();
 	client_set_endpoint(self->client, &self->endpoint);
@@ -140,10 +140,10 @@ test_session_post(TestSession* self,
 	}
 
 	// token
-	auto token = opt_string_of(&self->endpoint.token);
+	auto token = &self->endpoint.token;
 	if (! str_empty(token))
 	{
-		auto type = opt_int_of(&self->endpoint.token_type);
+		auto type = self->endpoint.token_type;
 		if (type == TOKEN_BASIC)
 			buf_write(buf, "Authorization: Basic ", 21);
 		else

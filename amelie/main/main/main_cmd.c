@@ -19,7 +19,7 @@ cmd_start(Main* self)
 	// amelie start <path> [options]
 
 	// ensure path is set
-	auto path = opt_string_of(&self->endpoint.path);
+	auto path = &self->endpoint.path;
 	if (str_empty(path))
 		error("path is not defined");
 
@@ -33,7 +33,7 @@ cmd_stop(Main* self)
 	// amelie stop <path>
 
 	// <path>/pid
-	auto path = opt_string_of(&self->endpoint.path);
+	auto path = &self->endpoint.path;
 	if (str_empty(path))
 		error("path is not defined");
 

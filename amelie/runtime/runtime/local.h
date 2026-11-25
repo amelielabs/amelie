@@ -44,18 +44,6 @@ local_reset(Local* self)
 	str_init(&self->db);
 }
 
-static inline void
-local_encode_opt(Local* self, Buf* buf, Opt* opt)
-{
-	// replace timezone with local settings
-	if (opt == &config()->timezone)
-	{
-		encode_str(buf, &self->timezone->name);
-		return;
-	}
-	opt_encode(opt, buf);
-}
-
 static inline bool
 local_limit(Local* self, int id, int64_t value)
 {

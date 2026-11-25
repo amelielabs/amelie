@@ -16,41 +16,49 @@ typedef struct Config Config;
 struct Config
 {
 	// main
-	Opt  version;
-	Opt  uuid;
-	Opt  timezone;
-	Opt  daemon;
+	Str     version;
+	Uuid    uuid;
+	Str     timezone;
+	bool    daemon;
+
 	// log
-	Opt  log_enable;
-	Opt  log_file;
-	Opt  log_stdout;
-	Opt  log_stdout_time;
-	Opt  log_connections;
-	Opt  log_options;
+	bool    log_enable;
+	bool    log_file;
+	bool    log_stdout;
+	bool    log_stdout_time;
+	bool    log_connections;
+	bool    log_options;
+
 	// wal
-	Opt  wal_crc;
-	Opt  wal_sync_create;
-	Opt  wal_sync_close;
-	Opt  wal_sync_write;
-	Opt  wal_sync_interval;
-	Opt  wal_service;
-	Opt  wal_size;
-	Opt  wal_checkpoint;
-	Opt  wal_rewind;
-	Opt  wal_rewind_pos;
+	bool    wal_crc;
+	bool    wal_sync_create;
+	bool    wal_sync_close;
+	bool    wal_sync_write;
+	Str     wal_sync_interval;
+	bool    wal_service;
+	int64_t wal_size;
+	int64_t wal_checkpoint;
+	bool    wal_rewind;
+	int64_t wal_rewind_pos;
+
 	// storage
-	Opt  storage_crc;
-	Opt  storage_compression;
-	Opt  storage_sync;
+	bool    storage_crc;
+	Str     storage_compression;
+	bool    storage_sync;
+
 	// compute
-	Opt  compute;
+	int64_t compute;
+
 	// replication
-	Opt  repl_readahead;
-	Opt  repl_reconnect_ms;
+	int64_t repl_readahead;
+	int64_t repl_reconnect_ms;
+
 	// network
-	Opt  recv;
-	Opt  listen;
-	Opts opts;
+	int64_t recv;
+	Str     listen;
+
+	// options
+	Opts    opts;
 };
 
 void config_init(Config*);

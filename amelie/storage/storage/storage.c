@@ -236,7 +236,7 @@ storage_state(Storage* self, Buf* buf)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_str(buf, &config()->version.string);
+	encode_str(buf, &config()->version);
 
 	// directory
 	encode_raw(buf, "directory", 9);
@@ -244,11 +244,11 @@ storage_state(Storage* self, Buf* buf)
 
 	// uuid
 	encode_raw(buf, "uuid", 4);
-	encode_uuid(buf, opt_uuid_of(&config()->uuid));
+	encode_uuid(buf, &config()->uuid);
 
 	// compute
 	encode_raw(buf, "compute", 7);
-	encode_int(buf, opt_int_of(&config()->compute));
+	encode_int(buf, config()->compute);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);

@@ -43,7 +43,7 @@ auth_basic(Auth* self, Endpoint* endpoint)
 	unused(self);
 
 	// parse basic token
-	auto token = opt_string_of(&endpoint->token);
+	auto token = &endpoint->token;
 	Str basic = *token;
 	str_advance(&basic, 6);
 
@@ -53,14 +53,14 @@ auth_basic(Auth* self, Endpoint* endpoint)
 	defer_buf(buf);
 
 	// set user
-	opt_string_set(&endpoint->user, &name);
+	str_assign(&endpoint->user, &name);
 }
 
 hot static inline void
 auth_jwt(Auth* self, Db* db, Endpoint* endpoint, uint64_t* expire)
 {
 	// parse token
-	auto token = opt_string_of(&endpoint->token);
+	auto token = &endpoint->token;
 	Str bearer = *token;
 	str_advance(&bearer, 7);
 
@@ -101,11 +101,11 @@ auth_jwt(Auth* self, Db* db, Endpoint* endpoint, uint64_t* expire)
 hot static inline void
 auth_db(Auth* self, Db* db, Endpoint* endpoint, uint64_t* expire)
 {
-	auto trusted = opt_int_of(&endpoint->trusted);
+	auto trusted = endpoint->trusted;
 	*expire = UINT64_MAX;
 
 	// no token
-	auto token = opt_string_of(&endpoint->token);
+	auto token = &endpoint->token;
 	if (str_empty(token))
 	{
 		// allow only for trusted connections (localhost)
@@ -141,11 +141,11 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 	uint64_t seq_secret = state()->secret_seq;
 
 	// find database
-	auto db_name = opt_string_of(&endpoint->db);
+	auto db_name = &endpoint->db;
 	auto db = catalog_find_db(&share()->storage->catalog, db_name, true);
 
 	// validate previous token
-	auto token_str = opt_string_of(&endpoint->token);
+	auto token_str = &endpoint->token;
 	if (likely(! token_empty(token)))
 	{
 		auto now = time_us();
@@ -167,7 +167,7 @@ auth_run(Auth* self, Endpoint* endpoint, Token* token)
 	auth_db(self, db, endpoint, &expire);
 
 	// system can connect only from localhost/unixsocket (trusted source)
-	auto trusted = opt_int_of(&endpoint->trusted);
+	auto trusted = endpoint->trusted;
 	if (db->system && !trusted)
 		error("auth: system can connect only from localhost");
 

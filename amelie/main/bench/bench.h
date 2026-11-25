@@ -37,12 +37,12 @@ struct Bench
 	int          clients_count;
 	Histogram    histogram;
 	BenchIf*     iface;
-	Opt          opt_type;
-	Opt          opt_databases;
-	Opt          opt_clients;
-	Opt          opt_duration;
-	Opt          opt_batch;
-	Opt          opt_histogram;
+	Str          opt_type;
+	int64_t      opt_databases;
+	int64_t      opt_clients;
+	int64_t      opt_duration;
+	int64_t      opt_batch;
+	bool         opt_histogram;
 	Opts         opts;
 	Main*        main;
 };

@@ -167,10 +167,7 @@ rels_rename(Rels* self, Rel* rel, Str* name)
 	rels_delete(self, rel);
 
 	if (! str_compare(rel->name, name))
-	{
-		str_free(rel->name);
-		str_copy(rel->name, name);
-	}
+		str_assign(rel->name, name);
 
 	// update hash tables with new name
 	//

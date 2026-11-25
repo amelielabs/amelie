@@ -49,7 +49,7 @@ service_process(Service* self, Write* record)
 	request_read(&portal->req, endpoint, record);
 
 	// set db (takes shared storage lock)
-	portal_bind(portal, opt_uuid_of(&endpoint->db_id));
+	portal_bind(portal, &endpoint->db_id);
 	auto db = portal->db;
 
 	// process

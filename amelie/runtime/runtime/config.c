@@ -33,7 +33,7 @@ config_free(Config* self)
 void
 config_prepare(Config* self)
 {
-	OptsDef defs[] =
+	OptsDef defs[28] =
 	{
 		{ "version",                 OPT_STRING, OPT_C,                   &self->version,                 AMELIE_VERSION,   0                   },
 		{ "uuid",                    OPT_UUID,   OPT_C,                   &self->uuid,                    NULL,             0                   },
@@ -69,9 +69,8 @@ config_prepare(Config* self)
 		// network
 		{ "recv",                    OPT_INT,    OPT_C,                   &self->recv,                    NULL,             1 * 1024 * 1024     },
 		{ "listen",                  OPT_JSON,   OPT_C|OPT_H,             &self->listen,                  NULL,             0                   },
-		{  NULL,                     0,          0,                       NULL,                           NULL,             0                   },
 	};
-	opts_define(&self->opts, defs);
+	opts_define(&self->opts, defs, 28);
 }
 
 void

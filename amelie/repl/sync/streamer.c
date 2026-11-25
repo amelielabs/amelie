@@ -19,7 +19,7 @@
 static inline Buf*
 streamer_collect(Streamer* self)
 {
-	auto size = opt_int_of(&config()->repl_readahead);
+	auto size = config()->repl_readahead;
 	for (;;)
 	{
 		auto lsn_max = state_lsn();
@@ -165,7 +165,7 @@ streamer_process(Streamer* self)
 		cancellation_point();
 
 		// reconnect
-		auto reconnect_interval = (int)opt_int_of(&config()->repl_reconnect_ms);
+		auto reconnect_interval = (int)config()->repl_reconnect_ms;
 		info("reconnect in {d} ms", reconnect_interval);
 		coroutine_sleep(reconnect_interval);
 	}
@@ -249,7 +249,7 @@ streamer_free(Streamer* self)
 void
 streamer_start(Streamer* self, Uuid* id_replica, Str* uri)
 {
-	self->id_primary = *opt_uuid_of(&config()->uuid);
+	self->id_primary = config()->uuid;
 	self->id_replica = *id_replica;
 	self->uri        = uri;
 	task_create(&self->task, "streamer", streamer_task_main, self);

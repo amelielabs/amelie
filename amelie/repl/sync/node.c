@@ -48,9 +48,10 @@ node_replay(Node* self, Buf* batch)
 		    (uint8_t*)record + record->size > end)
 				error("node: invalid record");
 
-		if (opt_int_of(&config()->wal_crc))
+		if (config()->wal_crc) {
 			if (unlikely(! record_validate(record)))
 				error("node: record crc mismatch");
+		}
 
 		if (record->lsn != (lsn + 1))
 			error("node: next lsn mismatch");
@@ -105,7 +106,7 @@ node_process(Node* self)
 		}
 
 		// NODE_ACK
-		node_send(client, NODE_ACK, opt_uuid_of(&config()->uuid),
+		node_send(client, NODE_ACK, &config()->uuid,
 		          state_lsn(), NULL);
 	}
 }

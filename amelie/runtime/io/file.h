@@ -41,7 +41,7 @@ file_open_stdin(File* self)
 {
 	// open file
 	auto path = "/dev/stdin";
-	str_dup_cstr(&self->path, path);
+	str_assign_cstr(&self->path, path);
 	self->size = 0;
 
 	// open
@@ -54,7 +54,7 @@ static inline void
 file_open_as(File* self, const char* path, int flags, int mode)
 {
 	// open or create file
-	str_dup_cstr(&self->path, path);
+	str_assign_cstr(&self->path, path);
 
 	// get file size
 	if (! (flags & O_CREAT))
@@ -146,16 +146,10 @@ file_update_size(File* self)
 static inline void
 file_rename(File* self, const char* path)
 {
-	Str new_path;
-	str_dup_cstr(&new_path, path);
-	int rc = vfs_rename(str_of(&self->path), str_of(&new_path));
+	int rc = vfs_rename(str_of(&self->path), path);
 	if (unlikely(rc == -1))
-	{
-		str_free(&new_path);
 		file_error(self, "rename");
-	}
-	str_free(&self->path);
-	self->path = new_path;
+	str_assign_cstr(&self->path, path);
 }
 
 static inline uint64_t

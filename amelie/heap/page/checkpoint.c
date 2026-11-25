@@ -57,7 +57,7 @@ checkpoint_create_schema(Checkpoint* self)
 	if (buf_empty(self->schema))
 		return;
 	file_write_buf(&file, self->schema);
-	if (opt_int_of(&config()->storage_sync))
+	if (config()->storage_sync)
 		file_sync(&file);
 }
 
@@ -85,7 +85,7 @@ checkpoint_create(Checkpoint* self)
 	}
 
 	// sync
-	if (opt_int_of(&config()->storage_sync))
+	if (config()->storage_sync)
 		file_sync(&file);
 
 	// rename as completed
@@ -114,7 +114,7 @@ checkpoint(Checkpoint* self)
 	if (! fs_exists("{s}", path))
 	{
 		fs_mkdir(0755, "{s}", path);
-		if (opt_int_of(&config()->storage_sync))
+		if (config()->storage_sync)
 			fs_syncdir("{s}/storage", state_directory());
 	}
 
@@ -131,7 +131,7 @@ checkpoint(Checkpoint* self)
 		checkpoint_create(self);
 
 		// sync directory
-		if (opt_int_of(&config()->storage_sync))
+		if (config()->storage_sync)
 			fs_syncdir("{s}", path);
 	);
 	if (on_error)

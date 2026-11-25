@@ -73,7 +73,7 @@ write_seal(Write* self, uint64_t lsn)
 	record->lsn = lsn;
 
 	// calculate crc
-	if (opt_int_of(&config()->wal_crc))
+	if (config()->wal_crc)
 		record->crc = runtime()->crc(0, &record->size, record->size - sizeof(uint32_t));
 }
 

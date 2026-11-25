@@ -181,7 +181,7 @@ mcp_parse_content(Mcp* self, Str* content)
 	auto cmd = jsonrpc_first(jsonrpc);
 
 	// set endpoint id
-	opt_json_set_data(&self->portal->endpoint.jsonrpc, cmd->id);
+	str_assign_raw(&self->portal->endpoint.jsonrpc, cmd->id, cmd->id_size);
 
 	// initialize
 	if (str_is(&cmd->method, "initialize", 10))

@@ -29,6 +29,6 @@ cmd_dst(Main* self)
 	logger_set_stdout_time(&runtime()->logger, false);
 	logger_set_stdout_lf(&runtime()->logger, false);
 
-	opt_int_set(&config()->log_connections, false);
+	config()->log_connections = false;
 	dst_run(&dst);
 }

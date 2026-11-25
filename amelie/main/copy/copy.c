@@ -26,13 +26,12 @@ copy_init(Copy* self, Main* main)
 	list_init(&self->clients_list);
 
 	opts_init(&self->opts);
-	OptsDef defs[] =
+	OptsDef defs[2] =
 	{
 		{ "batch",   OPT_INT, OPT_C|OPT_Z, &self->batch,   NULL,  128 * 1024 },
 		{ "clients", OPT_INT, OPT_C|OPT_Z, &self->clients, NULL,  16         },
-		{  NULL,     0,       0,            NULL,          NULL,  0          }
 	};
-	opts_define(&self->opts, defs);
+	opts_define(&self->opts, defs, 2);
 }
 
 void
@@ -46,7 +45,7 @@ static void
 copy_connect(Copy* self)
 {
 	// create clients and connect
-	int count = opt_int_of(&self->clients);
+	int count = self->clients;
 	while (count-- > 0)
 	{
 		auto client = client_allocate();
@@ -54,9 +53,9 @@ copy_connect(Copy* self)
 
 		// set default content_type
 		auto endpoint = &self->main->endpoint;
-		auto content_type = opt_string_of(&endpoint->content_type);
+		auto content_type = &endpoint->content_type;
 		if (str_empty(content_type))
-			opt_string_set_raw(&endpoint->content_type, "text/csv", 8);
+			str_assign_raw(&endpoint->content_type, "text/csv", 8);
 
 		// create client and connect
 		client_set_endpoint(client, endpoint);
@@ -183,7 +182,7 @@ copy_file(Copy* self, char* path)
 	{
 		Str batch;
 		str_init(&batch);
-		auto rc = csv_collect(csv, &batch, opt_int_of(&self->batch));
+		auto rc = csv_collect(csv, &batch, self->batch);
 		if (rc == CSV_EOF)
 			break;
 

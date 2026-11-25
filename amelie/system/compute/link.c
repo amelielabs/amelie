@@ -54,20 +54,20 @@ link_endpoint(Link* self)
 	// content type
 	auto content_type = http_find(http, "Content-Type", 12);
 	if (likely(content_type))
-		endpoint->content_type.string = content_type->value;
+		endpoint->content_type = content_type->value;
 
 	// accept
 	auto accept = http_find(http, "Accept", 6);
 	if (likely(accept))
-		endpoint->accept.string = accept->value;
+		endpoint->accept = accept->value;
 
 	// token
 	auto auth = http_find(http, "Authorization", 13);
 	if (auth)
-		endpoint->token.string = auth->value;
+		endpoint->token = auth->value;
 
 	// trusted
-	opt_int_set(&endpoint->trusted, self->client->trusted);
+	endpoint->trusted = self->client->trusted;
 
 	// update time and random seed
 	portal_prepare(portal);
@@ -78,8 +78,8 @@ link_endpoint(Link* self)
 		uri_parse_request(endpoint, &http->options[HTTP_URL]);
 
 		// set default db
-		if (opt_string_empty(&endpoint->db))
-			opt_string_set_raw(&endpoint->db, "amelie", 6);
+		if (str_empty(&endpoint->db))
+			str_assign_raw(&endpoint->db, "amelie", 6);
 	);
 }
 
@@ -117,7 +117,7 @@ link_main(Link* self)
 				break;
 
 			// read content
-			auto limit = opt_int_of(&config()->recv);
+			auto limit = config()->recv;
 			auto limit_reached =
 				http_read_content_limit(http, readahead, &http->content, limit);
 			if (unlikely(limit_reached))

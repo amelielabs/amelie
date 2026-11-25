@@ -48,13 +48,13 @@ syncer_init(Syncer* self, Storage* storage)
 void
 syncer_start(Syncer* self)
 {
-	if (! opt_int_of(&config()->wal_service))
+	if (! config()->wal_service)
 		return;
 
 	// prepare periodic interval
 	Interval interval;
 	interval_init(&interval);
-	interval_set(&interval, &config()->wal_sync_interval.string);
+	interval_set(&interval, &config()->wal_sync_interval);
 	if (interval_empty(&interval))
 		return;
 	if (interval.m > 0 || interval.d > 0)

@@ -57,8 +57,7 @@ index_config_free(IndexConfig* self)
 static inline void
 index_config_set_name(IndexConfig* self, Str* name)
 {
-	str_free(&self->name);
-	str_copy(&self->name, name);
+	str_assign(&self->name, name);
 }
 
 static inline void

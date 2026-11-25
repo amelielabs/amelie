@@ -18,7 +18,9 @@ struct JsonrpcReq
 {
 	Str      method;
 	uint8_t* params;
+	int      params_size;
 	uint8_t* id;
+	int      id_size;
 };
 
 struct Jsonrpc

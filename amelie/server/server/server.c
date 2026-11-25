@@ -70,7 +70,7 @@ server_listen(Server* self)
 	}
 
 	// set address name
-	str_dup_cstr(&self->addr_name, addr_name);
+	str_assign_cstr(&self->addr_name, addr_name);
 
 	info("listening on '{str}'", &self->addr_name);
 

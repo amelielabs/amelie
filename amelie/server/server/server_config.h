@@ -81,8 +81,7 @@ server_config_unref(ServerConfig* self)
 static inline void
 server_config_set_host(ServerConfig* self, Str* value)
 {
-	str_free(&self->host);
-	str_copy(&self->host, value);
+	str_assign(&self->host, value);
 }
 
 static inline void
@@ -106,36 +105,31 @@ server_config_set_tls(ServerConfig* self, bool value)
 static inline void
 server_config_set_tls_capath(ServerConfig* self, Str* value)
 {
-	str_free(&self->tls_capath);
-	str_copy(&self->tls_capath, value);
+	str_assign(&self->tls_capath, value);
 }
 
 static inline void
 server_config_set_tls_ca(ServerConfig* self, Str* value)
 {
-	str_free(&self->tls_ca);
-	str_copy(&self->tls_ca, value);
+	str_assign(&self->tls_ca, value);
 }
 
 static inline void
 server_config_set_tls_cert(ServerConfig* self, Str* value)
 {
-	str_free(&self->tls_cert);
-	str_copy(&self->tls_cert, value);
+	str_assign(&self->tls_cert, value);
 }
 
 static inline void
 server_config_set_tls_key(ServerConfig* self, Str* value)
 {
-	str_free(&self->tls_key);
-	str_copy(&self->tls_key, value);
+	str_assign(&self->tls_key, value);
 }
 
 static inline void
 server_config_set_tls_server(ServerConfig* self, Str* value)
 {
-	str_free(&self->tls_server);
-	str_copy(&self->tls_server, value);
+	str_assign(&self->tls_server, value);
 }
 
 static inline void
@@ -148,7 +142,7 @@ server_config_path(Str* self, Str* path)
 	// absolute or relative file path
 	if (*str_of(path) == '/' || relative)
 	{
-		str_copy(self, path);
+		str_assign(self, path);
 		return;
 	}
 
@@ -157,7 +151,7 @@ server_config_path(Str* self, Str* path)
 	auto relpath_size =
 		format(relpath, sizeof(relpath), "{s}/{str}",
 		       state_directory(), path);
-	str_dup(self, relpath, relpath_size);
+	str_assign_raw(self, relpath, relpath_size);
 }
 
 static inline void

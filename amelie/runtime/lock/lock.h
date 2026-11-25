@@ -39,7 +39,7 @@ lock_init(Lock* self, Resource* res, LockId lock,
 	self->func    = func;
 	str_init(&self->name);
 	if (unlikely(name))
-		str_copy(&self->name, name);
+		str_assign(&self->name, name);
 	event_init(&self->event);
 	list_init(&self->link_mgr);
 	list_init(&self->link);
