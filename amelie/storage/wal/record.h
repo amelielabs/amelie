@@ -15,8 +15,7 @@ typedef struct Record Record;
 
 enum
 {
-	RECORD_UTILITY = 1,
-	RECORD_PUBLISH = 2
+	RECORD_UTILITY = 1
 };
 
 struct Record
@@ -25,7 +24,6 @@ struct Record
 	uint32_t size;
 	uint8_t  flags;
 	uint64_t lsn;
-	uint64_t ack;
 } packed;
 
 static inline uint8_t*

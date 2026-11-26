@@ -95,7 +95,7 @@ write_content(Buf* buf, Str* value)
 }
 
 static inline void
-write_end(Buf* buf, MsgId id, uint64_t ack, uint8_t flags)
+write_end(Buf* buf, MsgId id, uint8_t flags)
 {
 	// request end
 	encode_array_end(buf);
@@ -107,7 +107,6 @@ write_end(Buf* buf, MsgId id, uint64_t ack, uint8_t flags)
 	record->size  = buf_size(buf) - sizeof(Write);
 	record->flags = flags;
 	record->lsn   = 0;
-	record->ack   = ack;
 }
 
 static inline void

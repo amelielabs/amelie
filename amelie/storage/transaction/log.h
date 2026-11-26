@@ -11,11 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LogIf  LogIf;
-typedef struct LogOp  LogOp;
-typedef struct Log    Log;
-typedef struct Part   Part;
-typedef struct Rel    Rel;
+typedef struct LogIf LogIf;
+typedef struct LogOp LogOp;
+typedef struct Log   Log;
+typedef struct Part  Part;
+typedef struct Rel   Rel;
 
 struct LogIf
 {
@@ -42,11 +42,9 @@ struct LogOp
 
 struct Log
 {
-	Buf  op;
-	Buf  data;
-	List publish;
-	int  count;
-	int  count_publish;
+	Buf op;
+	Buf data;
+	int count;
 };
 
 always_inline static inline LogOp*
@@ -65,23 +63,13 @@ static inline void
 log_init(Log* self)
 {
 	self->count = 0;
-	self->count_publish = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
-	list_init(&self->publish);
 }
 
 static inline void
 log_free(Log* self)
 {
-	// free publish
-	list_foreach_safe(&self->publish)
-	{
-		auto msg = list_at(MsgBuf, msg.link);
-		buf_free(msg->msg_buf);
-	}
-	list_init(&self->publish);
-
 	buf_free(&self->op);
 	buf_free(&self->data);
 }
@@ -89,15 +77,7 @@ log_free(Log* self)
 static inline void
 log_reset(Log* self)
 {
-	// free publish
-	list_foreach_safe(&self->publish)
-	{
-		auto msg = list_at(MsgBuf, msg.link);
-		buf_free(msg->msg_buf);
-	}
-	list_init(&self->publish);
 	self->count = 0;
-	self->count_publish = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 }
@@ -137,21 +117,4 @@ log_ddl(Log*   self,
 	op->rel       = rel;
 	op->rel_data  = buf_size(&self->data);
 	self->count++;
-}
-
-static inline void
-log_publish(Log* self, Msg* msg)
-{
-	list_append(&self->publish, &msg->link);
-	self->count_publish++;
-}
-
-static inline Msg*
-log_publish_pop(Log* self)
-{
-	if (! self->count_publish)
-		return NULL;
-	auto msg = container_of(list_pop(&self->publish), Msg, link);
-	self->count_publish--;
-	return msg;
 }

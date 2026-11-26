@@ -19,27 +19,6 @@
 #include <amelie_compute.h>
 
 static inline void
-service_ack(Service* self, uint64_t ack)
-{
-	auto db = self->req.db;
-	db_ack(db, ack);
-
-	if (! db->publish_count)
-		return;
-
-	list_foreach_safe(&db->publish)
-	{
-		auto write = list_at(Write, msg.link);
-		if (write->record->lsn <= ack)
-		{
-			list_unlink(&write->msg.link);
-			db->publish_count--;
-			buf_free(write->msg_buf);
-		}
-	}
-}
-
-static inline bool
 service_process(Service* self, Write* record)
 {
 	auto req      = &self->req;
@@ -61,53 +40,10 @@ service_process(Service* self, Write* record)
 
 	// set db (takes shared storage lock)
 	request_bind(req, &endpoint->db_id);
-	auto db = req->db;
-
-	// process
-	bool free    = true;
-	bool execute = true;
-	switch (record->msg.id) {
-	case MSG_PUBLISH:
-	{
-		// publish request (runtime)
-
-		// set db ack (will be part of the upcoming wal write)
-		db_ack(db, record->record->lsn);
-		break;
-	}
-	case MSG_RECORD:
-	{
-		// RECOVERY (WAL or REPL)
-		if (record->record->flags & RECORD_PUBLISH)
-		{
-			// if publish is not already processed then
-			// add to the queue
-			if (db_ack(db, record->record->lsn))
-			{
-				list_append(&db->publish, &record->msg.link);
-				db->publish_count++;
-
-				free = false;
-			}
-			execute = false;
-		}
-
-		// ACK (gc queue <= ack)
-		service_ack(self, record->record->ack);
-		break;
-	}
-	default:
-		abort();
-	}
 
 	// execute
-	if (execute)
-	{
-		auto compute = self->compute;
-		compute->iface->session_execute(self->session, req);
-	}
-
-	return free;
+	auto compute = self->compute;
+	compute->iface->session_execute(self->session, req);
 }
 
 static void
@@ -127,15 +63,13 @@ service_execute(Service* self, Write* record)
 	output_set(&req->output, endpoint, &output_json, NULL);
 
 	// process request
-	bool free;
-	auto on_error = error_catch
-	(
-		free = service_process(self, record)
+	auto on_error = error_catch (
+		service_process(self, record)
 	);
 
 	request_reset(req, true);
-	if (free)
-		buf_free(record->msg_buf);
+
+	buf_free(record->msg_buf);
 
 	// sync
 	if (record->msg.id == MSG_RECORD)

@@ -354,13 +354,6 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
-	case KPUBLISH:
-	{
-		self->id = STMT_PUBLISH;
-		parse_publish(self);
-		break;
-	}
-
 	case KIF:
 	{
 		self->id = STMT_IF;

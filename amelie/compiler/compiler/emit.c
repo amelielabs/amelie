@@ -147,9 +147,6 @@ emit_block(Compiler* self, Block* block)
 		case STMT_SELECT:
 			stmt->r = emit_select(self, stmt->ast, false);
 			break;
-		case STMT_PUBLISH:
-			stmt->r = emit_publish(self, stmt->ast);
-			break;
 		default:
 			abort();
 			break;

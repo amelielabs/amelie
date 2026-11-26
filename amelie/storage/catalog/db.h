@@ -23,10 +23,6 @@ struct Db
 	PageMgr     page_mgr;
 	Checkpoints checkpoints;
 
-	List        publish;
-	int         publish_count;
-	uint64_t    ack;
-
 	uint64_t    inv_revoked;
 	uint32_t    inv_seq;
 	int         commit;
@@ -50,17 +46,6 @@ always_inline static inline Db*
 db_of(Rel* self)
 {
 	return (Db*)self;
-}
-
-static inline bool
-db_ack(Db* self, uint64_t ack)
-{
-	if (self->ack < ack)
-	{
-		self->ack = ack;
-		return true;
-	}
-	return false;
 }
 
 static inline void

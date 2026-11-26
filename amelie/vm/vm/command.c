@@ -215,67 +215,6 @@ cupdate(Vm* self, Op* op)
 	stack_popn(&self->stack, op->b * 2);
 }
 
-hot void
-cpublish(Vm* self, Op* op)
-{
-	// [offset, values, refs]
-	auto endpoint = self->gtr->endpoint;
-
-	// find database
-	Str name_db;
-	Str name_rel;
-	auto pos = code_data_at(&self->program->code_data, op->a);
-	unpack_str(&pos, &name_db);
-	unpack_str(&pos, &name_rel);
-	auto db = catalog_find_db(&share()->storage->catalog, &name_db, true);
-
-	// create write on behalf of the destination db
-	auto buf = write_begin(db->rel.id, &endpoint->timezone, endpoint->time,
-	                       endpoint->seed);
-	errdefer_buf(buf);
-
-	// rel
-	write_rel(buf, &name_rel);
-
-	// content
-	encode_int(buf, META_CONTENT);
-	auto offset = buf_size(buf);
-	encode_str32(buf, 0);
-
-	// [value, ...]
-	encode_array(buf);
-
-	auto refs = stack_at(&self->stack, op->c);
-	if (op->b != -1)
-	{
-		auto set = (Set*)op->b;
-		for (auto order = 0; order < set->count_rows; order++)
-		{
-			auto value = set_row(set, order);
-			if (value->type == TYPE_REF)
-				value = &refs[value->integer];
-			value_encode(value, self->gtr->local->timezone, buf);
-		}
-	}
-	if (op->c > 0)
-		stack_popn(&self->stack, op->c);
-
-	encode_array_end(buf);
-
-	// set content size
-	auto start = buf->start + offset;
-	pack_str32(&start, buf_size(buf) - (offset + data_size_str32()));
-
-	// write end
-	auto db_current = db_of(self->gtr->tr.db);
-	write_end(buf, MSG_PUBLISH, db_current->ack, RECORD_PUBLISH);
-
-	// log
-	auto write = write_of(buf);
-	write->arg = db;
-	log_publish(&self->gtr->tr.log, &write->msg);
-}
-
 void
 cunion_limit(Vm* self, Op* op)
 {

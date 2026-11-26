@@ -18,7 +18,6 @@ struct Storage
 	Catalog  catalog;
 	uint64_t catalog_lsn;
 	Wal      wal;
-	Columns  publish;
 	Syncer   syncer;
 	EvalIf*  iface;
 	void*    iface_arg;

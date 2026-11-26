@@ -80,7 +80,6 @@
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
-#include "parser/parse_publish.h"
 
 // query
 #include "parser/parse_order.h"

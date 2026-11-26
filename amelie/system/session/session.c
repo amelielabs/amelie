@@ -177,7 +177,7 @@ session_run(Session* self)
 		write_rel(write, &endpoint->rel);
 		write_content_type(write, &endpoint->content_type);
 		write_content(write, &endpoint->content);
-		write_end(write, MSG_RECORD, req->db->ack, 0);
+		write_end(write, MSG_RECORD, 0);
 
 		commit(share()->commit, gtr);
 	}
@@ -284,7 +284,7 @@ session_run_utility(Session* self)
 		write_rel(write, &endpoint->rel);
 		write_content_type(write, &endpoint->content_type);
 		write_content(write, &endpoint->content);
-		write_end(write, MSG_RECORD, 0, flags);
+		write_end(write, MSG_RECORD, flags);
 
 		Writes writes;
 		writes_init(&writes);

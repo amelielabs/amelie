@@ -30,7 +30,6 @@ storage_init(Storage*   self,
 	self->catalog_lsn = 0;
 	catalog_init(&self->catalog, iface, iface_arg, NULL, NULL);
 	wal_init(&self->wal);
-	columns_init(&self->publish);
 	syncer_init(&self->syncer, self);
 }
 
@@ -47,7 +46,6 @@ storage_free(Storage* self)
 	}
 
 	catalog_free(&self->catalog);
-	columns_free(&self->publish);
 	wal_free(&self->wal);
 }
 
@@ -185,18 +183,6 @@ void
 storage_start(Storage* self, bool bootstrap)
 {
 	state_lsn_set(1);
-
-	// prepare publish columns
-	auto columns = &self->publish;
-	columns_init(columns);
-
-	// data
-	auto column = column_allocate();
-	Str name;
-	str_set(&name, "data", 4);
-	column_set_name(column, &name);
-	column_set_type(column, TYPE_JSON, 0);
-	columns_add(columns, column);
 
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option

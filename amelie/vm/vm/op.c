@@ -310,7 +310,6 @@ OpDesc ops[] =
 	{ CUPSERT, "upsert" },
 	{ CDELETE, "delete" },
 	{ CUPDATE, "update" },
-	{ CPUBLISH, "publish" },
 
 	// system
 	{ CSYSTEM_SET_SECRET, "system_set_secret" },
@@ -450,13 +449,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table = (Table*)op->a;
 			op_write(buf, op, false, false, false,
 			         "{str}", &table->config->name);
-			break;
-		}
-		case CPUBLISH:
-		{
-			auto db = (Db*)op->a;
-			op_write(buf, op, false, false, false,
-			         "{str}", db->rel.name);
 			break;
 		}
 		case CUPSERT_OPEN:

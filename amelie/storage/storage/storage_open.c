@@ -56,8 +56,6 @@ storage_open_schema(Storage* self, Db* db)
 		separator_advance(&sep);
 	}
 
-	// set db ack equal to checkpoint lsn
-	db_ack(db, cp->current->id);
 	return true;
 }
 
