@@ -58,7 +58,8 @@ apply_checkpoint(Apply* self, Db* db, Action* action)
 {
 	unused(self);
 	storage_checkpoint_db(share()->storage, db);
-	uint64_t* lsn = action->complete->arg;
+
+	auto lsn = *(uint64_t**)action->data;
 	*lsn = db->checkpoints.current->id;
 }
 

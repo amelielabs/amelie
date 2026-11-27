@@ -22,10 +22,8 @@ typedef enum
 	// resolver
 	MSG_RESOLVE,
 
-	// recover
-	MSG_RECORD,
-
 	// storage
+	MSG_RECORD,
 	MSG_OPEN,
 
 	// commit
@@ -33,8 +31,6 @@ typedef enum
 
 	// compute
 	MSG_CLIENT,
-	MSG_STREAM,
-	MSG_STREAM_CANCEL,
 
 	// system
 	MSG_SHOW_METRICS

@@ -49,10 +49,8 @@ service_sync(Service* self)
 }
 
 static inline void
-service_checkpoint(Service* self, Uuid* id, void* arg)
+service_checkpoint(Service* self, Uuid* id, uint64_t* lsn)
 {
-	Complete co;
-	complete_init(&co, 1, arg);
-	service_add(self, ACTION_CHECKPOINT, id, &co, 0, NULL);
-	complete_wait(&co);
+	service_add(self, ACTION_CHECKPOINT, id, NULL, sizeof(uint64_t**), &lsn);
+	service_sync(self);
 }

@@ -27,8 +27,10 @@ storage_checkpoint(Storage* self)
 	list_foreach(&self->catalog.rels.list)
 	{
 		auto db = db_of(list_at(Rel, link));
+
 		uint64_t checkpoint = UINT64_MAX;
 		service_checkpoint(&self->service, db->rel.id, &checkpoint);
+
 		if (checkpoint < min)
 			min = checkpoint;
 	}
