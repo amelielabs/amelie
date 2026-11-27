@@ -15,9 +15,9 @@ typedef struct Recover Recover;
 
 struct Recover
 {
-	RecoverSync sync;
-	bool        panic;
-	Storage*    storage;
+	uint64_t processed;
+	bool     panic;
+	Storage* storage;
 };
 
 void recover_init(Recover*, Storage*, bool);

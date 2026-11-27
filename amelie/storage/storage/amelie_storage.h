@@ -21,7 +21,6 @@
 #include "storage/storage_open.h"
 
 // recover
-#include "storage/recover_sync.h"
 #include "storage/recover.h"
 
 // backup

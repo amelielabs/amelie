@@ -16,6 +16,7 @@
 #include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_service.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 

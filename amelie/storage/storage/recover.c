@@ -16,15 +16,16 @@
 #include <amelie_transaction.h>
 #include <amelie_part.h>
 #include <amelie_catalog.h>
+#include <amelie_service.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 
 void
 recover_init(Recover* self, Storage* storage, bool panic)
 {
-	self->storage = storage;
-	self->panic = panic;
-	recover_sync_init(&self->sync);
+	self->processed = 0;
+	self->panic     = panic;
+	self->storage   = storage;
 }
 
 void
@@ -36,7 +37,18 @@ recover_free(Recover* self)
 void
 recover_wait(Recover* self)
 {
-	recover_sync(&self->sync, self->panic);
+	auto service = &self->storage->service;
+	service_sync(service);
+
+	// check for errors
+	uint64_t errors = atomic_u64_of(&service->errors);
+	if (unlikely(errors))
+	{
+		if (self->panic)
+			panic("recover: error during playback");
+		else
+			error("recover: error during playback");
+	}
 }
 
 static inline Db*
@@ -70,57 +82,48 @@ recover_read(Recover* self, Write* msg)
 void
 recover_next(Recover* self, Write* msg)
 {
+	auto service = &self->storage->service;
+	auto record  = msg->record;
+
+	auto db = recover_read(self, msg);
+	if (! db)
+		return;
+
 	// global (catalog)
-	auto sync = &self->sync;
-	if ((msg->record->flags & RECORD_UTILITY) > 0)
+	if ((record->flags & RECORD_UTILITY) > 0)
 	{
 		// applied
-		if (likely(self->storage->catalog_lsn >= msg->record->lsn))
-		{
-			buf_free(msg->msg_buf);
+		if (likely(self->storage->catalog_lsn >= record->lsn))
 			return;
-		}
 
-		// wait for completion
+		// sync
 		recover_wait(self);
 
 		// execute (under amelie)
-		auto db = recover_read(self, msg);
-		assert(db);
+		service_add(service, ACTION_RECORD, db->rel.id, NULL,
+		            record_data_size(record),
+		            record_data(record));
 
-		recover_sync_add(sync);
-		msg->arg = sync;
-		task_send(db->compute, &msg->msg);
-
-		// wait for completion
+		// sync
 		recover_wait(self);
 		return;
 	}
 
 	// local (per database)
-	auto db = recover_read(self, msg);
-	if (! db)
-	{
-		buf_free(msg->msg_buf);
-		return;
-	}
 
 	// applied (as part of the last checkpoint)
 	if (db->checkpoints.current &&
-	    db->checkpoints.current->id >= msg->record->lsn)
-	{
-		buf_free(msg->msg_buf);
+	    db->checkpoints.current->id >= record->lsn)
 		return;
-	}
 
 	// execute
-	recover_sync_add(sync);
-	msg->arg = sync;
-	task_send(db->compute, &msg->msg);
+	service_add(service, ACTION_RECORD, db->rel.id, NULL,
+	            record_data_size(record),
+	            record_data(record));
 
 	// sync
-	uint64_t total = atomic_u64_of(&sync->total);
-	if ((total % 100000) == 0)
+	self->processed++;
+	if ((self->processed % 100000) == 0)
 		recover_wait(self);
 }
 
@@ -145,7 +148,10 @@ recover_wal_main(Recover* self)
 			auto msg = wal_cursor_next_msg(&cursor);
 			if (! msg)
 				break;
+			defer_buf(msg->msg_buf);
+
 			size += msg->record->size;
+			self->processed++;
 			count++;
 
 			// set lsn
