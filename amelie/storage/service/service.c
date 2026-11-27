@@ -54,6 +54,41 @@ service_attach(Service* self, Subscriber* sub)
 	spinlock_unlock(&self->lock);
 }
 
+void
+service_detach(Service* self, Subscriber* sub)
+{
+	spinlock_lock(&self->lock);
+
+	// update subscribers
+	list_unlink(&sub->link);
+	self->subs_count--;
+
+	// update waiters
+	auto        wait = false;
+	Subscriber* prev = NULL;
+	Subscriber* ref  = self->waiters;
+	for (; ref; ref = ref->wait_next)
+	{
+		if (ref == sub)
+		{
+			if (prev == NULL)
+				self->waiters = ref->wait_next;
+			else
+				prev->wait_next = ref->wait_next;
+			ref->wait_next = NULL;
+			wait = true;
+			break;
+		}
+		prev = ref;
+	}
+
+	sub->shutdown = true;
+	spinlock_unlock(&self->lock);
+
+	if (wait)
+		event_signal(&sub->event);
+}
+
 hot void
 service_add(Service*  self, ActionType type,
             Uuid*     db,
@@ -87,18 +122,18 @@ service_add(Service*  self, ActionType type,
 	// write action
 	assert((page->size - page->position) >= size);
 	auto action = (Action*)((uint8_t*)page + page->position);
-	action->id        = self->id++;
-	action->type      = type;
+	action->id   = self->id++;
+	action->type = type;
 	if (db)
-		action->db        = *db;
+		action->db = *db;
 	else
 		uuid_init(&action->db);
 	action->complete  = complete;
 	action->data_size = data_size;
 	if (data_size > 0)
 		memcpy(action->data, data, data_size);
-	page->position += size;
 	page->last      = action;
+	page->position += size;
 
 	// resume waiters
 	auto sub = self->waiters;
@@ -127,10 +162,16 @@ service_next(Service* self, Subscriber* sub)
 	auto event = &sub->event;
 	event_attach(&sub->event);
 
-	Action* action = NULL;
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
+
+		if (unlikely(sub->shutdown))
+		{
+			sub->pos = NULL;
+			spinlock_unlock(&self->lock);
+			break;
+		}
 
 		if (likely(sub->end))
 		{
@@ -142,6 +183,7 @@ service_next(Service* self, Subscriber* sub)
 			auto page = sub->page;
 			if (sub->end < page->last)
 			{
+				sub->pos = (Action*)(sub->pos->data + sub->pos->data_size);
 				sub->end = page->last;
 				spinlock_unlock(&self->lock);
 				break;
@@ -180,5 +222,5 @@ service_next(Service* self, Subscriber* sub)
 		event_wait(event, -1);
 	}
 
-	return action;
+	return sub->pos;
 }

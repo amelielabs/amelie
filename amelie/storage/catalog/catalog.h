@@ -102,3 +102,9 @@ catalog_find_db(Catalog* self, Str* name, bool error_if_not_exists)
 {
 	return (Db*)rels_find(&self->rels, REL_DB, name, error_if_not_exists);
 }
+
+static inline Db*
+catalog_find_db_by(Catalog* self, Uuid* id, bool error_if_not_exists)
+{
+	return (Db*)rels_find_by(&self->rels, REL_DB, id, error_if_not_exists);
+}

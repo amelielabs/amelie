@@ -17,25 +17,15 @@ struct Complete
 {
 	atomic_u32 pending;
 	Event      event;
+	void*      arg;
 };
 
 static inline void
-complete_init(Complete* self)
-{
-	self->pending = 0;
-	event_init(&self->event);
-}
-
-static inline void
-complete_reset(Complete* self)
-{
-	self->pending = 0;
-}
-
-static inline void
-complete_prepare(Complete* self, int count)
+complete_init(Complete* self, int count, void* arg)
 {
 	self->pending = count;
+	self->arg     = arg;
+	event_init(&self->event);
 	event_attach(&self->event);
 }
 

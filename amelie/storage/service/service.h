@@ -29,6 +29,7 @@ struct Service
 void    service_init(Service*);
 void    service_free(Service*);
 void    service_attach(Service*, Subscriber*);
+void    service_detach(Service*, Subscriber*);
 void    service_add(Service*, ActionType, Uuid*, Complete*, uint32_t, void*);
 Action* service_next(Service*, Subscriber*);
 
@@ -42,8 +43,16 @@ static inline void
 service_sync(Service* self)
 {
 	Complete co;
-	complete_init(&co);
-	complete_prepare(&co, self->subs_count);
+	complete_init(&co, self->subs_count, NULL);
 	service_add(self, ACTION_SYNC, NULL, &co, 0, NULL);
+	complete_wait(&co);
+}
+
+static inline void
+service_checkpoint(Service* self, Uuid* id, void* arg)
+{
+	Complete co;
+	complete_init(&co, 1, arg);
+	service_add(self, ACTION_CHECKPOINT, id, &co, 0, NULL);
 	complete_wait(&co);
 }

@@ -65,8 +65,8 @@ compute_rpc(Rpc* rpc, void* arg)
 		// disconnect clients
 		clients_shutdown(&self->clients);
 
-		// stop service
-		service_stop(&self->service);
+		// stop apply
+		apply_stop(&self->apply);
 		break;
 	}
 	default:
@@ -79,8 +79,8 @@ compute_main(void* arg)
 {
 	Compute* self = arg;
 
-	// start service
-	service_start(&self->service);
+	// start apply
+	apply_start(&self->apply);
 
 	// main
 	bool stop = false;
@@ -94,12 +94,6 @@ compute_main(void* arg)
 			auto client = (Client*)msg;
 			client->arg = self;
 			coroutine_create(compute_main_client, client);
-			break;
-		}
-		case MSG_RECORD:
-		case MSG_CHECKPOINT:
-		{
-			service_add(&self->service, msg);
 			break;
 		}
 		default:
@@ -121,7 +115,7 @@ compute_init(Compute* self, ComputeIf* iface, void* iface_arg)
 	self->iface_arg = iface_arg;
 	clients_init(&self->clients);
 	auth_init(&self->auth);
-	service_init(&self->service, self);
+	apply_init(&self->apply, self);
 	task_init(&self->task);
 }
 
@@ -129,7 +123,7 @@ void
 compute_free(Compute* self)
 {
 	clients_free(&self->clients);
-	service_free(&self->service);
+	apply_free(&self->apply);
 	auth_free(&self->auth);
 	task_free(&self->task);
 }

@@ -20,6 +20,7 @@ struct Subscriber
 	ServicePage* page;
 	Subscriber*  wait_next;
 	Event        event;
+	bool         shutdown;
 	List         link;
 };
 
@@ -30,6 +31,7 @@ subscriber_init(Subscriber* self)
 	self->end       = NULL;
 	self->page      = NULL;
 	self->wait_next = NULL;
+	self->shutdown  = false;
 	event_init(&self->event);
 	list_init(&self->link);
 }

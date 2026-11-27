@@ -25,7 +25,7 @@ struct Compute
 {
 	Clients    clients;
 	Auth       auth;
-	Service    service;
+	Apply      apply;
 	ComputeIf* iface;
 	void*      iface_arg;
 	Task       task;

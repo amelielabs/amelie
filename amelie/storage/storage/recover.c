@@ -101,8 +101,8 @@ recover_next(Recover* self, Write* msg)
 
 		// execute (under amelie)
 		service_add(service, ACTION_RECORD, db->rel.id, NULL,
-		            record_data_size(record),
-		            record_data(record));
+		            msg->record->size,
+		            msg->record);
 
 		// sync
 		recover_wait(self);
@@ -118,8 +118,8 @@ recover_next(Recover* self, Write* msg)
 
 	// execute
 	service_add(service, ACTION_RECORD, db->rel.id, NULL,
-	            record_data_size(record),
-	            record_data(record));
+		        msg->record->size,
+		        msg->record);
 
 	// sync
 	self->processed++;

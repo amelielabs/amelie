@@ -27,7 +27,6 @@ typedef enum
 
 	// storage
 	MSG_OPEN,
-	MSG_CHECKPOINT,
 
 	// commit
 	MSG_GTR,

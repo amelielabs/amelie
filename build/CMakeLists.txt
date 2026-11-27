@@ -88,6 +88,7 @@ include_directories("${AMELIE_ROOT}/storage")
 include_directories("${AMELIE_ROOT}/storage/transaction")
 include_directories("${AMELIE_ROOT}/storage/part")
 include_directories("${AMELIE_ROOT}/storage/catalog")
+include_directories("${AMELIE_ROOT}/storage/service")
 include_directories("${AMELIE_ROOT}/storage/wal")
 include_directories("${AMELIE_ROOT}/storage/storage")
 
@@ -212,6 +213,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/catalog/describe.c
     ${AMELIE_ROOT}/storage/catalog/mcp.c
     ${AMELIE_ROOT}/storage/catalog/execute.c
+    ${AMELIE_ROOT}/storage/service/service.c
     ${AMELIE_ROOT}/storage/wal/wal.c
     ${AMELIE_ROOT}/storage/wal/wal_recovery.c
     ${AMELIE_ROOT}/storage/wal/wal_write.c
@@ -326,7 +328,7 @@ set(AMELIE_SOURCES_COMPILER
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/compute/auth.c
     ${AMELIE_ROOT}/system/compute/compute.c
-    ${AMELIE_ROOT}/system/compute/service.c
+    ${AMELIE_ROOT}/system/compute/apply.c
     ${AMELIE_ROOT}/system/compute/mcp.c
     ${AMELIE_ROOT}/system/compute/mcp_execute.c
     ${AMELIE_ROOT}/system/compute/link.c

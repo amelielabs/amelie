@@ -29,7 +29,7 @@ struct Action
 	Complete*  complete;
 	uint32_t   data_size;
 	uint8_t    data[];
-};
+} packed;
 
 static inline void
 action_complete(Action* self)

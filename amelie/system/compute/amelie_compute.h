@@ -15,8 +15,8 @@
 #include "compute/auth.h"
 #include "compute/request.h"
 
-// service
-#include "compute/service.h"
+// apply
+#include "compute/apply.h"
 
 // compute
 #include "compute/compute.h"
