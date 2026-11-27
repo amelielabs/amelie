@@ -51,39 +51,11 @@ recover_wait(Recover* self)
 	}
 }
 
-static inline Db*
-recover_read(Recover* self, Record* record)
-{
-	auto pos = record_data(record);
-	unpack_array(&pos);
-	while (! unpack_array_end(&pos))
-	{
-		int64_t field;
-		unpack_int(&pos, &field);
-
-		// META_ID
-		if (field == 0)
-		{
-			Uuid id;
-			uuid_init(&id);
-			Str str;
-			unpack_str(&pos, &str);
-			uuid_set(&id, &str);
-			return (Db*)catalog_find_by(&self->storage->catalog, REL_DB, &id, false);
-		}
-		data_skip(&pos);
-	}
-
-	error("recover: db field not found");
-	return NULL;
-}
-
 void
 recover_next(Recover* self, Record* record)
 {
 	auto service = &self->storage->service;
-
-	auto db = recover_read(self, record);
+	auto db = catalog_find_db_by(&self->storage->catalog, &record->id, false);
 	if (! db)
 		return;
 

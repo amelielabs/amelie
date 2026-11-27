@@ -22,8 +22,9 @@ struct Record
 {
 	uint32_t crc;
 	uint32_t size;
-	uint8_t  flags;
 	uint64_t lsn;
+	Uuid     id;
+	uint8_t  flags;
 } packed;
 
 static inline uint8_t*

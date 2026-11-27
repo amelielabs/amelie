@@ -36,7 +36,7 @@ apply_record(Apply* self, Db* db, Action* action)
 
 	// restore request
 	auto record = (Record*)action->data;
-	record_read(record_data(record),
+	record_read(record,
 	            &endpoint->db_id,
 	            &endpoint->timezone,
 	            &endpoint->time,

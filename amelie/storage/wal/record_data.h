@@ -13,7 +13,6 @@
 
 enum
 {
-	META_UUID,
 	META_TIMEZONE,
 	META_TIME,
 	META_SEED,
@@ -36,13 +35,10 @@ record_begin(Buf*     buf,
 	record->size  = 0;
 	record->flags = flags;
 	record->lsn   = 0;
+	record->id    = *id;
 
 	// []
 	encode_array(buf);
-
-	// uuid
-	encode_int(buf, META_UUID);
-	encode_uuid(buf, id);
 
 	// timezone
 	encode_int(buf, META_TIMEZONE);
@@ -102,7 +98,7 @@ record_end(Buf* buf, int offset)
 }
 
 static inline void
-record_read(uint8_t*  pos,
+record_read(Record*   self,
             Uuid*     id,
             Str*      timezone,
             uint64_t* time,
@@ -111,6 +107,10 @@ record_read(uint8_t*  pos,
             Str*      content_type,
             Str*      content)
 {
+	// set id
+	*id = self->id;
+
+	auto pos = record_data(self);
 	unpack_array(&pos);
 	while (! unpack_array_end(&pos))
 	{
@@ -118,13 +118,6 @@ record_read(uint8_t*  pos,
 		unpack_int(&pos, &field);
 
 		switch (field) {
-		case META_UUID:
-		{
-			Str uuid;
-			unpack_str(&pos, &uuid);
-			uuid_set(id, &uuid);
-			break;
-		}
 		case META_TIMEZONE:
 			unpack_str(&pos, timezone);
 			break;
