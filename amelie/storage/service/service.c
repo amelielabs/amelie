@@ -59,6 +59,9 @@ service_detach(Service* self, Subscriber* sub)
 {
 	spinlock_lock(&self->lock);
 
+	if (sub->page)
+		service_page_unref(sub->page);
+
 	// update subscribers
 	list_unlink(&sub->link);
 	self->subs_count--;
@@ -96,21 +99,25 @@ service_add(Service*  self, ActionType type,
             uint32_t  data_size,
             void*     data)
 {
-	spinlock_lock(&self->lock);
-	defer(spinlock_unlock, &self->lock);
-
-	auto size_page = 256 * 1024;
+	// ensure size can fit the page
+	auto size_page = 2 * 1024 * 1024;
 	auto size = sizeof(Action) + data_size;
 
-	// ensure size can fit the page
 	if (unlikely(size > (size_page - sizeof(ServicePage))))
 		error("service: max page capacity {d} exceeded", size_page);
+
+	spinlock_lock(&self->lock);
 
 	// add new page
 	auto page = self->current;
 	if (unlikely(!page || (page->size - page->position) < size))
 	{
 		page = service_page_allocate(size_page);
+		if (unlikely(! page))
+		{
+			spinlock_unlock(&self->lock);
+			error_system();
+		}
 		if (self->current)
 			self->current->next = page;
 		else
@@ -139,6 +146,8 @@ service_add(Service*  self, ActionType type,
 	auto sub = self->waiters;
 	self->waiters = NULL;
 
+	spinlock_unlock(&self->lock);
+
 	// resume waiters
 	while (sub)
 	{
@@ -147,6 +156,31 @@ service_add(Service*  self, ActionType type,
 		event_signal(&sub->event);
 		sub = next;
 	}
+}
+
+static inline ServicePage*
+service_gc(Service* self)
+{
+	if (likely(!self->list || self->list->refs > 0))
+		return NULL;
+
+	ServicePage* head = self->list;
+	ServicePage* page = head;
+	ServicePage* prev = NULL;
+	auto count = 0;
+	while (page != self->current && !page->refs)
+	{
+		prev = page;
+		page = page->next;
+		count++;
+	}
+
+	self->list = page;
+	self->list_count -= count;
+	if (prev)
+		prev->next = NULL;
+
+	return head;
 }
 
 Action*
@@ -162,6 +196,7 @@ service_next(Service* self, Subscriber* sub)
 	auto event = &sub->event;
 	event_attach(&sub->event);
 
+	ServicePage* gc = NULL;
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
@@ -177,8 +212,6 @@ service_next(Service* self, Subscriber* sub)
 		{
 			assert(sub->pos == sub->end);
 
-			// todo: ack?
-
 			// iterate current page
 			auto page = sub->page;
 			if (sub->end < page->last)
@@ -192,9 +225,16 @@ service_next(Service* self, Subscriber* sub)
 			// next page
 			if (page->next)
 			{
+				service_page_unref(sub->page);
+
 				sub->page = page->next;
 				sub->pos  = (Action*)sub->page->data;
 				sub->end  = (Action*)sub->page->last;
+
+				service_page_ref(sub->page);
+
+				// collect pages ready for gc
+				gc = service_gc(self);
 				spinlock_unlock(&self->lock);
 				break;
 			}
@@ -207,6 +247,8 @@ service_next(Service* self, Subscriber* sub)
 				sub->page = self->list;
 				sub->pos  = (Action*)sub->page->data;
 				sub->end  = (Action*)sub->page->last;
+
+				service_page_ref(sub->page);
 				spinlock_unlock(&self->lock);
 				break;
 			}
@@ -220,6 +262,17 @@ service_next(Service* self, Subscriber* sub)
 
 		// wait
 		event_wait(event, -1);
+	}
+
+	// cleanup
+	if (unlikely(gc))
+	{
+		while (gc)
+		{
+			auto next = gc->next;
+			service_page_free(gc);
+			gc = next;
+		}
 	}
 
 	return sub->pos;
