@@ -138,23 +138,6 @@ wal_cursor_read(WalCursor* self, Buf* buf)
 	return false;
 }
 
-Write*
-wal_cursor_next_msg(WalCursor* self)
-{
-	auto write = buf_create();
-	write_init(write, false);
-	errdefer_buf(write);
-
-	if (wal_cursor_read(self, write))
-	{
-		write_set(write, MSG_RECORD);
-		return write_of(write);
-	}
-
-	buf_free(write);
-	return NULL;
-}
-
 Buf*
 wal_cursor_next(WalCursor* self)
 {

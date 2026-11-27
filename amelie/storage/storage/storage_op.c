@@ -156,15 +156,13 @@ storage_sync(Storage* self, uint64_t id, bool close)
 }
 
 hot void
-storage_write(Storage* self, Writes* list)
+storage_write(Storage* self, struct iovec* iov, int iov_count)
 {
-	if (! list->list_count)
-		return;
-
 	WalContext context =
 	{
-		.list       = list,
-		.recover    = NULL,
+		.recover    = false,
+		.iov        = iov,
+		.iov_count  = iov_count,
 		.lsn        = 0,
 		.sync_close = 0,
 		.sync       = 0,
@@ -188,12 +186,13 @@ storage_write(Storage* self, Writes* list)
 }
 
 void
-storage_write_recover(Storage* self, Buf* recover, uint64_t lsn)
+storage_write_recover(Storage* self, struct iovec* iov, int iov_count, uint64_t lsn)
 {
 	WalContext context =
 	{
-		.list       = NULL,
-		.recover    = recover,
+		.recover    = true,
+		.iov        = iov,
+		.iov_count  = iov_count,
 		.lsn        = lsn,
 		.sync_close = 0,
 		.sync       = 0,

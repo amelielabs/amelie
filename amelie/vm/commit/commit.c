@@ -29,6 +29,8 @@ commit_main(void* arg)
 	Batch batch;
 	batch_init(&batch);
 	defer(batch_free, &batch);
+
+	auto iov = &batch.iov;
 	for (;;)
 	{
 		auto msg = task_recv();
@@ -44,8 +46,8 @@ commit_main(void* arg)
 			continue;
 
 		// wal write
-		if (batch.writes.list_count)
-			storage_write(storage, &batch.writes);
+		if (! iov_empty(iov))
+			storage_write(storage, iov_pointer(iov), iov->iov_count);
 
 		// wakeup transactions
 		batch_complete(&batch);

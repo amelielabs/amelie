@@ -15,12 +15,13 @@ typedef struct WalContext WalContext;
 
 struct WalContext
 {
-	Writes*  list;
-	Buf*     recover;
-	uint64_t lsn;
-	uint64_t sync;
-	uint64_t sync_close;
-	bool     checkpoint;
+	bool          recover;
+	struct iovec* iov;
+	int           iov_count;
+	uint64_t      lsn;
+	uint64_t      sync;
+	uint64_t      sync_close;
+	bool          checkpoint;
 };
 
 void wal_write(Wal*, WalContext*);

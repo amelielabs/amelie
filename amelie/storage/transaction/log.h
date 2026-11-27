@@ -43,8 +43,8 @@ struct LogOp
 struct Log
 {
 	Buf op;
+	int op_count;
 	Buf data;
-	int count;
 };
 
 always_inline static inline LogOp*
@@ -62,7 +62,7 @@ log_data_of(Log* self, LogOp* op)
 static inline void
 log_init(Log* self)
 {
-	self->count = 0;
+	self->op_count = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
 }
@@ -77,7 +77,7 @@ log_free(Log* self)
 static inline void
 log_reset(Log* self)
 {
-	self->count = 0;
+	self->op_count = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 }
@@ -85,7 +85,7 @@ log_reset(Log* self)
 static inline LogOp*
 log_last(Log* self)
 {
-	return log_of(self, self->count - 1);
+	return log_of(self, self->op_count - 1);
 }
 
 hot static inline LogOp*
@@ -101,7 +101,7 @@ log_dml(Log*   self,
 	op->part      = part;
 	op->row       = row;
 	op->row_prev  = NULL;
-	self->count++;
+	self->op_count++;
 	return op;
 }
 
@@ -116,5 +116,5 @@ log_ddl(Log*   self,
 	op->iface_arg = iface_arg;
 	op->rel       = rel;
 	op->rel_data  = buf_size(&self->data);
-	self->count++;
+	self->op_count++;
 }

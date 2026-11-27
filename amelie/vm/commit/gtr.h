@@ -76,9 +76,25 @@ gtr_begin(Gtr*      self, Local* local, Db* db,
 	tr_set_local(tr, local);
 	tr_set_limit(tr, &self->usage);
 
-	if (! event_attached(&self->on_commit))
-		event_attach(&self->on_commit);
+	event_attach(&self->on_commit);
 
 	// set access
 	self->access = access;
+}
+
+static inline void
+gtr_write(Gtr* self, Uuid* uuid, int flags)
+{
+	auto endpoint = self->endpoint;
+	auto buf      = &self->write;
+	auto offset   =
+		record_begin(buf, uuid,
+		             &endpoint->timezone,
+		              endpoint->time,
+		              endpoint->seed,
+		              flags);
+	record_rel(buf, &endpoint->rel);
+	record_content_type(buf, &endpoint->content_type);
+	record_content(buf, &endpoint->content);
+	record_end(buf, offset);
 }

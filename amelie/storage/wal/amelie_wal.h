@@ -11,13 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-// wal record
+// record
 #include "wal/record.h"
-
-// wal write
-#include "wal/write.h"
-#include "wal/write_data.h"
-#include "wal/writes.h"
+#include "wal/record_data.h"
 
 // wal
 #include "wal/wal_file.h"

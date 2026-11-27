@@ -136,6 +136,10 @@ session_run(Session* self)
 	auto endpoint = &req->endpoint;
 	gtr_begin(gtr, &req->local, req->db, access, endpoint);
 
+	// create wal record
+	if (!ro && !req->replay)
+		gtr_write(gtr, &endpoint->db_id, 0);
+
 	// do retention
 	session_retention(access, req->db);
 
@@ -168,25 +172,16 @@ session_run(Session* self)
 	if (returning && ret.value)
 		output_value(output, returning, ret.value);
 
-	// wal write
-	if (!req->replay && !ro)
+	// commit
+	if (! ro)
 	{
-		auto write = &gtr->write;
-		write_begin_at(write, &endpoint->db_id, &endpoint->timezone,
-		               endpoint->time, endpoint->seed);
-		write_rel(write, &endpoint->rel);
-		write_content_type(write, &endpoint->content_type);
-		write_content(write, &endpoint->content);
-		write_end(write, MSG_RECORD, 0);
+		if (! req->replay)
+			commit(share()->commit, gtr);
 
-		commit(share()->commit, gtr);
+		// mark for checkpoint
+		db_dirty(req->db, true);
 	}
 
-	// mark for checkpoint
-	if (! ro)
-		db_dirty(req->db, true);
-
-	// commit
 	tr_commit(&gtr->tr);
 
 	// explain profile
@@ -278,18 +273,14 @@ session_run_utility(Session* self)
 			flags = RECORD_UTILITY;
 			uuid  = &uuid_amelie;
 		}
+		gtr_write(gtr, uuid, flags);
 
-		auto write = &gtr->write;
-		write_begin_at(write, uuid, &endpoint->timezone, endpoint->time, endpoint->seed);
-		write_rel(write, &endpoint->rel);
-		write_content_type(write, &endpoint->content_type);
-		write_content(write, &endpoint->content);
-		write_end(write, MSG_RECORD, flags);
-
-		Writes writes;
-		writes_init(&writes);
-		writes_add(&writes, write_of(write));
-		storage_write(share()->storage, &writes);
+		struct iovec iov =
+		{
+			.iov_base = gtr->write.start,
+			.iov_len  = buf_size(&gtr->write)
+		};
+		storage_write(share()->storage, &iov, 1);
 	}
 
 	// mark for checkpoint

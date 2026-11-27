@@ -52,9 +52,8 @@ recover_wait(Recover* self)
 }
 
 static inline Db*
-recover_read(Recover* self, Write* msg)
+recover_read(Recover* self, Record* record)
 {
-	auto record = msg->record;
 	auto pos = record_data(record);
 	unpack_array(&pos);
 	while (! unpack_array_end(&pos))
@@ -80,12 +79,11 @@ recover_read(Recover* self, Write* msg)
 }
 
 void
-recover_next(Recover* self, Write* msg)
+recover_next(Recover* self, Record* record)
 {
 	auto service = &self->storage->service;
-	auto record  = msg->record;
 
-	auto db = recover_read(self, msg);
+	auto db = recover_read(self, record);
 	if (! db)
 		return;
 
@@ -101,8 +99,8 @@ recover_next(Recover* self, Write* msg)
 
 		// execute (under amelie)
 		service_add(service, ACTION_RECORD, db->rel.id, NULL,
-		            msg->record->size,
-		            msg->record);
+		            record->size,
+		            record);
 
 		// sync
 		recover_wait(self);
@@ -118,8 +116,8 @@ recover_next(Recover* self, Write* msg)
 
 	// execute
 	service_add(service, ACTION_RECORD, db->rel.id, NULL,
-		        msg->record->size,
-		        msg->record);
+	            record->size,
+	            record);
 
 	// sync
 	self->processed++;
@@ -145,21 +143,22 @@ recover_wal_main(Recover* self)
 		wal_cursor_open(&cursor, wal, id, false, wal_crc, false);
 		for (;;)
 		{
-			auto msg = wal_cursor_next_msg(&cursor);
-			if (! msg)
+			auto buf = wal_cursor_next(&cursor);
+			if (! buf)
 				break;
-			defer_buf(msg->msg_buf);
+			defer_buf(buf);
 
-			size += msg->record->size;
+			auto record = (Record*)buf->start;
+			size += record->size;
 			self->processed++;
 			count++;
 
 			// set lsn
-			assert(state_lsn() < msg->record->lsn);
-			state_lsn_set(msg->record->lsn);
+			assert(state_lsn() < record->lsn);
+			state_lsn_set(record->lsn);
 
 			// execute
-			recover_next(self, msg);
+			recover_next(self, (Record*)buf->start);
 		}
 		if (! wal_cursor_active(&cursor))
 			break;
@@ -167,6 +166,7 @@ recover_wal_main(Recover* self)
 		// sync
 		recover_wait(self);
 
+		// report
 		clock_update(&am_task->clock);
 		info("recover: wal/{u64} ({.2f} MiB, {u64} transactions)", cursor.file->id,
 		     (double)size / 1024 / 1024, count);

@@ -61,16 +61,19 @@ node_replay(Node* self, Buf* batch)
 	}
 
 	// wal write (update global lsn)
-	storage_write_recover(self->recover.storage, batch, lsn);
+	struct iovec iov =
+	{
+		.iov_base = batch->start,
+		.iov_len  = buf_size(batch)
+	};
+	storage_write_recover(self->recover.storage, &iov, 1, lsn);
 
 	// execute
 	pos = batch->start;
 	while (pos < end)
 	{
 		auto record = (Record*)pos;
-		auto write = write_copy(MSG_RECORD, record);
-		recover_next(recover, write);
-
+		recover_next(recover, record);
 		pos += record->size;
 	}
 

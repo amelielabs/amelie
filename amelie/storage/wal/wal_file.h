@@ -97,9 +97,9 @@ wal_file_unpin_defer(WalFile* self)
 }
 
 static inline void
-wal_file_write(WalFile* self, Iov* iov)
+wal_file_write(WalFile* self, struct iovec* iov, int iov_count)
 {
-	file_writev(&self->file, iov_pointer(iov), iov->iov_count);
+	file_writev(&self->file, iov, iov_count);
 }
 
 static inline bool

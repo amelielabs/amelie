@@ -15,5 +15,5 @@ void storage_checkpoint(Storage*);
 void storage_checkpoint_db(Storage*, Db*);
 void storage_checkpoint_catalog(Storage*);
 void storage_sync(Storage*, uint64_t, bool);
-void storage_write(Storage*, Writes*);
-void storage_write_recover(Storage*, Buf*, uint64_t);
+void storage_write(Storage*, struct iovec*, int);
+void storage_write_recover(Storage*, struct iovec*, int, uint64_t);

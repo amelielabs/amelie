@@ -22,14 +22,20 @@ enum
 	META_CONTENT
 };
 
-static inline void
-write_begin_at(Buf*     buf,
-               Uuid*    id,
-               Str*     timezone,
-               uint64_t time,
-               uint64_t seed)
+static inline int
+record_begin(Buf*     buf,
+             Uuid*    id,
+             Str*     timezone,
+             uint64_t time,
+             uint64_t seed,
+             int      flags)
 {
-	write_init(buf, true);
+	auto offset = buf_size(buf);
+	auto record = (Record*)buf_emplace(buf, sizeof(Record));
+	record->crc   = 0;
+	record->size  = 0;
+	record->flags = flags;
+	record->lsn   = 0;
 
 	// []
 	encode_array(buf);
@@ -51,21 +57,11 @@ write_begin_at(Buf*     buf,
 	encode_int(buf, seed);
 
 	// (incomplete)
-}
-
-static inline Buf*
-write_begin(Uuid*    id,
-            Str*     timezone,
-            uint64_t time,
-            uint64_t seed)
-{
-	auto buf = buf_create();
-	write_begin_at(buf, id, timezone, time, seed);
-	return buf;
+	return offset;
 }
 
 static inline void
-write_rel(Buf* buf, Str* value)
+record_rel(Buf* buf, Str* value)
 {
 	if (value && !str_empty(value))
 	{
@@ -75,7 +71,7 @@ write_rel(Buf* buf, Str* value)
 }
 
 static inline void
-write_content_type(Buf* buf, Str* value)
+record_content_type(Buf* buf, Str* value)
 {
 	if (value && !str_empty(value))
 	{
@@ -85,7 +81,7 @@ write_content_type(Buf* buf, Str* value)
 }
 
 static inline void
-write_content(Buf* buf, Str* value)
+record_content(Buf* buf, Str* value)
 {
 	if (value && !str_empty(value))
 	{
@@ -95,29 +91,25 @@ write_content(Buf* buf, Str* value)
 }
 
 static inline void
-write_end(Buf* buf, MsgId id, uint8_t flags)
+record_end(Buf* buf, int offset)
 {
 	// request end
 	encode_array_end(buf);
 
-	write_set(buf, id);
-
-	auto record = write_of(buf)->record;
-	record->crc   = 0;
-	record->size  = buf_size(buf) - sizeof(Write);
-	record->flags = flags;
-	record->lsn   = 0;
+	// set size
+	auto record = (Record*)(buf->start + offset);
+	record->size = buf_size(buf) - offset;
 }
 
 static inline void
-write_read(uint8_t*  pos,
-           Uuid*     id,
-           Str*      timezone,
-           uint64_t* time,
-           uint64_t* seed,
-           Str*      rel,
-           Str*      content_type,
-           Str*      content)
+record_read(uint8_t*  pos,
+            Uuid*     id,
+            Str*      timezone,
+            uint64_t* time,
+            uint64_t* seed,
+            Str*      rel,
+            Str*      content_type,
+            Str*      content)
 {
 	unpack_array(&pos);
 	while (! unpack_array_end(&pos))

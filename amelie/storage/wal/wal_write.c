@@ -79,15 +79,10 @@ wal_create(Wal* self, WalContext* context, uint64_t id)
 }
 
 hot static inline void
-wal_write_recover(Wal* self, WalFile* current, WalContext* context)
+wal_write_recover(WalFile* current, WalContext* context)
 {
-	// context contains a prepared list of records and lsn to set
-	auto iov = &self->iov;
-	iov_reset(iov);
-	iov_add_buf(iov, context->recover);
-
 	// write
-	wal_file_write(current, iov);
+	wal_file_write(current, context->iov, context->iov_count);
 
 	// sync after write
 	if (config()->wal_sync_write)
@@ -95,34 +90,31 @@ wal_write_recover(Wal* self, WalFile* current, WalContext* context)
 }
 
 hot static inline void
-wal_write_list(Wal* self, WalFile* current, WalContext* context)
+wal_write_list(WalFile* current, WalContext* context)
 {
-	auto iov = &self->iov;
-	iov_reset(iov);
+	context->lsn = state_lsn();
 
-	context->lsn = state_lsn() + 1;
-	list_foreach(&context->list->list)
+	// set lsn
+	auto iov = context->iov;
+	auto iov_count = context->iov_count;
+	for (auto i = 0; i < iov_count; i++)
 	{
-		auto write = list_at(Write, msg.link);
-
-		// set lsn and crc
-		write_seal(write, context->lsn);
-
-		// [record][data]
-		iov_add(iov, &write->record, write->record->size);
-
-		if (! list_is_last(&context->list->list, &write->msg.link))
-			context->lsn++;
+		auto ptr = (uint8_t*)iov[i].iov_base;
+		auto end = (uint8_t*)iov[i].iov_base + iov[i].iov_len;
+		while (ptr < end)
+		{
+			auto record = (Record*)ptr;
+			record_seal(record, ++context->lsn);
+			ptr += record->size;
+		}
 	}
 
 	// write
-	wal_file_write(current, iov);
+	wal_file_write(current, iov, iov_count);
 
 	// sync after write
 	if (config()->wal_sync_write)
 		wal_file_sync(current);
-
-	context->list->lsn = context->lsn;
 }
 
 hot void
@@ -150,9 +142,9 @@ wal_write(Wal* self, WalContext* context)
 	auto on_error = error_catch
 	(
 		if (context->recover)
-			wal_write_recover(self, current, context);
+			wal_write_recover(current, context);
 		else
-			wal_write_list(self, current, context);
+			wal_write_list(current, context);
 	);
 	if (unlikely(on_error))
 		panic("wal: wal write failed");

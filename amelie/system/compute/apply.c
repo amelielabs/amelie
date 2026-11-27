@@ -36,14 +36,14 @@ apply_record(Apply* self, Db* db, Action* action)
 
 	// restore request
 	auto record = (Record*)action->data;
-	write_read(record_data(record),
-	           &endpoint->db_id,
-	           &endpoint->timezone,
-	           &endpoint->time,
-	           &endpoint->seed,
-	           &endpoint->rel,
-	           &endpoint->content_type,
-	           &endpoint->content);
+	record_read(record_data(record),
+	            &endpoint->db_id,
+	            &endpoint->timezone,
+	            &endpoint->time,
+	            &endpoint->seed,
+	            &endpoint->rel,
+	            &endpoint->content_type,
+	            &endpoint->content);
 
 	// assign db
 	request_set(req, db, false);

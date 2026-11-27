@@ -38,6 +38,14 @@ record_data_size(Record* self)
 	return self->size - sizeof(Record);
 }
 
+static inline void
+record_seal(Record* self, uint64_t lsn)
+{
+	self->lsn = lsn;
+	if (config()->wal_crc)
+		self->crc = runtime()->crc(0, &self->size, self->size - sizeof(uint32_t));
+}
+
 static inline bool
 record_validate(Record* self)
 {
