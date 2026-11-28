@@ -302,6 +302,7 @@ enum
 	CUPSERT,
 	CDELETE,
 	CUPDATE,
+	CPUBLISH,
 
 	// system
 	CSYSTEM_SET_SECRET,

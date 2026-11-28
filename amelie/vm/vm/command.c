@@ -215,6 +215,62 @@ cupdate(Vm* self, Op* op)
 	stack_popn(&self->stack, op->b * 2);
 }
 
+hot void
+cpublish(Vm* self, Op* op)
+{
+	// [offset, values, refs]
+	auto gtr      = self->gtr;
+	auto endpoint = gtr->endpoint;
+
+	// find database
+	Str name_db;
+	Str name_rel;
+	auto pos = code_data_at(&self->program->code_data, op->a);
+	unpack_str(&pos, &name_db);
+	unpack_str(&pos, &name_rel);
+	auto db = catalog_find_db(&share()->storage->catalog, &name_db, true);
+
+	// create wal record on behalf of the destination db
+	auto buf    = &gtr->write;
+	auto offset = record_begin(buf, db->rel.id, &endpoint->timezone, endpoint->time,
+	                           endpoint->seed, RECORD_PUBLISH);
+
+	// rel
+	record_rel(buf, &name_rel);
+
+	// content
+	encode_int(buf, META_CONTENT);
+	auto offset_content = buf_size(buf);
+	encode_str32(buf, 0);
+
+	// [value, ...]
+	encode_array(buf);
+
+	auto refs = stack_at(&self->stack, op->c);
+	if (op->b != -1)
+	{
+		auto set = (Set*)op->b;
+		for (auto order = 0; order < set->count_rows; order++)
+		{
+			auto value = set_row(set, order);
+			if (value->type == TYPE_REF)
+				value = &refs[value->integer];
+			value_encode(value, self->gtr->local->timezone, buf);
+		}
+	}
+	if (op->c > 0)
+		stack_popn(&self->stack, op->c);
+
+	encode_array_end(buf);
+
+	// set content size
+	auto start = buf->start + offset_content;
+	pack_str32(&start, buf_size(buf) - (offset_content + data_size_str32()));
+
+	// write end
+	record_end(buf, offset);
+}
+
 void
 cunion_limit(Vm* self, Op* op)
 {

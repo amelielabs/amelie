@@ -67,6 +67,12 @@ access_ro(Access* self)
 	return self->ro;
 }
 
+static inline void
+access_set_publish(Access* self)
+{
+	self->ro = false;
+}
+
 hot static inline void
 access_add(Access* self, Rel* rel, uint32_t perm)
 {

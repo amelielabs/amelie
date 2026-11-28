@@ -50,7 +50,7 @@ commit_main(void* arg)
 			storage_write(storage, iov_pointer(iov), iov->iov_count);
 
 		// wakeup transactions
-		batch_complete(&batch);
+		batch_complete(&batch, &self->storage->service);
 	}
 }
 
