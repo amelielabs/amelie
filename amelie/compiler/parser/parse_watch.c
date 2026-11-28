@@ -21,8 +21,12 @@
 void
 parse_watch(Stmt* self)
 {
-	// WATCH expr
+	// WATCH PUBLISH | expr
 	auto stmt = ast_watch_allocate();
 	self->ast = &stmt->ast;
+
+	if (stmt_if(self, KPUBLISH))
+		return;
+
 	stmt->expr = parse_expr(self, NULL);
 }

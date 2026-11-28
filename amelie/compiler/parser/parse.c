@@ -324,12 +324,6 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
-	case KWATCH:
-		// WATCH expr
-		self->id = STMT_WATCH;
-		parse_watch(self);
-		break;
-
 	case KINSERT:
 		self->id  = STMT_INSERT;
 		parse_insert(self);
@@ -395,6 +389,7 @@ parse_stmt(Stmt* self)
 	}
 
 	case KEXECUTE:
+	case KWATCH:
 	case KBEGIN:
 	case KCOMMIT:
 		stmt_error(self, ast, "cannot be used here");
@@ -537,7 +532,7 @@ parse(Parser* self, Program* program, Str* str)
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
 	auto block = blocks_add(&ns->blocks, NULL, NULL);
 
-	// EXECUTE | BEGIN
+	// EXECUTE | WATCH | BEGIN
 	if (lex_if(lex, KEXECUTE))
 	{
 		// EXECUTE function_name(args, ...)
@@ -545,6 +540,15 @@ parse(Parser* self, Program* program, Str* str)
 		stmt->id = STMT_EXECUTE;
 		stmts_add(&block->stmts, stmt);
 		parse_execute(stmt);
+		lex_if(lex, ';');
+	} else
+	if (lex_if(lex, KWATCH))
+	{
+		// WATCH expr
+		auto stmt = stmt_allocate(self, lex, block);
+		stmts_add(&block->stmts, stmt);
+		stmt->id = STMT_WATCH;
+		parse_watch(stmt);
 		lex_if(lex, ';');
 	} else
 	{

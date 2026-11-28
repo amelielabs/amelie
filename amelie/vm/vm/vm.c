@@ -376,6 +376,7 @@ vm_run(Vm*      self,
 		&&cdelete,
 		&&cupdate,
 		&&cpublish,
+		&&csync,
 
 		// system
 		&&csystem_set_secret,
@@ -2103,6 +2104,10 @@ cupdate:
 
 cpublish:
 	cpublish(self, op);
+	op_next;
+
+csync:
+	csync(self, op);
 	op_next;
 
 csystem_set_secret:

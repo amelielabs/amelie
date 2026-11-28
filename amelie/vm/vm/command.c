@@ -271,6 +271,15 @@ cpublish(Vm* self, Op* op)
 	record_end(buf, offset);
 }
 
+hot void
+csync(Vm* self, Op* op)
+{
+	unused(self);
+	unused(op);
+
+	service_sync(&share()->storage->service);
+}
+
 void
 cunion_limit(Vm* self, Op* op)
 {

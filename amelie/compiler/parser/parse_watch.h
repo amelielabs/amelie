@@ -29,7 +29,6 @@ static inline AstWatch*
 ast_watch_allocate(void)
 {
 	AstWatch* self = ast_allocate(0, sizeof(AstWatch));
-	self->expr = NULL;
 	return self;
 }
 

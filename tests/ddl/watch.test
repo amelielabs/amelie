@@ -11,5 +11,10 @@ show state;
 explain watch show('state').lsn::int = 1;
 watch show('state').lsn::int = 1;
 
+# test: watch (multi-stmt)
+begin
+	watch show('state').lsn::int = 1;
+end;
+
 disconnect S0;
 close E0;

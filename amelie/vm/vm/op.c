@@ -311,6 +311,7 @@ OpDesc ops[] =
 	{ CDELETE, "delete" },
 	{ CUPDATE, "update" },
 	{ CPUBLISH, "publish" },
+	{ CSYNC, "sync" },
 
 	// system
 	{ CSYSTEM_SET_SECRET, "system_set_secret" },

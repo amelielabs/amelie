@@ -15,6 +15,7 @@
 #include "bench/bench.h"
 #include "bench/bench_insert.h"
 #include "bench/bench_upsert.h"
+#include "bench/bench_publish.h"
 #include "bench/bench_tpcb.h"
 #include "bench/bench_decre.h"
 #include "bench/bench_vector.h"

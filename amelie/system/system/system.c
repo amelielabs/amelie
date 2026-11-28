@@ -264,6 +264,9 @@ system_recover(System* self, bool bootstrap)
 	recover_wal(&recover);
 	info("");
 
+	// wait for compute sync
+	service_sync(&self->storage.service);
+
 	state_recover_set(RECOVER_NONE);
 }
 

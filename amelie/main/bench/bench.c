@@ -221,6 +221,9 @@ bench_run(Bench* self)
 	if (str_is_cstr(type, "upsert"))
 		self->iface = &bench_upsert;
 	else
+	if (str_is_cstr(type, "publish"))
+		self->iface = &bench_publish;
+	else
 	if (str_is_cstr(type, "tpcb"))
 		self->iface = &bench_tpcb;
 	else

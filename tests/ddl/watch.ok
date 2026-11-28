@@ -38,5 +38,11 @@ main
  14   nop                 0      0      0
  15   ret                 -1     0      -
 watch show('state').lsn::int = 1;
+# test: watch (multi-stmt)
+begin
+	watch show('state').lsn::int = 1;
+end;
+error: begin
+	❰watch❱ ⟵ cannot be used here
 disconnect S0;
 close E0;

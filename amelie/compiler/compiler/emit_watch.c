@@ -26,6 +26,13 @@ emit_watch(Compiler* self, Ast* ast)
 {
 	AstWatch* watch = ast_watch_of(ast);
 
+	// WATCH PUBLISH
+	if (! watch->expr)
+	{
+		op0(self, CSYNC);
+		return;
+	}
+
 	// WATCH expr
 
 	// _start

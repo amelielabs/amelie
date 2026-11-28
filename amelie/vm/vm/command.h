@@ -19,6 +19,7 @@ Op*  cupsert(Vm*, Op*);
 void cdelete(Vm*, Op*);
 void cupdate(Vm*, Op*);
 void cpublish(Vm*, Op*);
+void csync(Vm*, Op*);
 
 void cunion_limit(Vm*, Op*);
 void cunion_offset(Vm*, Op*);

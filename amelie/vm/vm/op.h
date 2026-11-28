@@ -303,6 +303,7 @@ enum
 	CDELETE,
 	CUPDATE,
 	CPUBLISH,
+	CSYNC,
 
 	// system
 	CSYSTEM_SET_SECRET,
